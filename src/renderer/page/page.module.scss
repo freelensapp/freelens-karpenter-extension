@@ -1,0 +1,212 @@
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 180px);
+  justify-content: space-evenly;
+  grid-gap: 8px;
+  padding: 16px;
+}
+
+.center {
+  text-align: center;
+}
+
+.chart-title {
+  color: var(--colorInfo);
+}
+
+.chart-item {
+  margin-bottom: 16px;
+}
+
+.pb3 {
+  padding-bottom: 3em;
+}
+
+// ── TabLayout content wrapper ─────────────────────────────────────────────────
+
+.tabContent {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+.fluxContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px 48px;
+}
+
+// ── NodePool list ─────────────────────────────────────────────────────────────
+
+.nodePoolList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.nodePoolListHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 10px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--textColorPrimary, #ccc);
+}
+
+.nodePoolSearch {
+  background: var(--contentColor, #0d1117);
+  border: 1px solid var(--borderColor, #3a3a4a);
+  border-radius: 6px;
+  padding: 4px 28px 4px 10px; // right padding for clear button
+  color: var(--textColorPrimary, #ccc);
+  font-size: 12px;
+  outline: none;
+  min-width: 260px;
+  width: 100%;
+
+  &::placeholder {
+    color: var(--textColorTertiary, #888);
+  }
+
+  &:focus {
+    border-color: #00a7e1;
+  }
+}
+
+.nodePoolSearchWrap {
+  position: relative;
+  flex: 1;
+  max-width: 340px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.nodePoolSearchClear {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--textColorTertiary, #888);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+  line-height: 1;
+
+  &:hover { color: var(--textColorPrimary, #ccc); }
+}
+
+// ── Quick-filter status chips ─────────────────────────────────────────────────
+
+.quickFilters {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.quickFilterChip {
+  background: transparent;
+  border: 1px solid var(--borderColor, rgba(128,128,128,0.3));
+  border-radius: 12px;
+  padding: 2px 9px;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+  opacity: 0.65;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(128,128,128,0.1);
+  }
+}
+
+.quickFilterChipActive {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.noResults {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--textColorTertiary, #666);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.nodePoolCount {
+  background: var(--layoutTabsBackground, #2d2d2d);
+  color: var(--textColorSecondary, #888);
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.nodePoolEmptyBtn {
+  background: transparent;
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-radius: 4px;
+  color: var(--textColorSecondary, #888);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 3px 10px;
+  margin-left: 8px;
+  font-weight: 400;
+  transition: background 0.1s, color 0.1s;
+
+  &:hover {
+    background: rgba(0, 167, 225, 0.1);
+    color: #00a7e1;
+  }
+
+  &.nodePoolEmptyBtnActive {
+    background: rgba(0, 167, 225, 0.15);
+    border-color: #00a7e1;
+    color: #00a7e1;
+    font-weight: 600;
+  }
+}
+
+// ── Karpenter not installed ───────────────────────────────────────────────────
+
+.karpenterNotInstalled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px;
+  gap: 16px;
+  text-align: center;
+}
+
+.karpenterNotInstalledIcon {
+  font-size: 56px;
+  line-height: 1;
+}
+
+.karpenterNotInstalledTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--textColorPrimary, #fff);
+  margin: 0;
+}
+
+.karpenterNotInstalledMsg {
+  font-size: 14px;
+  color: var(--textColorSecondary, #888);
+  max-width: 480px;
+  margin: 0;
+  line-height: 1.6;
+
+  code {
+    font-family: monospace;
+    background: var(--layoutTabsBackground, #2d2d2d);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #00a7e1;
+  }
+}
