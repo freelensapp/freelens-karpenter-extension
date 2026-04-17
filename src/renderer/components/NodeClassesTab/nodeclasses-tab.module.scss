@@ -1,0 +1,246 @@
+// ── Tab root ──────────────────────────────────────────────────────────────────
+
+.tabRoot {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tabHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.tabHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tabTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--textColorPrimary, #e8e8e8);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.countBadge {
+  background: var(--layoutTabsBackground, #2d2d2d);
+  color: var(--textColorSecondary, #888);
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.searchInput {
+  background: var(--contentColor, #0d1117);
+  border: 1px solid var(--borderColor, #3a3a4a);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--textColorPrimary, #ccc);
+  font-size: 13px;
+  outline: none;
+  min-width: 200px;
+
+  &::placeholder { color: var(--textColorTertiary, #555); }
+  &:focus { border-color: #00a7e1; }
+}
+
+.empty {
+  color: var(--textColorTertiary, #555);
+  font-size: 13px;
+  padding: 32px 0;
+  text-align: center;
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ── NodeClass card ────────────────────────────────────────────────────────────
+
+.nodeClassCard {
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--contentColor, #13161b);
+}
+
+.nodeClassHeader {
+  padding: 12px 16px;
+  background: var(--layoutTabsBackground, #1a1d22);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--layoutTabsActiveBackground, #1e2430);
+  }
+}
+
+.nodeClassTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.nodeClassIcon {
+  font-size: 16px;
+}
+
+.nodeClassKind {
+  font-size: 11px;
+  color: var(--textColorTertiary, #666);
+  white-space: nowrap;
+}
+
+.nodeClassName {
+  font-size: 15px;
+  font-weight: 600;
+  color: #6ab0d4;
+  font-family: monospace;
+  cursor: pointer;
+  transition: color 0.1s;
+
+  &:hover {
+    color: #00a7e1;
+  }
+}
+
+.extLink {
+  font-size: 10px;
+  color: var(--textColorTertiary, #555);
+  margin-left: 2px;
+}
+
+.poolCountBadge {
+  background: rgba(106, 176, 212, 0.12);
+  color: #6ab0d4;
+  border: 1px solid rgba(106, 176, 212, 0.2);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.expandChevron {
+  font-size: 14px;
+  color: var(--textColorTertiary, #555);
+  margin-left: 4px;
+}
+
+.nodeClassMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-left: 26px;
+}
+
+.metaItem {
+  font-size: 12px;
+  color: var(--textColorSecondary, #aaa);
+}
+
+.metaLabel {
+  color: var(--textColorTertiary, #666);
+  margin-right: 4px;
+}
+
+// ── NodePools table ───────────────────────────────────────────────────────────
+
+.poolsContainer {
+  padding: 0;
+  border-top: 1px solid var(--borderColor, #2d2d2d);
+}
+
+.noPools {
+  padding: 16px;
+  color: var(--textColorTertiary, #555);
+  font-size: 12px;
+  text-align: center;
+}
+
+.poolsTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 12px;
+  color: var(--textColorPrimary, #d0d0d0);
+
+  thead tr {
+    background: rgba(128, 128, 128, 0.05);
+
+    th {
+      text-align: left;
+      padding: 7px 12px;
+      font-weight: 500;
+      color: var(--textColorSecondary, #666);
+      border-bottom: 1px solid var(--borderColor, #2d2d2d);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  tbody .poolRow {
+    border-bottom: 1px solid var(--borderColor, #1a1d22);
+    cursor: pointer;
+    transition: background 0.1s;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: rgba(0, 167, 225, 0.06); }
+
+    td {
+      padding: 8px 12px;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.poolName {
+  font-weight: 500;
+  color: var(--textColorPrimary, #d0d0d0);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+
+  span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.poolIcon {
+  font-size: 14px;
+}
+
+.mono {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--textColorSecondary, #aaa);
+}
+
+.clickHint {
+  font-size: 10px;
+  color: var(--textColorTertiary, #444);
+  text-align: right;
+  padding-right: 12px;
+}

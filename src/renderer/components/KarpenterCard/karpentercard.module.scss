@@ -1,0 +1,679 @@
+// ── Card root ─────────────────────────────────────────────────────────────────
+// Left border color is set via inline style from theme.ts STATUS_BORDER_COLOR.
+
+.cardRoot {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-left: 4px solid #555; // default fallback — overridden by inline style
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--contentColor, #13161b);
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Top row: left info + right overview ──────────────────────────────────────
+
+.cardTopRow {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--borderColor, #2d2d2d);
+  background: var(--layoutTabsBackground, #1a1d22);
+  min-width: 0;
+}
+
+.cardTopLeft {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--textColorPrimary, #e8e8e8);
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  letter-spacing: -0.01em;
+}
+
+.cardNodeCount {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6ab0d4;
+  background: rgba(100, 160, 210, 0.12);
+  border: 1px solid rgba(100, 160, 210, 0.25);
+  border-radius: 10px;
+  padding: 2px 9px;
+  font-family: sans-serif;
+}
+
+// ── Info bar pills ────────────────────────────────────────────────────────────
+
+.cardInfoBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 32px;        // reserve height so row never collapses
+}
+
+.infoPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--layoutTabsBackground, rgba(128, 128, 128, 0.08));
+  border: 1px solid var(--borderColor, rgba(128, 128, 128, 0.3));
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 30px;          // fixed height — all pills identical
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  vertical-align: middle;
+
+  &:hover {
+    border-color: #00a7e1;
+    background: rgba(0, 167, 225, 0.1);
+  }
+}
+
+.infoPillKind {
+  font-size: 11px;
+  color: var(--textColorSecondary, #888);
+  white-space: nowrap;
+}
+
+.infoPillName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--colorInfo, #6ab0d4);
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+.infoPillArrow {
+  font-size: 10px;
+  color: var(--textColorSecondary, #555);
+  margin-left: 2px;
+  user-select: none;
+}
+
+.infoSep {
+  font-size: 14px;
+  color: var(--textColorSecondary, #555);
+  user-select: none;
+  flex-shrink: 0;
+  line-height: 30px;   // match pill height
+}
+
+.infoMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-left: 4px;
+}
+
+.infoMetaItem {
+  font-size: 12px;
+  color: var(--textColorSecondary, #aaa);
+  white-space: nowrap;
+}
+
+.infoMetaLabel {
+  color: var(--textColorTertiary, #666);
+  margin-right: 3px;
+}
+
+// ── Active node type chips (in info bar) ──────────────────────────────────────
+
+.infoTypeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--textColorSecondary, #aaa);
+  background: rgba(106, 176, 212, 0.08);
+  border: 1px solid rgba(106, 176, 212, 0.2);
+  border-radius: 10px;
+  padding: 2px 9px;
+  white-space: nowrap;
+  font-family: monospace;
+}
+
+.infoTypeCount {
+  font-weight: 600;
+  color: #6ab0d4;
+}
+
+// ── Empty node pool state ─────────────────────────────────────────────────────
+
+.emptyNodes {
+  padding: 14px 20px;
+  font-size: 12px;
+  color: var(--textColorSecondary, #666);
+  font-style: italic;
+}
+
+// ── Inline overview panel ─────────────────────────────────────────────────────
+
+.cardCharts {
+  flex-shrink: 0;
+  border-left: 1px solid var(--borderColor, #2d2d2d);
+  display: flex;
+  align-items: stretch;
+}
+
+.inlineOverview {
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+  max-width: 280px;
+  justify-content: center;
+}
+
+.overviewBar {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.overviewBarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.overviewBarLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--textColorSecondary, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.overviewBarValue {
+  font-size: 11px;
+  color: var(--textColorSecondary, #aaa);
+  font-family: monospace;
+}
+
+.overviewBarTrack {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(128, 128, 128, 0.2);
+  overflow: hidden;
+}
+
+.overviewBarFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.overviewTypes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.overviewTypeChip {
+  font-size: 11px;
+  color: var(--textColorSecondary, #aaa);
+  background: rgba(128, 128, 128, 0.1);
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-radius: 10px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.overviewTypeCount {
+  font-weight: 600;
+  color: var(--textColorPrimary, #ddd);
+}
+
+// ── Card body ─────────────────────────────────────────────────────────────────
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cardBodyHeader {
+  padding: 8px 12px 12px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+// ── View toggle ───────────────────────────────────────────────────────────────
+
+.viewToggle {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+.toggleBtn {
+  background: transparent;
+  border: none;
+  color: var(--textColorSecondary, #888);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 12px;
+  transition: background 0.1s, color 0.1s;
+
+  &:hover {
+    background: var(--layoutTabsBackground, rgba(128, 128, 128, 0.1));
+    color: var(--textColorPrimary, #ccc);
+  }
+}
+
+.toggleActive {
+  background: rgba(0, 167, 225, 0.15);
+  color: #00a7e1;
+  font-weight: 600;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.nodesTable {
+  width: 100%;
+  box-sizing: border-box;
+  border-collapse: collapse;
+  table-layout: fixed;        // ← forza larghezze fisse da colgroup
+  font-size: 12px;
+  color: var(--textColorPrimary, #d0d0d0);
+
+  thead tr {
+    background: rgba(128, 128, 128, 0.05);
+
+    th {
+      text-align: left;
+      padding: 6px 10px;
+      font-weight: 500;
+      color: var(--textColorSecondary, #888);
+      border-bottom: 1px solid var(--borderColor, #2d2d2d);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--borderColor, #1e1e1e);
+    cursor: pointer;
+    transition: background 0.1s;
+
+    &:last-child { border-bottom: none; }
+
+    &:hover {
+      background: rgba(0, 167, 225, 0.06);
+    }
+
+    td {
+      padding: 6px 10px;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.nodeNameCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;          // permette al flex di troncare correttamente
+}
+
+.nodeIcon {
+  font-size: 13px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.nodeName {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--colorInfo, #6ab0d4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monoSmall {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--textColorSecondary, #aaa);
+}
+
+.clickHint {
+  font-size: 10px;
+  color: var(--textColorTertiary, #555);
+  padding-right: 4px;
+  text-align: right;
+}
+
+// ── Status badges — rendered inline via StatusBadge.tsx + theme.ts ───────────
+// (no CSS classes needed here — colors come from theme)
+
+// ── Tree view ─────────────────────────────────────────────────────────────────
+
+.tree {
+  padding: 8px 16px 12px;
+  overflow-x: auto;
+}
+
+.treeRoot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.treeRootBox,
+.treeNodePoolBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(128, 128, 128, 0.06);
+  border: 1px solid var(--borderColor, #333);
+  border-radius: 6px;
+  padding: 5px 14px;
+}
+
+.treeClickable {
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+
+  &:hover {
+    background: rgba(0, 167, 225, 0.08);
+    border-color: #00a7e1;
+  }
+}
+
+.treeExternalLink {
+  font-size: 10px;
+  color: var(--textColorSecondary, #555);
+  margin-left: 4px;
+  user-select: none;
+}
+
+.treeRootKind {
+  font-size: 11px;
+  color: var(--textColorSecondary, #666);
+  white-space: nowrap;
+}
+
+.treeRootName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--textColorPrimary, #ddd);
+  font-family: monospace;
+}
+
+.treeVertical {
+  width: 2px;
+  height: 16px;
+  background: var(--borderColor, #333);
+  margin-left: 20px;
+}
+
+.treeChildren {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  padding-left: 20px;
+  border-left: 2px solid var(--borderColor, #333);
+  margin-left: 20px;
+}
+
+.treePairRow {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--borderColor, #1e1e1e);
+
+  &:last-child { border-bottom: none; }
+}
+
+.treeConnector {
+  width: 20px;
+  height: 2px;
+  background: var(--borderColor, #333);
+  margin-top: 22px;
+  flex-shrink: 0;
+}
+
+.treePairLeaves {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.treePairArrow {
+  font-size: 18px;
+  color: var(--textColorSecondary, #555);
+  margin-top: 16px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.treeLeaf {
+  background: rgba(128, 128, 128, 0.04);
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-left-width: 3px;   // colored left border (set inline per-leaf)
+  border-radius: 6px;
+  padding: 6px 10px;
+  min-width: 180px;
+  max-width: none;           // let it grow — never truncate node names
+  cursor: default;
+  transition: background 0.1s, border-color 0.1s;
+
+  &.treeClickable {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(0, 167, 225, 0.08);
+      border-color: #00a7e1;
+    }
+  }
+}
+
+// icon + kind label + name all on one line
+.treeLeafHeader {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+  overflow: visible;     // never clip the name
+}
+
+.treeLeafIcon {
+  font-size: 13px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.treeLeafKind {
+  font-size: 10px;
+  color: var(--textColorSecondary, #666);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.treeLeafName {
+  font-family: monospace;
+  font-size: 11px;
+  color: #6ab0d4;
+  font-weight: 500;
+  white-space: nowrap;   // keep on one line but never truncate
+  overflow: visible;
+}
+
+.treeLeafExtra {
+  margin-top: 5px;
+}
+
+.treeLeafStats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nodeCardStat {
+  font-size: 11px;
+  color: var(--textColorSecondary, #aaa);
+  white-space: nowrap;
+}
+
+// ── Pool event timeline ────────────────────────────────────────────────────────
+
+.historyChart {
+  border-top: 1px solid var(--borderColor, #2d2d2d);
+  border-bottom: 1px solid var(--borderColor, #2d2d2d);
+  background: rgba(128, 128, 128, 0.02);
+  overflow-x: auto;
+  max-height: 240px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar { width: 3px; height: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--borderColor, #444); border-radius: 2px; }
+}
+
+.historyEmpty {
+  padding: 12px 16px;
+  font-size: 11px;
+  color: var(--textColorTertiary, #666);
+  font-style: italic;
+  border-top: 1px solid var(--borderColor, #2d2d2d);
+}
+
+.eventTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  table-layout: fixed;
+
+  th {
+    padding: 5px 8px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--textColorTertiary, #666);
+    background: rgba(128,128,128,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-bottom: 1px solid var(--borderColor, #2d2d2d);
+  }
+
+  td {
+    padding: 4px 8px;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.eventRow {
+  border-bottom: 1px solid var(--borderColor, rgba(128,128,128,0.07));
+  cursor: default;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(128,128,128,0.05); }
+}
+
+.eventAge {
+  color: var(--textColorTertiary, #777);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.eventReason {
+  font-weight: 600;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.eventObject {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.eventKind {
+  color: var(--textColorTertiary, #777);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.eventName {
+  color: var(--colorInfo, #6ab0d4);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eventMessage {
+  color: var(--textColorSecondary, #bbb);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ── Legacy ────────────────────────────────────────────────────────────────────
+
+.card {
+  background: var(--contentColor);
+}
+
+.parent {
+  width: 100%;
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chart {
+  width: 180px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--borderColor, #2d2d2d);
+}
