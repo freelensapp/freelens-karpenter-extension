@@ -8,8 +8,8 @@
  */
 
 import { Renderer } from "@freelensapp/extensions";
-import { ec2NodeClassStore } from "./ec2nodeclass-store";
-import { aksNodeClassStore } from "./aksNodeclass-store";
+import { getEC2NodeClassStore } from "./ec2nodeclass-store";
+import { getAKSNodeClassStore } from "./aksNodeclass-store";
 
 export type NodeClassProvider = "aws" | "azure" | "unknown";
 
@@ -49,8 +49,8 @@ export function detectProvider(nodeClassRef?: {
 
 /** Heuristic: whichever store has loaded items wins */
 function guessFromStores(): NodeClassProvider {
-  if (aksNodeClassStore.items.length > 0) return "azure";
-  if (ec2NodeClassStore.items.length > 0) return "aws";
+  if ((getAKSNodeClassStore()?.items.length ?? 0) > 0) return "azure";
+  if ((getEC2NodeClassStore()?.items.length ?? 0) > 0) return "aws";
   return "unknown";
 }
 
@@ -83,28 +83,34 @@ export function openNodeClassDetail(name: string, provider: NodeClassProvider): 
 
 /** Return items from the correct store */
 export function getNodeClassItems(provider: NodeClassProvider): any[] {
-  if (provider === "azure") return aksNodeClassStore.items as any[];
-  if (provider === "aws")   return ec2NodeClassStore.items as any[];
+  const ec2NodeClassStore = getEC2NodeClassStore();
+  const aksNodeClassStore = getAKSNodeClassStore();
+  if (provider === "azure") return (aksNodeClassStore?.items ?? []) as any[];
+  if (provider === "aws")   return (ec2NodeClassStore?.items ?? []) as any[];
   // Unknown: try both
   const items = [
-    ...ec2NodeClassStore.items,
-    ...aksNodeClassStore.items,
+    ...(ec2NodeClassStore?.items ?? []),
+    ...(aksNodeClassStore?.items ?? []),
   ] as any[];
   return items;
 }
 
 /** Load all node class stores */
 export function loadAllNodeClassStores(): Promise<void[]> {
+  const stores = [getEC2NodeClassStore(), getAKSNodeClassStore()].filter(
+    (store): store is NonNullable<typeof store> => Boolean(store),
+  );
   return Promise.all([
-    ec2NodeClassStore.loadAll().catch(() => undefined),
-    aksNodeClassStore.loadAll().catch(() => undefined),
+    ...stores.map((store) => store.loadAll().catch(() => undefined)),
   ]) as Promise<void[]>;
 }
 
 /** Subscribe to all node class stores */
 export function subscribeAllNodeClassStores(): (() => void)[] {
   const unsubs: (() => void)[] = [];
-  try { unsubs.push(ec2NodeClassStore.subscribe()); } catch { /* not available */ }
-  try { unsubs.push(aksNodeClassStore.subscribe()); } catch { /* not available */ }
+  const ec2NodeClassStore = getEC2NodeClassStore();
+  const aksNodeClassStore = getAKSNodeClassStore();
+  try { if (ec2NodeClassStore) unsubs.push(ec2NodeClassStore.subscribe()); } catch { /* not available */ }
+  try { if (aksNodeClassStore) unsubs.push(aksNodeClassStore.subscribe()); } catch { /* not available */ }
   return unsubs;
 }

@@ -42,14 +42,23 @@ export class KubeEvent extends KubeObject<any, any, any> {
 }
 
 export class KubeEventApi extends Renderer.K8sApi.KubeApi<KubeEvent> {}
-export const kubeEventApi = new KubeEventApi({ objectConstructor: KubeEvent });
 
-export class KubeEventStore extends KubeObjectStore<KubeEvent> {
-  api: Renderer.K8sApi.KubeApi<KubeEvent> = kubeEventApi;
+export class KubeEventStore extends KubeObjectStore<KubeEvent, KubeEventApi> {
+  constructor(api: KubeEventApi) {
+    super(api);
+  }
 }
-export const kubeEventStore = new KubeEventStore();
 
-Renderer.K8sApi.apiManager.registerStore(kubeEventStore);
+let kubeEventStore: KubeEventStore | undefined;
+
+export function getKubeEventStore(): KubeEventStore {
+  if (!kubeEventStore) {
+    kubeEventStore = new KubeEventStore(new KubeEventApi({ objectConstructor: KubeEvent }));
+    Renderer.K8sApi.apiManager.registerStore(kubeEventStore);
+  }
+
+  return kubeEventStore;
+}
 
 // ── Direct fetch of events from all namespaces ────────────────────────────────
 // KubeObjectStore.loadAll() may only load the currently selected namespace.
@@ -82,11 +91,13 @@ export async function fetchAllNamespaceEvents(): Promise<RawKubeEvent[]> {
     return _allNamespaceEvents;
   }
 
+  const eventStore = getKubeEventStore();
+
   // Use KubeObjectStore.loadAll({ namespaces }) — this is the proven path that
   // goes through the Freelens cluster proxy. It also populates kubeEventStore.items
   // so the store-based fallback path works too.
   try {
-    await kubeEventStore.loadAll({
+    await eventStore.loadAll({
       namespaces: KARPENTER_EVENT_NAMESPACES,
       onLoadFailure: () => undefined, // don't throw on 404
     });
@@ -96,7 +107,7 @@ export async function fetchAllNamespaceEvents(): Promise<RawKubeEvent[]> {
 
   const seen = new Set<string>();
   const merged: RawKubeEvent[] = [];
-  for (const e of kubeEventStore.items) {
+  for (const e of eventStore.items) {
     const uid = (e as any).metadata?.uid ?? "";
     if (uid && seen.has(uid)) continue;
     if (uid) seen.add(uid);

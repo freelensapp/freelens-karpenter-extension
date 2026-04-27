@@ -1,9 +1,9 @@
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
-import { ec2NodeClassStore } from "../../k8s/karpenter/ec2nodeclass-store";
-import { aksNodeClassStore } from "../../k8s/karpenter/aksNodeclass-store";
-import { nodePoolStore } from "../../k8s/karpenter/store";
-import { nodeStore } from "../../k8s/core/node-store";
+import { getEC2NodeClassStore } from "../../k8s/karpenter/ec2nodeclass-store";
+import { getAKSNodeClassStore } from "../../k8s/karpenter/aksNodeclass-store";
+import { getNodePoolStore } from "../../k8s/karpenter/store";
+import { getNodeStore } from "../../k8s/core/node-store";
 import {
   openNodeClassDetail,
   NODE_CLASS_KIND,
@@ -79,6 +79,8 @@ function NodePoolRow({
 
 function NodeClassCard({ nodeClass }: { nodeClass: any }) {
   const [expanded, setExpanded] = useState(true);
+  const nodePoolStore = getNodePoolStore();
+  const nodeStore = getNodeStore();
   const name: string = nodeClass.metadata?.name ?? "—";
   const status = getNodeClassStatus(nodeClass);
 
@@ -223,10 +225,12 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
 // ── Main tab component ────────────────────────────────────────────────────────
 
 export const NodeClassesTab: React.FC = observer(() => {
+  const ec2NodeClassStore = getEC2NodeClassStore();
+  const aksNodeClassStore = getAKSNodeClassStore();
   // Merge items from both AWS and Azure stores
   const nodeClasses = [
-    ...ec2NodeClassStore.items,
-    ...aksNodeClassStore.items,
+    ...(ec2NodeClassStore?.items ?? []),
+    ...(aksNodeClassStore?.items ?? []),
   ];
   const [search, setSearch] = useState("");
 
@@ -236,7 +240,7 @@ export const NodeClassesTab: React.FC = observer(() => {
       )
     : nodeClasses;
 
-  const emptyMessage = ec2NodeClassStore.items.length === 0 && aksNodeClassStore.items.length === 0
+  const emptyMessage = (ec2NodeClassStore?.items.length ?? 0) === 0 && (aksNodeClassStore?.items.length ?? 0) === 0
     ? "No NodeClasses found (checked EC2NodeClass and AKSNodeClass)"
     : "No results for this filter";
 

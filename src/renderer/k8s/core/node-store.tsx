@@ -42,9 +42,10 @@ export class Node extends KubeObject {
 }
 
 export class NodeApi extends Renderer.K8sApi.KubeApi<Node> {}
-export const nodeApi = new NodeApi({ objectConstructor: Node });
-export class NodeStore extends KubeObjectStore<Node> {
-  api = nodeApi;
+export class NodeStore extends KubeObjectStore<Node, NodeApi> {
+  constructor(api: NodeApi) {
+    super(api);
+  }
 
   // Mappa: nodeName -> usage { cpu, memory }
   usageMetrics: Record<string, { cpu: string; memory: string }> = {};
@@ -84,6 +85,13 @@ export class NodeStore extends KubeObjectStore<Node> {
   }
 }
 
-export const nodeStore = new NodeStore();
+let nodeStore: NodeStore | undefined;
 
-Renderer.K8sApi.apiManager.registerStore(nodeStore);
+export function getNodeStore(): NodeStore {
+  if (!nodeStore) {
+    nodeStore = new NodeStore(new NodeApi({ objectConstructor: Node }));
+    Renderer.K8sApi.apiManager.registerStore(nodeStore);
+  }
+
+  return nodeStore;
+}

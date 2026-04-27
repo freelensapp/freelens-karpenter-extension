@@ -1,5 +1,3 @@
-import { nodePoolApi } from "./store";
-
 export const karpenterObjects = [
     {
     kind: "KarpenterNodePool",
@@ -8,6 +6,5 @@ export const karpenterObjects = [
       "provisioning.karpenter.sh/v1beta2",
       "provisioning.karpenter.sh/v1",
     ],
-    api: nodePoolApi,
   },
 ]

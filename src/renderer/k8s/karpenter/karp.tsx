@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import React from "react";
 
 import styleInline from "./karp.scss?inline";
-import { NodePool, nodePoolStore } from "./store";
+import { NodePool, getNodePoolStore } from "./store";
 
 const {
   Component: { KubeObjectListLayout},
@@ -18,6 +18,8 @@ enum sortBy {
 @observer
 export class KarpenterNodePools extends React.Component<{ extension: Renderer.LensExtension }> {
   render() {
+    const nodePoolStore = getNodePoolStore();
+
     return (
       <>
         <style>{styleInline}</style>
