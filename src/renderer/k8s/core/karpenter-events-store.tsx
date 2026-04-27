@@ -1,49 +1,14 @@
 import { Renderer } from "@freelensapp/extensions";
 
-const KubeObject = Renderer.K8sApi.KubeObject;
 const KubeObjectStore = Renderer.K8sApi.KubeObjectStore;
 
-export class KubeEvent extends KubeObject<any, any, any> {
-  static readonly kind = "Event";
-  static readonly namespaced = true;
-  static readonly apiBase = "/api/v1/events";
+type KubeEvent = Renderer.K8sApi.KubeEvent;
+const KubeEvent = Renderer.K8sApi.KubeEvent;
+export { KubeEvent };
 
-  get involvedObject(): { kind: string; name: string; namespace?: string } {
-    return (this as any).involvedObject;
-  }
+export class KubeEventApi extends Renderer.K8sApi.KubeApi<KubeEvent, any> {}
 
-  get reason(): string {
-    return (this as any).reason;
-  }
-
-  get message(): string {
-    return (this as any).message;
-  }
-
-  get type(): string {
-    return (this as any).type;
-  }
-
-  get source(): { component?: string } | undefined {
-    return (this as any).source;
-  }
-
-  get reportingComponent(): string | undefined {
-    return (this as any).reportingComponent;
-  }
-
-  get lastTimestamp(): string | undefined {
-    return (this as any).lastTimestamp;
-  }
-
-  get eventTime(): string | undefined {
-    return (this as any).eventTime;
-  }
-}
-
-export class KubeEventApi extends Renderer.K8sApi.KubeApi<KubeEvent> {}
-
-export class KubeEventStore extends KubeObjectStore<KubeEvent, KubeEventApi> {
+export class KubeEventStore extends KubeObjectStore<KubeEvent, KubeEventApi, any> {
   constructor(api: KubeEventApi) {
     super(api);
   }
