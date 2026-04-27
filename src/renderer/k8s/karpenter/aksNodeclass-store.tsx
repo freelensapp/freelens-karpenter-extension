@@ -1,21 +1,28 @@
 import { Renderer } from "@freelensapp/extensions";
 import type { KubeObjectMetadata } from "../core/metadata";
 
-const KubeObject = Renderer.K8sApi.KubeObject;
-const KubeObjectStore = Renderer.K8sApi.KubeObjectStore;
+const LensExtensionKubeObject = ((Renderer.K8sApi as any).LensExtensionKubeObject ?? Renderer.K8sApi.KubeObject) as typeof Renderer.K8sApi.KubeObject;
 
-export class AKSNodeClass extends KubeObject<KubeObjectMetadata, any, any> {
+export class AKSNodeClass extends LensExtensionKubeObject<KubeObjectMetadata, any, any> {
   static readonly kind = "AKSNodeClass";
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.azure.com/v1alpha2/aksnodeclasses";
+  static readonly crd = {
+    apiVersions: ["karpenter.azure.com/v1alpha2"],
+    plural: "aksnodeclasses",
+    singular: "aksnodeclass",
+  };
 }
 
 export class AKSNodeClassApi extends Renderer.K8sApi.KubeApi<AKSNodeClass> {}
-export const aksNodeClassApi = new AKSNodeClassApi({ objectConstructor: AKSNodeClass });
 
-export class AKSNodeClassStore extends KubeObjectStore<AKSNodeClass> {
-  api: Renderer.K8sApi.KubeApi<AKSNodeClass> = aksNodeClassApi;
+export class AKSNodeClassStore extends Renderer.K8sApi.KubeObjectStore<AKSNodeClass, AKSNodeClassApi> {
 }
-export const aksNodeClassStore = new AKSNodeClassStore();
 
-Renderer.K8sApi.apiManager.registerStore(aksNodeClassStore);
+export function getAKSNodeClassStore(): Renderer.K8sApi.KubeObjectStore<AKSNodeClass> | undefined {
+  try {
+    return (AKSNodeClass as any).getStore() as Renderer.K8sApi.KubeObjectStore<AKSNodeClass>;
+  } catch {
+    return undefined;
+  }
+}

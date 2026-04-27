@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { type Node } from "../k8s/core/node-store";
-import { type RawKubeEvent, fetchAllNamespaceEvents, getCachedAllNamespaceEvents, kubeEventStore } from "../k8s/core/karpenter-events-store";
+import { type RawKubeEvent, fetchAllNamespaceEvents, getCachedAllNamespaceEvents, getKubeEventStore } from "../k8s/core/karpenter-events-store";
 import { buildPodCountMap, getInstanceType } from "../utils/kube-helpers";
 
 // ── Pod count map cache (per-render, shared across all cards) ─────────────────
@@ -125,7 +125,7 @@ export function usePoolEvents(
 
   const filteredStore = useMemo(
     () => filterPoolEvents(
-      kubeEventStore.items.map((e) => e as unknown as RawKubeEvent),
+      getKubeEventStore().items.map((e) => e as unknown as RawKubeEvent),
       poolName, nodeNameSet, claimNameSet,
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -8,15 +8,15 @@ import style from "./page.module.scss";
 
 // must be `?inline` for explicit CSS to use in `<style>` tag
 import styleInline from "./page.module.scss?inline";
-import { NodePool, nodePoolStore } from "../k8s/karpenter/store";
+import { NodePool, getNodePoolStore } from "../k8s/karpenter/store";
 import { observer } from "mobx-react";
 import { PieChart } from "../components/PieChart/pie-chart";
 import { KarpenterCard } from "../components/KarpenterCard/KarpenterCard";
-import { nodeStore } from "../k8s/core/node-store";
-import { ec2NodeClassStore } from "../k8s/karpenter/ec2nodeclass-store";
-import { aksNodeClassStore } from "../k8s/karpenter/aksNodeclass-store";
-import { kubeEventStore, fetchAllNamespaceEvents } from "../k8s/core/karpenter-events-store";
-import { crdStore } from "../k8s/core/crd";
+import { getNodeStore } from "../k8s/core/node-store";
+import { getEC2NodeClassStore } from "../k8s/karpenter/ec2nodeclass-store";
+import { getAKSNodeClassStore } from "../k8s/karpenter/aksNodeclass-store";
+import { getKubeEventStore, fetchAllNamespaceEvents } from "../k8s/core/karpenter-events-store";
+import { getCrdStore } from "../k8s/core/crd";
 import { ScalingDecisions } from "../components/ScalingDecisions/ScalingDecisions";
 import { NodeClassesTab } from "../components/NodeClassesTab/NodeClassesTab";
 import { ClusterPieView } from "../components/ClusterPieView/ClusterPieView";
@@ -40,6 +40,11 @@ interface KarpenterDashboardState {
 export class KarpenterDashboard extends React.Component<{ extension: Renderer.LensExtension }, KarpenterDashboardState> {
   private readonly watches: (() => void)[] = [];
   private readonly abortController = new AbortController();
+  private nodePoolStore?: ReturnType<typeof getNodePoolStore>;
+  private nodeStore?: ReturnType<typeof getNodeStore>;
+  private ec2NodeClassStore?: ReturnType<typeof getEC2NodeClassStore>;
+  private aksNodeClassStore?: ReturnType<typeof getAKSNodeClassStore>;
+  private kubeEventStore?: ReturnType<typeof getKubeEventStore>;
   public readonly state: Readonly<KarpenterDashboardState> = {
     nodePools: [],
     data: [],
@@ -61,27 +66,13 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
     this.watches.length = 0;
   }
 
-  async componentDidMount() {
-    [
-      nodePoolStore,
-      nodeStore,
-      ec2NodeClassStore,
-      aksNodeClassStore,
-    ].forEach((store) => {
-      store.loadAll().then(() => this.watches.push(store.subscribe()));
-    });
-
-    // Load events explicitly from Karpenter namespaces (events live in "default"),
-    // then keep watching. fetchAllNamespaceEvents calls loadAll({namespaces:[...]}) internally.
-    fetchAllNamespaceEvents().catch(() => undefined);
-    this.watches.push(kubeEventStore.subscribe());
-
-    // Detect Karpenter version from CRDs
-    this.detectKarpenterVersion();
+  componentDidMount() {
+    this.initializeDashboard().catch(() => this.setState({ karpenterVersion: null }));
   }
 
-  private async detectKarpenterVersion() {
+  private async initializeDashboard() {
     try {
+      const crdStore = getCrdStore();
       await crdStore.loadAll({ onLoadFailure: () => undefined });
       // Look for nodepools.karpenter.sh CRD — presence confirms Karpenter is installed
       const crd = crdStore.items.find(
@@ -91,6 +82,27 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
         this.setState({ karpenterVersion: null });
         return;
       }
+
+      this.nodePoolStore = getNodePoolStore();
+      this.nodeStore = getNodeStore();
+      this.ec2NodeClassStore = getEC2NodeClassStore();
+      this.aksNodeClassStore = getAKSNodeClassStore();
+      this.kubeEventStore = getKubeEventStore();
+
+      await Promise.all([
+        this.nodePoolStore,
+        this.nodeStore,
+        this.ec2NodeClassStore,
+        this.aksNodeClassStore,
+      ].filter((store): store is NonNullable<typeof store> => Boolean(store)).map(async (store) => {
+        await store.loadAll({ onLoadFailure: () => undefined });
+        this.watches.push(store.subscribe());
+      }));
+
+      // Load events explicitly from Karpenter namespaces (events live in "default"),
+      // then keep watching. fetchAllNamespaceEvents calls loadAll({namespaces:[...]}) internally.
+      await fetchAllNamespaceEvents().catch(() => undefined);
+      this.watches.push(this.kubeEventStore.subscribe());
 
       // 1️⃣ Try to read the karpenter-controller Deployment image tag
       //    (the most reliable source of the real semver, e.g. "1.9.0")
@@ -171,18 +183,6 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
   }
 
   render() {
-    const getNodePoolsWithNodes = () => {
-      return nodePoolStore.items
-        .map(nodePool => {
-          const nodes = nodeStore.items.filter(
-            node => node.metadata?.labels?.["karpenter.sh/nodepool"] === nodePool.metadata?.name
-          );
-          return { nodePool, nodes };
-        })
-        .filter(({ nodes }) => nodes.length > 0);
-    };
-
-    const nodePoolsWithNodes = getNodePoolsWithNodes();
     const { activeTab, search, karpenterVersion } = this.state;
 
     // ── Karpenter not installed ──────────────────────────────────────────────
@@ -216,6 +216,36 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
         </>
       );
     }
+
+    if (karpenterVersion === undefined || !this.nodePoolStore || !this.nodeStore) {
+      return (
+        <>
+          <style>{styleInline}</style>
+          <Renderer.Component.TabLayout scrollable={false} contentClass={style.tabContent}>
+            <div className={style.fluxContent}>
+              <div className={style.karpenterNotInstalled}>
+                <h2 className={style.karpenterNotInstalledTitle}>Loading Karpenter data</h2>
+              </div>
+            </div>
+          </Renderer.Component.TabLayout>
+        </>
+      );
+    }
+
+    const nodePoolStore = this.nodePoolStore;
+    const nodeStore = this.nodeStore;
+    const getNodePoolsWithNodes = () => {
+      return nodePoolStore.items
+        .map(nodePool => {
+          const nodes = nodeStore.items.filter(
+            node => node.metadata?.labels?.["karpenter.sh/nodepool"] === nodePool.metadata?.name
+          );
+          return { nodePool, nodes };
+        })
+        .filter(({ nodes }) => nodes.length > 0);
+    };
+
+    const nodePoolsWithNodes = getNodePoolsWithNodes();
 
     const tabs: { id: "cluster" | "overview" | "nodeclasses" | "scaling"; label: string }[] = [
       { id: "cluster",    label: "Cluster View" },

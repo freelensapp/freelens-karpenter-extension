@@ -7,11 +7,19 @@ const CustomResourceDefinition = Renderer.K8sApi.CustomResourceDefinition;
 
 export class CrdApi extends Renderer.K8sApi.KubeApi<CustomResourceDefinition> {}
 
-export const crdApi = new CrdApi({ objectConstructor: CustomResourceDefinition });
-export class CrdStore extends KubeObjectStore<CustomResourceDefinition> {
-  api: Renderer.K8sApi.KubeApi<CustomResourceDefinition> = crdApi;
+export class CrdStore extends KubeObjectStore<CustomResourceDefinition, CrdApi> {
+  constructor(api: CrdApi) {
+    super(api);
+  }
 }
 
-export const crdStore = new CrdStore();
+let crdStore: CrdStore | undefined;
 
-Renderer.K8sApi.apiManager.registerStore(crdStore);
+export function getCrdStore(): CrdStore {
+  if (!crdStore) {
+    crdStore = new CrdStore(new CrdApi({ objectConstructor: CustomResourceDefinition }));
+    Renderer.K8sApi.apiManager.registerStore(crdStore);
+  }
+
+  return crdStore;
+}

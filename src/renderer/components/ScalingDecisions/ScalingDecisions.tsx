@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { observer } from "mobx-react";
-import { kubeEventStore, KubeEvent } from "../../k8s/core/karpenter-events-store";
-import { nodePoolStore, NodePool } from "../../k8s/karpenter/store";
+import { getKubeEventStore, KubeEvent } from "../../k8s/core/karpenter-events-store";
+import { getNodePoolStore, NodePool } from "../../k8s/karpenter/store";
 
 import styles from "./scaling-decisions.module.scss";
 
@@ -216,6 +216,8 @@ const DebugPanel: React.FC<{ allEvents: KubeEvent[] }> = ({ allEvents }) => {
 
 export const ScalingDecisions: React.FC = observer(() => {
   const [selectedPool, setSelectedPool] = useState<string>("");
+  const nodePoolStore = getNodePoolStore();
+  const kubeEventStore = getKubeEventStore();
 
   const nodePools: NodePool[] = nodePoolStore.items;
   const allEvents: KubeEvent[] = kubeEventStore.items;

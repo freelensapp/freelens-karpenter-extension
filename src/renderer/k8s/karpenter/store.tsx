@@ -1,8 +1,7 @@
 import { Renderer } from "@freelensapp/extensions";
 import type { KubeObjectMetadata } from "../core/metadata";
 
-const KubeObject = Renderer.K8sApi.KubeObject;
-const KubeObjectStore = Renderer.K8sApi.KubeObjectStore;
+const LensExtensionKubeObject = ((Renderer.K8sApi as any).LensExtensionKubeObject ?? Renderer.K8sApi.KubeObject) as typeof Renderer.K8sApi.KubeObject;
 
 // Karpenter NodePool spec (simplified example)
 /*export interface NodePoolSpec {
@@ -57,18 +56,23 @@ export interface NodePoolStatus {
 
 
 
-export class NodePool extends KubeObject<KubeObjectMetadata, any, any> {
+export class NodePool extends LensExtensionKubeObject<KubeObjectMetadata, any, any> {
   static readonly kind = "NodePool";
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.sh/v1/nodepools";
+  static readonly crd = {
+    apiVersions: ["karpenter.sh/v1"],
+    plural: "nodepools",
+    singular: "nodepool",
+    shortNames: ["np"],
+  };
 }
 
 export class NodePoolApi extends Renderer.K8sApi.KubeApi<NodePool> {}
-export const nodePoolApi = new NodePoolApi({ objectConstructor: NodePool });
 
-export class NodePoolStore extends KubeObjectStore<NodePool> {
-  api: Renderer.K8sApi.KubeApi<NodePool> = nodePoolApi;
+export class NodePoolStore extends Renderer.K8sApi.KubeObjectStore<NodePool, NodePoolApi> {
 }
-export const nodePoolStore = new NodePoolStore();
 
-Renderer.K8sApi.apiManager.registerStore(nodePoolStore);
+export function getNodePoolStore(): Renderer.K8sApi.KubeObjectStore<NodePool> {
+  return (NodePool as any).getStore() as Renderer.K8sApi.KubeObjectStore<NodePool>;
+}

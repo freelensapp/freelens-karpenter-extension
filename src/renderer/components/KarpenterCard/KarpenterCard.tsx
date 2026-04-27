@@ -5,13 +5,10 @@ import { Renderer } from "@freelensapp/extensions";
 import { type NodePool } from "../../k8s/karpenter/store";
 import { type Node } from "../../k8s/core/node-store";
 import React, { useMemo, useState } from "react";
-// side-effect imports: register both stores with apiManager
-import "../../k8s/karpenter/ec2nodeclass-store";
-import "../../k8s/karpenter/aksNodeclass-store";
 import { detectProvider, openNodeClassDetail } from "../../k8s/karpenter/nodeclass-utils";
 import { StatusBadge } from "../shared/StatusBadge";
 import { CardLoadingSkeleton, Spinner } from "../shared/LoadingSkeleton";
-import { kubeEventStore, type RawKubeEvent } from "../../k8s/core/karpenter-events-store";
+import { getKubeEventStore, type RawKubeEvent } from "../../k8s/core/karpenter-events-store";
 import { observer } from "mobx-react";
 import {
   getInstanceType,
@@ -59,6 +56,7 @@ const PoolEventTimeline = observer(function PoolEventTimeline({
   claimNames: string[];
 }) {
   const [showDebug, setShowDebug] = useState(false);
+  const kubeEventStore = getKubeEventStore();
 
   const nodeNameSet  = useMemo(() => new Set(nodeNames),  [nodeNames.join(",")]);  // eslint-disable-line react-hooks/exhaustive-deps
   const claimNameSet = useMemo(() => new Set(claimNames), [claimNames.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps

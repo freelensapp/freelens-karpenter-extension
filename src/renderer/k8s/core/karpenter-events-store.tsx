@@ -1,55 +1,29 @@
 import { Renderer } from "@freelensapp/extensions";
 
-const KubeObject = Renderer.K8sApi.KubeObject;
 const KubeObjectStore = Renderer.K8sApi.KubeObjectStore;
 
-export class KubeEvent extends KubeObject<any, any, any> {
-  static readonly kind = "Event";
-  static readonly namespaced = true;
-  static readonly apiBase = "/api/v1/events";
+type KubeEvent = Renderer.K8sApi.KubeEvent;
+const KubeEvent = Renderer.K8sApi.KubeEvent;
+export { KubeEvent };
 
-  get involvedObject(): { kind: string; name: string; namespace?: string } {
-    return (this as any).involvedObject;
-  }
+export class KubeEventApi extends Renderer.K8sApi.KubeApi<KubeEvent, any> {}
 
-  get reason(): string {
-    return (this as any).reason;
-  }
-
-  get message(): string {
-    return (this as any).message;
-  }
-
-  get type(): string {
-    return (this as any).type;
-  }
-
-  get source(): { component?: string } | undefined {
-    return (this as any).source;
-  }
-
-  get reportingComponent(): string | undefined {
-    return (this as any).reportingComponent;
-  }
-
-  get lastTimestamp(): string | undefined {
-    return (this as any).lastTimestamp;
-  }
-
-  get eventTime(): string | undefined {
-    return (this as any).eventTime;
+export class KubeEventStore extends KubeObjectStore<KubeEvent, KubeEventApi, any> {
+  constructor(api: KubeEventApi) {
+    super(api);
   }
 }
 
-export class KubeEventApi extends Renderer.K8sApi.KubeApi<KubeEvent> {}
-export const kubeEventApi = new KubeEventApi({ objectConstructor: KubeEvent });
+let kubeEventStore: KubeEventStore | undefined;
 
-export class KubeEventStore extends KubeObjectStore<KubeEvent> {
-  api: Renderer.K8sApi.KubeApi<KubeEvent> = kubeEventApi;
+export function getKubeEventStore(): KubeEventStore {
+  if (!kubeEventStore) {
+    kubeEventStore = new KubeEventStore(new KubeEventApi({ objectConstructor: KubeEvent }));
+    Renderer.K8sApi.apiManager.registerStore(kubeEventStore);
+  }
+
+  return kubeEventStore;
 }
-export const kubeEventStore = new KubeEventStore();
-
-Renderer.K8sApi.apiManager.registerStore(kubeEventStore);
 
 // ── Direct fetch of events from all namespaces ────────────────────────────────
 // KubeObjectStore.loadAll() may only load the currently selected namespace.
@@ -82,11 +56,13 @@ export async function fetchAllNamespaceEvents(): Promise<RawKubeEvent[]> {
     return _allNamespaceEvents;
   }
 
+  const eventStore = getKubeEventStore();
+
   // Use KubeObjectStore.loadAll({ namespaces }) — this is the proven path that
   // goes through the Freelens cluster proxy. It also populates kubeEventStore.items
   // so the store-based fallback path works too.
   try {
-    await kubeEventStore.loadAll({
+    await eventStore.loadAll({
       namespaces: KARPENTER_EVENT_NAMESPACES,
       onLoadFailure: () => undefined, // don't throw on 404
     });
@@ -96,7 +72,7 @@ export async function fetchAllNamespaceEvents(): Promise<RawKubeEvent[]> {
 
   const seen = new Set<string>();
   const merged: RawKubeEvent[] = [];
-  for (const e of kubeEventStore.items) {
+  for (const e of eventStore.items) {
     const uid = (e as any).metadata?.uid ?? "";
     if (uid && seen.has(uid)) continue;
     if (uid) seen.add(uid);
