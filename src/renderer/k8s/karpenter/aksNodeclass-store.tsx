@@ -17,12 +17,18 @@ export class AKSNodeClass extends LensExtensionKubeObject<KubeObjectMetadata, an
 export class AKSNodeClassApi extends Renderer.K8sApi.KubeApi<AKSNodeClass> {}
 
 export class AKSNodeClassStore extends Renderer.K8sApi.KubeObjectStore<AKSNodeClass, AKSNodeClassApi> {
+  constructor(api: AKSNodeClassApi) {
+    super(api);
+  }
 }
 
-export function getAKSNodeClassStore(): Renderer.K8sApi.KubeObjectStore<AKSNodeClass> | undefined {
-  try {
-    return (AKSNodeClass as any).getStore() as Renderer.K8sApi.KubeObjectStore<AKSNodeClass>;
-  } catch {
-    return undefined;
+let aksNodeClassStore: AKSNodeClassStore | undefined;
+
+export function getAKSNodeClassStore(): AKSNodeClassStore {
+  if (!aksNodeClassStore) {
+    aksNodeClassStore = new AKSNodeClassStore(new AKSNodeClassApi({ objectConstructor: AKSNodeClass }));
+    Renderer.K8sApi.apiManager.registerStore(aksNodeClassStore);
   }
+
+  return aksNodeClassStore;
 }

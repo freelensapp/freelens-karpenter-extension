@@ -17,12 +17,18 @@ export class EC2NodeClass extends LensExtensionKubeObject<KubeObjectMetadata, an
 export class EC2NodeClassApi extends Renderer.K8sApi.KubeApi<EC2NodeClass> {}
 
 export class EC2NodeClassStore extends Renderer.K8sApi.KubeObjectStore<EC2NodeClass, EC2NodeClassApi> {
+  constructor(api: EC2NodeClassApi) {
+    super(api);
+  }
 }
 
-export function getEC2NodeClassStore(): Renderer.K8sApi.KubeObjectStore<EC2NodeClass> | undefined {
-  try {
-    return (EC2NodeClass as any).getStore() as Renderer.K8sApi.KubeObjectStore<EC2NodeClass>;
-  } catch {
-    return undefined;
+let ec2NodeClassStore: EC2NodeClassStore | undefined;
+
+export function getEC2NodeClassStore(): EC2NodeClassStore {
+  if (!ec2NodeClassStore) {
+    ec2NodeClassStore = new EC2NodeClassStore(new EC2NodeClassApi({ objectConstructor: EC2NodeClass }));
+    Renderer.K8sApi.apiManager.registerStore(ec2NodeClassStore);
   }
+
+  return ec2NodeClassStore;
 }
