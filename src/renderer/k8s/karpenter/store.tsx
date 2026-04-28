@@ -76,3 +76,46 @@ export class NodePoolStore extends Renderer.K8sApi.KubeObjectStore<NodePool, Nod
 export function getNodePoolStore(): Renderer.K8sApi.KubeObjectStore<NodePool> {
   return (NodePool as any).getStore() as Renderer.K8sApi.KubeObjectStore<NodePool>;
 }
+
+// ── NodeClaim ────────────────────────────────────────────────────────────────
+
+export class NodeClaim extends LensExtensionKubeObject<KubeObjectMetadata, any, any> {
+  static readonly kind = "NodeClaim";
+  static readonly namespaced = false;
+  static readonly apiBase = "/apis/karpenter.sh/v1/nodeclaims";
+  static readonly crd = {
+    apiVersions: ["karpenter.sh/v1"],
+    plural: "nodeclaims",
+    singular: "nodeclaim",
+    shortNames: ["nc"],
+  };
+}
+
+export class NodeClaimApi extends Renderer.K8sApi.KubeApi<NodeClaim> {}
+
+export class NodeClaimStore extends Renderer.K8sApi.KubeObjectStore<NodeClaim, NodeClaimApi> {
+}
+
+export function getNodeClaimStore(): Renderer.K8sApi.KubeObjectStore<NodeClaim> {
+  return (NodeClaim as any).getStore() as Renderer.K8sApi.KubeObjectStore<NodeClaim>;
+}
+
+/** A NodeClaim is "claiming" when it has been created but no Node has been
+ *  registered to it yet (i.e. status.nodeName is empty). */
+export function isClaimingNodeClaim(nc: NodeClaim): boolean {
+  if ((nc as any).metadata?.deletionTimestamp) return false;
+  const status: any = (nc as any).status ?? {};
+  const nodeName: string = status?.nodeName ?? "";
+  return !nodeName;
+}
+
+/** Return the NodePool name that owns this NodeClaim (if any). */
+export function getNodeClaimPoolName(nc: NodeClaim): string {
+  const labels: Record<string, string> = (nc as any).metadata?.labels ?? {};
+  const annotations: Record<string, string> = (nc as any).metadata?.annotations ?? {};
+  return (
+    labels["karpenter.sh/nodepool"] ||
+    annotations["karpenter.sh/nodepool"] ||
+    ""
+  );
+}

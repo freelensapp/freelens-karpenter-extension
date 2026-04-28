@@ -12,7 +12,7 @@ import { type NodePool } from "../k8s/karpenter/store";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type CondStatus = "Ready" | "NotReady" | "Provisioning" | "Terminating" | "Unknown";
+export type CondStatus = "Ready" | "NotReady" | "Provisioning" | "Claiming" | "Terminating" | "Unknown";
 
 // ── Status helpers ────────────────────────────────────────────────────────────
 

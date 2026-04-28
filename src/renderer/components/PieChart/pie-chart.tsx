@@ -23,6 +23,10 @@ export interface PieChartProps {
   activePool?: string;
   onFilterChange?: (filter: string) => void;
   activeFilter?: string;
+  /** Total number of NodeClaims that don't yet have a Node bound */
+  claimingCount?: number;
+  /** Per-NodePool count of unbound NodeClaims */
+  claimingByPool?: Record<string, number>;
 }
 
 // ── stat box ──────────────────────────────────────────────────────────────────
@@ -52,7 +56,16 @@ function StatBox({
 // ── main component ────────────────────────────────────────────────────────────
 
 export function PieChart(props: PieChartProps): React.ReactElement {
-  const { objects, nodes, onPoolClick, activePool, onFilterChange = undefined, activeFilter = "" } = props;
+  const {
+    objects,
+    nodes,
+    onPoolClick,
+    activePool,
+    onFilterChange = undefined,
+    activeFilter = "",
+    claimingCount = 0,
+    claimingByPool = {},
+  } = props;
 
   // ── aggregate stats ──────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -193,6 +206,9 @@ export function PieChart(props: PieChartProps): React.ReactElement {
             {stats.provisioning > 0 && (
               <StatBox value={stats.provisioning} label="Provisioning" color="#ffc107" />
             )}
+            {claimingCount > 0 && (
+              <StatBox value={claimingCount} label="Claiming" color="#5ad1fc" />
+            )}
           </div>
 
           {/* per-pool breakdown grid — scrollable if many pools */}
@@ -200,12 +216,13 @@ export function PieChart(props: PieChartProps): React.ReactElement {
             {objects.map((np, i) => {
               const name = np.nodePool.metadata?.name ?? "?";
               const isActive = activePool === name;
+              const claiming = claimingByPool[name] ?? 0;
               return (
                 <div
                   key={name}
                   className={`${style.poolBreakdownItem}${isActive ? ` ${style.active}` : ""}`}
                   onClick={() => onPoolClick?.(isActive ? "" : name)}
-                  title={name}
+                  title={claiming > 0 ? `${name} — ${claiming} claiming` : name}
                 >
                   <span
                     className={style.poolBreakdownDot}
@@ -213,9 +230,66 @@ export function PieChart(props: PieChartProps): React.ReactElement {
                   />
                   <span className={style.poolBreakdownName}>{name}</span>
                   <span className={style.poolBreakdownCount}>{np.nodes.length}</span>
+                  {claiming > 0 && (
+                    <span
+                      className={style.poolBreakdownCount}
+                      style={{
+                        color: "#5ad1fc",
+                        background: "rgba(90, 209, 252, 0.15)",
+                        marginLeft: 4,
+                      }}
+                      title={`${claiming} NodeClaim${claiming !== 1 ? "s" : ""} pending (no Node yet)`}
+                    >
+                      ◌ {claiming}
+                    </span>
+                  )}
                 </div>
               );
             })}
+            {/* Pools that exist only as claims (no ready nodes yet) */}
+            {Object.entries(claimingByPool)
+              .filter(([poolName]) =>
+                poolName !== "__unknown__" &&
+                !objects.some((o) => o.nodePool.metadata?.name === poolName)
+              )
+              .map(([poolName, count]) => (
+                <div
+                  key={`claim-only-${poolName}`}
+                  className={style.poolBreakdownItem}
+                  title={`${poolName} — ${count} claiming, no ready nodes yet`}
+                >
+                  <span
+                    className={style.poolBreakdownDot}
+                    style={{ background: "#5ad1fc" }}
+                  />
+                  <span className={style.poolBreakdownName}>{poolName}</span>
+                  <span
+                    className={style.poolBreakdownCount}
+                    style={{ color: "#5ad1fc", background: "rgba(90, 209, 252, 0.15)" }}
+                  >
+                    ◌ {count}
+                  </span>
+                </div>
+              ))}
+            {claimingByPool["__unknown__"] && claimingByPool["__unknown__"]! > 0 && (
+              <div
+                key="claim-only-unknown"
+                className={style.poolBreakdownItem}
+                title={`${claimingByPool["__unknown__"]} claiming NodeClaim(s) without a NodePool label`}
+              >
+                <span
+                  className={style.poolBreakdownDot}
+                  style={{ background: "#5ad1fc" }}
+                />
+                <span className={style.poolBreakdownName}>(no pool label)</span>
+                <span
+                  className={style.poolBreakdownCount}
+                  style={{ color: "#5ad1fc", background: "rgba(90, 209, 252, 0.15)" }}
+                >
+                  ◌ {claimingByPool["__unknown__"]}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

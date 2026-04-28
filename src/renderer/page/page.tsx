@@ -9,6 +9,12 @@ import style from "./page.module.scss";
 // must be `?inline` for explicit CSS to use in `<style>` tag
 import styleInline from "./page.module.scss?inline";
 import { NodePool, getNodePoolStore } from "../k8s/karpenter/store";
+import {
+  NodeClaim,
+  getNodeClaimStore,
+  isClaimingNodeClaim,
+  getNodeClaimPoolName,
+} from "../k8s/karpenter/store";
 import { observer } from "mobx-react";
 import { PieChart } from "../components/PieChart/pie-chart";
 import { KarpenterCard } from "../components/KarpenterCard/KarpenterCard";
@@ -43,6 +49,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
   private readonly abortController = new AbortController();
   private nodePoolStore?: ReturnType<typeof getNodePoolStore>;
   private nodeStore?: ReturnType<typeof getNodeStore>;
+  private nodeClaimStore?: ReturnType<typeof getNodeClaimStore>;
   private ec2NodeClassStore?: ReturnType<typeof getEC2NodeClassStore>;
   private aksNodeClassStore?: ReturnType<typeof getAKSNodeClassStore>;
   private kubeEventStore?: ReturnType<typeof getKubeEventStore>;
@@ -86,6 +93,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
 
       this.nodePoolStore = getNodePoolStore();
       this.nodeStore = getNodeStore();
+      this.nodeClaimStore = getNodeClaimStore();
       this.ec2NodeClassStore = getEC2NodeClassStore();
       this.aksNodeClassStore = getAKSNodeClassStore();
       this.kubeEventStore = getKubeEventStore();
@@ -93,6 +101,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
       await Promise.all([
         this.nodePoolStore,
         this.nodeStore,
+        this.nodeClaimStore,
         this.ec2NodeClassStore,
         this.aksNodeClassStore,
       ].filter((store): store is NonNullable<typeof store> => Boolean(store)).map(async (store) => {
@@ -233,6 +242,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
 
     const nodePoolStore = this.nodePoolStore;
     const nodeStore = this.nodeStore;
+    const nodeClaimStore = this.nodeClaimStore;
     const getNodePoolsWithNodes = () => {
       return nodePoolStore.items
         .map(nodePool => {
@@ -245,6 +255,11 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
     };
 
     const nodePoolsWithNodes = getNodePoolsWithNodes();
+
+    // NodeClaims that have been launched but not yet bound to a Node
+    const claimingClaims: NodeClaim[] = nodeClaimStore
+      ? nodeClaimStore.items.filter(isClaimingNodeClaim)
+      : [];
 
     const tabs: { id: "cluster" | "overview" | "nodeclasses" | "scaling"; label: string }[] = [
       { id: "cluster",    label: "Cluster View" },
@@ -313,10 +328,10 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
             )}
             {activeTab === "overview" && (
               <>
-                {renderLimits(nodePoolsWithNodes, nodeStore.items, search, (name) => {
+                {renderLimits(nodePoolsWithNodes, nodeStore.items, claimingClaims, search, (name) => {
                   this.setState({ search: name });
                 })}
-                {renderBody2(nodePoolStore, nodeStore, search, (name) => this.setState({ search: name }))}
+                {renderBody2(nodePoolStore, nodeStore, nodeClaimStore, search, (name) => this.setState({ search: name }))}
               </>
             )}
             {activeTab === "nodeclasses" && (
@@ -332,18 +347,24 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
   }
 }
 
-const renderLimits = (nodePoolsWithNodes: any[], nodes: any[], search: string, onPoolClick: (name: string) => void) => {
+const renderLimits = (nodePoolsWithNodes: any[], nodes: any[], claimingClaims: NodeClaim[], search: string, onPoolClick: (name: string) => void) => {
   return (
     <div style={{ marginBottom: 16 }}>
-      {getOverwiewChart(nodePoolsWithNodes, nodes, search, onPoolClick)}
+      {getOverwiewChart(nodePoolsWithNodes, nodes, claimingClaims, search, onPoolClick)}
     </div>
   );
 }
 
-function getOverwiewChart(nodePoolsWithNodes: any[], nodes: any[], search: string, onPoolClick: (name: string) => void) {
+function getOverwiewChart(nodePoolsWithNodes: any[], nodes: any[], claimingClaims: NodeClaim[], search: string, onPoolClick: (name: string) => void) {
   const limits = {
     cpu: "1000m",
     memory: "2000m"
+  }
+  // Build per-pool claiming counts (claims with no Node yet, grouped by NodePool label)
+  const claimingByPool: Record<string, number> = {};
+  for (const c of claimingClaims) {
+    const pool = getNodeClaimPoolName(c) || "__unknown__";
+    claimingByPool[pool] = (claimingByPool[pool] ?? 0) + 1;
   }
   return (
     <div className="row">
@@ -356,6 +377,8 @@ function getOverwiewChart(nodePoolsWithNodes: any[], nodes: any[], search: strin
         onPoolClick={onPoolClick}
         activeFilter={search}
         onFilterChange={onPoolClick}
+        claimingCount={claimingClaims.length}
+        claimingByPool={claimingByPool}
       />
     </div>
   );
@@ -366,6 +389,7 @@ function getOverwiewChart(nodePoolsWithNodes: any[], nodes: any[], search: strin
 const STATUS_QUICK_FILTERS: { status: CondStatus; label: string; color: string }[] = [
   { status: "Ready",        label: "Ready",        color: "#48c78e" },
   { status: "Provisioning", label: "Provisioning", color: "#ffc107" },
+  { status: "Claiming",     label: "Claiming",     color: "#5ad1fc" },
   { status: "Terminating",  label: "Terminating",  color: "#ff7043" },
   { status: "NotReady",     label: "Not Ready",    color: "#f14668" },
 ];
@@ -404,6 +428,7 @@ function nodePoolMatchesFilter(
   typeTokens: string[],
   quickStatuses: CondStatus[],
   poolStatusTokens: string[] = [],
+  claims: NodeClaim[] = [],
 ): boolean {
   const poolName = (np.metadata?.name ?? "").toLowerCase();
 
@@ -437,7 +462,11 @@ function nodePoolMatchesFilter(
       const s = getNodeStatus(node).toLowerCase();
       return allStatusFilters.some((f) => s.includes(f));
     });
-    if (!hasMatchingNode) return false;
+    // Claiming status matches against pending NodeClaims (no node bound yet)
+    const hasMatchingClaim =
+      allStatusFilters.some((f) => "claiming".includes(f) || f.includes("claiming")) &&
+      claims.length > 0;
+    if (!hasMatchingNode && !hasMatchingClaim) return false;
   }
 
   // type: token
@@ -454,7 +483,7 @@ function nodePoolMatchesFilter(
 
 // ── NodePool list ─────────────────────────────────────────────────────────────
 
-const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; search: string; setSearch: (v: string) => void }> = observer(({ nodePoolStore, nodeStore, search, setSearch }) => {
+const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStore?: any; search: string; setSearch: (v: string) => void }> = observer(({ nodePoolStore, nodeStore, nodeClaimStore, search, setSearch }) => {
   const [showEmpty, setShowEmpty] = React.useState(false);
   const [quickStatuses, setQuickStatuses] = React.useState<CondStatus[]>([]);
 
@@ -467,27 +496,47 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; search: strin
       prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
     );
 
+  // All NodeClaims that haven't yet been bound to a Node — grouped by pool below
+  const claimingClaims: NodeClaim[] = nodeClaimStore
+    ? (nodeClaimStore.items as NodeClaim[]).filter(isClaimingNodeClaim)
+    : [];
+
+  const claimsByPool = React.useMemo(() => {
+    const map: Record<string, NodeClaim[]> = {};
+    for (const c of claimingClaims) {
+      const pool = getNodeClaimPoolName(c);
+      if (!pool) continue;
+      (map[pool] ??= []).push(c);
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [claimingClaims.length, claimingClaims.map((c) => c.metadata?.name).join(",")]);
+
   const allFiltered = allNodePools.filter((np: NodePool) => {
     const nodes = nodeStore.items.filter(
       (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === np.metadata?.name
     );
-    return nodePoolMatchesFilter(np, nodes, nameTerms, statusTokens, typeTokens, quickStatuses, poolStatusTokens);
+    const claims = claimsByPool[np.metadata?.name ?? ""] ?? [];
+    return nodePoolMatchesFilter(np, nodes, nameTerms, statusTokens, typeTokens, quickStatuses, poolStatusTokens, claims);
   });
 
   const nodePools = showEmpty
     ? allFiltered
     : allFiltered.filter((np: NodePool) => {
+        const poolName = np.metadata?.name ?? "";
         const nodeCount = nodeStore.items.filter(
-          (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === np.metadata?.name
+          (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName
         ).length;
-        return nodeCount > 0;
+        // Keep pools that have either nodes OR claiming NodeClaims
+        return nodeCount > 0 || (claimsByPool[poolName]?.length ?? 0) > 0;
       });
 
   const emptyCount = allNodePools.filter((np: NodePool) => {
+    const poolName = np.metadata?.name ?? "";
     const nodeCount = nodeStore.items.filter(
-      (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === np.metadata?.name
+      (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName
     ).length;
-    return nodeCount === 0;
+    return nodeCount === 0 && (claimsByPool[poolName]?.length ?? 0) === 0;
   }).length;
 
   const hasActiveFilter = search.trim() !== "" || quickStatuses.length > 0;
@@ -543,14 +592,17 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; search: strin
       </div>
 
       {nodePools.map((nodePool: NodePool) => {
+        const poolName = nodePool.metadata?.name ?? "";
         const nodes = nodeStore.items.filter(
-          (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === nodePool.metadata?.name
+          (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName
         );
+        const claims = claimsByPool[poolName] ?? [];
         return (
           <div key={nodePool.metadata?.uid ?? nodePool.metadata?.name} className={style.nodePoolRow}>
             <KarpenterCard
               nodePool={nodePool}
               nodes={nodes}
+              claims={claims}
               nodeStore={nodeStore}
             />
           </div>
@@ -569,9 +621,10 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; search: strin
 const renderBody2 = (
   nodePoolStore: any,
   nodeStore: any,
+  nodeClaimStore: any,
   search: string,
   setSearch: (v: string) => void,
-) => <NodePoolList nodePoolStore={nodePoolStore} nodeStore={nodeStore} search={search} setSearch={setSearch} />;
+) => <NodePoolList nodePoolStore={nodePoolStore} nodeStore={nodeStore} nodeClaimStore={nodeClaimStore} search={search} setSearch={setSearch} />;
 /*
 const renderBody = (nodePoolsWithNodes: any[]) => {
   // Split nodePoolsWithNodes in chunks of 2

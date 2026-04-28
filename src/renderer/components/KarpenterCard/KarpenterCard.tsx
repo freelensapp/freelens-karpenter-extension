@@ -3,6 +3,7 @@ import styleInline from "./karpentercard.module.scss?inline";
 import style from "./karpentercard.module.scss";
 import { Renderer } from "@freelensapp/extensions";
 import { type NodePool } from "../../k8s/karpenter/store";
+import { type NodeClaim } from "../../k8s/karpenter/store";
 import { type Node } from "../../k8s/core/node-store";
 import React, { useMemo, useState } from "react";
 import { detectProvider, openNodeClassDetail } from "../../k8s/karpenter/nodeclass-utils";
@@ -255,11 +256,26 @@ function ToggleButton({
 
 // ── Table view ────────────────────────────────────────────────────────────────
 
+/** Best-effort instance type extraction for a NodeClaim that hasn't bound yet.
+ *  Tries (in order): label, status.allocatable, single-value spec requirement. */
+function getNodeClaimInstanceType(claim: NodeClaim): string {
+  const labels: Record<string, string> = (claim as any).metadata?.labels ?? {};
+  const labelType = labels["node.kubernetes.io/instance-type"];
+  if (labelType) return labelType;
+  const reqs: any[] = (claim as any).spec?.requirements ?? [];
+  const req = reqs.find((r) => r?.key === "node.kubernetes.io/instance-type");
+  if (req?.values?.length === 1) return req.values[0];
+  if (req?.values?.length > 1) return `${req.values.length} types`;
+  return "—";
+}
+
 export const NodesList = ({
   nodes,
+  claims = [],
   podCountMap,
 }: {
   nodes: Node[];
+  claims?: NodeClaim[];
   podCountMap: Record<string, number>;
 }) => (
   <table className={style.nodesTable}>
@@ -309,6 +325,32 @@ export const NodesList = ({
             <td className={style.monoSmall}>{getNodeCpu(node)}</td>
             <td className={style.monoSmall}>{getNodeMemory(node)}</td>
             <td className={style.monoSmall}>{podLabel}</td>
+            <td className={style.clickHint}>{ICON.external}</td>
+          </tr>
+        );
+      })}
+      {claims.map((claim, idx) => {
+        const claimName = claim.metadata?.name ?? "";
+        return (
+          <tr
+            key={`claim-${claim.metadata?.uid ?? claimName ?? idx}`}
+            onClick={() => openNodeClaimDetail(claimName)}
+            title="Click to open NodeClaim details"
+          >
+            <td>
+              <span className={style.nodeNameCell}>
+                <span className={style.nodeIcon}>{ICON.nodeclaim}</span>
+                <span className={style.nodeName} style={{ color: COLOR.textSecondary, fontStyle: "italic" }}>
+                  (pending)
+                </span>
+              </span>
+            </td>
+            <td><span className={style.monoSmall}>{claimName || "—"}</span></td>
+            <td><span className={style.monoSmall}>{getNodeClaimInstanceType(claim)}</span></td>
+            <td><StatusBadge status="Claiming" /></td>
+            <td className={style.monoSmall}>—</td>
+            <td className={style.monoSmall}>—</td>
+            <td className={style.monoSmall}>—</td>
             <td className={style.clickHint}>{ICON.external}</td>
           </tr>
         );
@@ -530,9 +572,11 @@ function InfoPill({
 export const KarpenterCard = observer(function KarpenterCard({
   nodePool,
   nodes,
+  claims = [],
 }: {
   nodePool: NodePool;
   nodes: Node[];
+  claims?: NodeClaim[];
   nodeStore?: any;
 }) {
   const [viewMode, setViewMode] = useState<ViewMode>("table");
@@ -568,6 +612,11 @@ export const KarpenterCard = observer(function KarpenterCard({
               {poolName}
               <span className={style.cardNodeCount}>
                 {nodes.length} node{nodes.length !== 1 ? "s" : ""}
+                {claims.length > 0 && (
+                  <span style={{ marginLeft: 8, color: COLOR.claiming, fontWeight: 600 }}>
+                    +{claims.length} claiming
+                  </span>
+                )}
               </span>
             </div>
             <CardInfoBar nodePool={nodePool} instanceTypeCounts={instanceTypeCounts} />
@@ -579,7 +628,7 @@ export const KarpenterCard = observer(function KarpenterCard({
 
         {/* Body */}
         <div className={style.cardBody}>
-          {nodes.length === 0 ? (
+          {nodes.length === 0 && claims.length === 0 ? (
             <div className={style.emptyNodes}>{LABEL.noNodes}</div>
           ) : (
             <>
@@ -599,12 +648,15 @@ export const KarpenterCard = observer(function KarpenterCard({
                 <PoolEventTimeline
                   poolName={poolName}
                   nodeNames={nodes.map((n) => n.metadata?.name ?? "").filter(Boolean)}
-                  claimNames={nodes.map((n) => getNodeClaimName(n)).filter(Boolean)}
+                  claimNames={[
+                    ...nodes.map((n) => getNodeClaimName(n)).filter(Boolean),
+                    ...claims.map((c) => c.metadata?.name ?? "").filter(Boolean),
+                  ]}
                 />
               )}
 
               {viewMode === "table"
-                ? <NodesList nodes={nodes} podCountMap={podCountMap} />
+                ? <NodesList nodes={nodes} claims={claims} podCountMap={podCountMap} />
                 : <NodesTree nodes={nodes} podCountMap={podCountMap} />
               }
             </>

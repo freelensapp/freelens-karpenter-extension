@@ -40,6 +40,12 @@ export const COLOR = {
   /** NodeClaim accent */
   nodeclaim:     "#6c63ff",
 
+  /** Claiming (NodeClaim launched but no Node yet) — celeste / light blue */
+  claiming:        "#5ad1fc",
+  claimingDim:     "#3fb8e6",
+  claimingBg:      "rgba(90, 209, 252, 0.15)",
+  claimingBorder:  "rgba(90, 209, 252, 0.35)",
+
   /** CPU bar */
   cpu:           "#26a822",
 
@@ -88,6 +94,13 @@ export const STATUS_VISUAL: Record<CondStatus, StatusVisual> = {
     label:  "Provisioning",
     dot:    "◌",
   },
+  Claiming: {
+    color:  COLOR.claimingDim,
+    bg:     COLOR.claimingBg,
+    border: COLOR.claimingBorder,
+    label:  "Claiming",
+    dot:    "◌",
+  },
   Terminating: {
     color:  COLOR.terminating,
     bg:     COLOR.terminatingBg,
@@ -109,6 +122,7 @@ export const STATUS_BORDER_COLOR: Record<CondStatus, string> = {
   Ready:        COLOR.success,
   NotReady:     COLOR.danger,
   Provisioning: COLOR.warning,
+  Claiming:     COLOR.claiming,
   Terminating:  COLOR.terminating,
   Unknown:      "#555",
 };
