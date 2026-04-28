@@ -8,8 +8,6 @@ Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robert
 
 ## Build from the source
 
-Freelens extension for Karpenter.
-
 ### Prerequisites
 
 Use [NVM](https://github.com/nvm-sh/nvm) or
