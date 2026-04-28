@@ -211,17 +211,16 @@ export function buildPodCountMap(): Record<string, number> {
  */
 export function navigateToDetail(listPath: string, selfLink: string): void {
   if (!selfLink) return;
+  const navigation = Renderer.Navigation as any;
   const enc = encodeURIComponent(selfLink);
-  (Renderer.Navigation as any).navigate(
-    `${listPath}?kube-details=${enc}&kube-selected=${enc}`
-  );
+  navigation.navigate(`${listPath}?kube-details=${enc}&kube-selected=${enc}`);
 }
 
 export function openNodeDetail(node: Node): void {
-  const selfLink: string =
-    (node as any).metadata?.selfLink ||
-    `/api/v1/nodes/${node.metadata?.name ?? ""}`;
-  navigateToDetail("/nodes", selfLink);
+  const name = node.metadata?.name;
+  if (!name) return;
+
+  navigateToDetail("/nodes", `/api/v1/nodes/${name}`);
 }
 
 export function openNodePoolDetail(nodePool: NodePool): void {
@@ -237,18 +236,4 @@ export function openNodeClaimDetail(name: string): void {
     "/crd/karpenter.sh/nodeclaims",
     `/apis/karpenter.sh/v1/nodeclaims/${name}`
   );
-}
-
-/**
- * Navigate to a CRD detail page by deriving the list path from the selfLink.
- * Example: /apis/karpenter.sh/v1/nodepools/mypool  →  /crd/karpenter.sh/nodepools
- */
-export function openCrdDetail(selfLink: string): void {
-  if (!selfLink) return;
-  const withoutApis = selfLink.replace(/^\/apis\//, "");
-  const parts = withoutApis.split("/");
-  // parts: ["karpenter.sh", "v1", "nodepools", "name"]
-  const listPath =
-    parts.length >= 3 ? `/crd/${parts[0]}/${parts[2]}` : "/crd/definitions";
-  navigateToDetail(listPath, selfLink);
 }

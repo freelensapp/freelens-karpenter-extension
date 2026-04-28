@@ -291,7 +291,10 @@ export const NodesList = ({
         return (
           <tr
             key={node.metadata?.uid ?? nodeName ?? idx}
-            onClick={() => openNodeDetail(node)}
+            onClick={(event) => {
+              event.stopPropagation();
+              openNodeDetail(node);
+            }}
             title="Click to open node details"
           >
             <td>
@@ -320,7 +323,8 @@ function TreeLeaf({
   icon, kind, name, extra, color, onClick,
 }: {
   icon: string; kind: string; name: string;
-  extra?: React.ReactNode; color?: string; onClick?: () => void;
+  extra?: React.ReactNode; color?: string;
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }) {
   return (
     <div
@@ -357,13 +361,19 @@ function NodePairRow({ node, podCountMap }: { node: Node; podCountMap: Record<st
         <TreeLeaf
           icon={ICON.nodeclaim} kind="NodeClaim" name={claimName || "—"}
           color={COLOR.nodeclaim}
-          onClick={claimName ? () => openNodeClaimDetail(claimName) : undefined}
+          onClick={claimName ? (event) => {
+            event.stopPropagation();
+            openNodeClaimDetail(claimName);
+          } : undefined}
         />
         <div className={style.treePairArrow}>{ICON.arrow}</div>
         <TreeLeaf
           icon={ICON.node} kind="Node" name={nodeName}
           color={color}
-          onClick={() => openNodeDetail(node)}
+          onClick={(event) => {
+            event.stopPropagation();
+            openNodeDetail(node);
+          }}
           extra={
             <div className={style.treeLeafStats}>
               <StatusBadge status={status} />
@@ -456,7 +466,10 @@ function CardInfoBar({ nodePool, instanceTypeCounts }: { nodePool: NodePool; ins
       <InfoPill
         kind={`${ICON.nodeclass} ${nodeClassKind}`}
         name={nodeClassName}
-        onClick={() => openNodeClassDetail(nodeClassName, provider)}
+        onClick={(event) => {
+          event.stopPropagation();
+          openNodeClassDetail(nodeClassName, provider);
+        }}
         title={`Open ${nodeClassKind} ${nodeClassName}`}
       />
 
@@ -465,7 +478,10 @@ function CardInfoBar({ nodePool, instanceTypeCounts }: { nodePool: NodePool; ins
       <InfoPill
         kind={`${ICON.nodepool} NodePool`}
         name={poolName}
-        onClick={() => openNodePoolDetail(nodePool)}
+        onClick={(event) => {
+          event.stopPropagation();
+          openNodePoolDetail(nodePool);
+        }}
         title={`Open NodePool ${poolName}`}
         badge={<StatusBadge status={poolStatus} />}
       />
@@ -496,7 +512,7 @@ function InfoPill({
   kind, name, onClick, title, badge,
 }: {
   kind: string; name: string;
-  onClick: () => void; title: string;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void; title: string;
   badge?: React.ReactNode;
 }) {
   return (

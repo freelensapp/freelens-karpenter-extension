@@ -10,9 +10,9 @@ import {
   type NodeClassProvider,
 } from "../../k8s/karpenter/nodeclass-utils";
 import {
-  openCrdDetail,
   getNodePoolStatus,
   getNodeClassStatus,
+  openNodePoolDetail,
 } from "../../utils/kube-helpers";
 import { StatusBadge } from "../shared/StatusBadge";
 import style from "./nodeclasses-tab.module.scss";
@@ -50,9 +50,10 @@ function NodePoolRow({
   return (
     <tr
       className={style.poolRow}
-      onClick={() =>
-        openCrdDetail(`/apis/karpenter.sh/v1/nodepools/${name}`)
-      }
+      onClick={event => {
+        event.stopPropagation();
+        openNodePoolDetail(nodePool);
+      }}
       title="Click to open NodePool details"
     >
       <td className={style.poolName}>
@@ -147,8 +148,8 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
           <span className={style.nodeClassKind}>{kindLabel}</span>
           <span
             className={style.nodeClassName}
-            onClick={e => {
-              e.stopPropagation();
+            onClick={event => {
+              event.stopPropagation();
               openNodeClassDetail(name, provider);
             }}
             title={`Open ${kindLabel} details`}
