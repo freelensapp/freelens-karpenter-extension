@@ -249,3 +249,333 @@
   text-align: right;
 }
 
+// ── New scaling-decisions UI ─────────────────────────────────────────────────
+
+.filterDivider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--borderColor, #2a2d35);
+  margin: 0 4px;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--borderColor, #2a2d35);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.segBtn {
+  background: transparent;
+  border: none;
+  color: var(--textColorSecondary, #aaa);
+  font-size: 12px;
+  padding: 5px 12px;
+  cursor: pointer;
+  border-right: 1px solid var(--borderColor, #2a2d35);
+
+  &:last-child { border-right: none; }
+  &:hover { background: rgba(0, 167, 225, 0.08); color: var(--textColorPrimary, #fff); }
+}
+
+.segBtnActive {
+  background: rgba(0, 167, 225, 0.18);
+  color: #00a7e1;
+  font-weight: 600;
+}
+
+.groupChips {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.groupChip {
+  background: transparent;
+  border: 1px solid var(--borderColor, #2a2d35);
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0.55;
+
+  &:hover { opacity: 1; }
+}
+
+.groupChipActive {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.chartCard {
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-radius: 8px;
+  background: var(--contentColor, #13161b);
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.chartTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--textColorSecondary, #bbb);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.clearBtn {
+  background: rgba(0, 167, 225, 0.12);
+  color: #00a7e1;
+  border: 1px solid #00a7e155;
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 11px;
+  cursor: pointer;
+
+  &:hover { background: rgba(0, 167, 225, 0.22); }
+}
+
+.hoverHint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--textColorTertiary, #777);
+
+  code {
+    background: rgba(128, 128, 128, 0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: monospace;
+    color: var(--textColorSecondary, #bbb);
+  }
+}
+
+.poolGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.poolCard {
+  background: var(--contentColor, #13161b);
+  border: 1px solid var(--borderColor, #2d2d2d);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover { border-color: #00a7e1; background: rgba(0, 167, 225, 0.05); }
+}
+
+.poolCardActive {
+  border-color: #00a7e1;
+  background: rgba(0, 167, 225, 0.1);
+  box-shadow: 0 0 0 1px #00a7e155 inset;
+}
+
+.poolCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.poolCardName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--textColorPrimary, #ddd);
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.poolCardCount {
+  font-size: 11px;
+  color: var(--textColorTertiary, #888);
+  background: rgba(128, 128, 128, 0.1);
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+}
+
+.tableCountPill {
+  margin-left: 8px;
+  font-size: 11px;
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--textColorSecondary, #aaa);
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.rowHighlighted {
+  background: rgba(0, 167, 225, 0.12) !important;
+  outline: 1px solid #00a7e155;
+}
+
+.reasonDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+// ── Grafana-style metric panels ──────────────────────────────────────────────
+
+.panelStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.panel {
+  background: #0c0e12;
+  border: 1px solid #1f232b;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
+}
+
+.panelActive {
+  border-color: #00a7e1;
+  box-shadow: 0 0 0 1px #00a7e155 inset;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #14181f;
+  border-bottom: 1px solid #1f232b;
+}
+
+.panelTitleWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.panelTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8e8e8;
+  letter-spacing: -0.01em;
+}
+
+.panelSubtitle {
+  font-size: 11px;
+  color: #888;
+  font-family: monospace;
+}
+
+.panelPoolBtn {
+  background: rgba(0, 167, 225, 0.08);
+  border: 1px solid #00a7e133;
+  color: #00a7e1;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover { background: rgba(0, 167, 225, 0.18); }
+}
+
+.panelPoolBtnActive {
+  background: rgba(0, 167, 225, 0.22);
+  font-weight: 600;
+}
+
+.panelTabs {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: #10131a;
+  border-bottom: 1px solid #1f232b;
+  min-height: 32px;
+}
+
+.panelTabsLeft {
+  display: flex;
+  gap: 4px;
+}
+
+.panelTabsRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metricTab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #777;
+  font-size: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: #ccc; }
+}
+
+.metricTabActive {
+  color: #fff;
+  font-weight: 600;
+}
+
+.metricTabDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.panelBody {
+  padding: 8px 6px 4px;
+  background: #0c0e12;
+}
+
+.panelLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 8px 14px 12px;
+  border-top: 1px solid #1f232b;
+  background: #0c0e12;
+}
+
+.panelLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.panelLegendLine {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  display: inline-block;
+}
+
+
