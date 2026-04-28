@@ -20,6 +20,7 @@ import { getCrdStore } from "../k8s/core/crd";
 import { ScalingDecisions } from "../components/ScalingDecisions/ScalingDecisions";
 import { NodeClassesTab } from "../components/NodeClassesTab/NodeClassesTab";
 import { ClusterPieView } from "../components/ClusterPieView/ClusterPieView";
+import { KarpenterPageLoading } from "../components/shared/LoadingSkeleton";
 import { getNodeStatus, getInstanceType } from "../utils/kube-helpers";
 import type { CondStatus } from "../utils/kube-helpers";
 
@@ -223,9 +224,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
           <style>{styleInline}</style>
           <Renderer.Component.TabLayout scrollable={false} contentClass={style.tabContent}>
             <div className={style.fluxContent}>
-              <div className={style.karpenterNotInstalled}>
-                <h2 className={style.karpenterNotInstalledTitle}>Loading Karpenter data</h2>
-              </div>
+              <KarpenterPageLoading />
             </div>
           </Renderer.Component.TabLayout>
         </>

@@ -108,8 +108,14 @@ export function Spinner({ size = 16, color = "var(--colorInfo,#6ab0d4)" }: { siz
   );
 }
 
+interface PageLoadingProps {
+  message?: string;
+  description?: string;
+  preview?: React.ReactNode;
+}
+
 /** Full-page loading overlay */
-export function PageLoading({ message = "Loading…" }: { message?: string }) {
+export function PageLoading({ message = "Loading...", description, preview }: PageLoadingProps) {
   return (
     <div
       style={{
@@ -117,14 +123,113 @@ export function PageLoading({ message = "Loading…" }: { message?: string }) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 16,
-        padding: "80px 32px",
+        gap: 24,
+        minHeight: 420,
+        padding: "56px 32px",
         color: "var(--textColorSecondary, #888)",
         fontSize: 14,
+        textAlign: "center",
       }}
     >
-      <Spinner size={32} />
-      <span>{message}</span>
+      <style>{`
+        @keyframes skeletonPulse {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <Spinner size={30} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <strong style={{ color: "var(--textColorPrimary, #fff)", fontSize: 18, fontWeight: 700 }}>
+            {message}
+          </strong>
+          {description && (
+            <span style={{ color: "var(--textColorSecondary, #888)", fontSize: 13, lineHeight: 1.5 }}>
+              {description}
+            </span>
+          )}
+        </div>
+      </div>
+      {preview}
     </div>
+  );
+}
+
+function KarpenterLoadingPreview() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        width: "min(760px, 100%)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+        opacity: 0.9,
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+          gap: 10,
+        }}
+      >
+        {[120, 92, 108].map((width, index) => (
+          <div
+            key={index}
+            style={{
+              border: "1px solid var(--borderColor, #2d2d2d)",
+              borderRadius: 8,
+              background: "var(--contentColor, #13161b)",
+              padding: 14,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            <SkeletonLine width={width} height={12} />
+            <SkeletonLine width={52} height={24} borderRadius={5} />
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          border: "1px solid var(--borderColor, #2d2d2d)",
+          borderRadius: 8,
+          background: "var(--contentColor, #13161b)",
+          overflow: "hidden",
+          textAlign: "left",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            alignItems: "center",
+            padding: "14px 16px",
+            borderBottom: "1px solid var(--borderColor, #2d2d2d)",
+            background: "var(--layoutTabsBackground, #1a1d22)",
+          }}
+        >
+          <SkeletonLine width={150} height={18} />
+          <SkeletonLine width={88} height={18} borderRadius={10} style={{ marginLeft: "auto" }} />
+        </div>
+        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+          {[1, 2, 3].map((row) => (
+            <SkeletonLine key={row} height={36} borderRadius={6} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function KarpenterPageLoading() {
+  return (
+    <PageLoading
+      message="Loading Karpenter data"
+      description="Discovering NodePools, nodes, and NodeClasses..."
+      preview={<KarpenterLoadingPreview />}
+    />
   );
 }
