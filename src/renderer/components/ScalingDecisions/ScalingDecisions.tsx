@@ -111,8 +111,13 @@ function getEventNodePool(e: KubeEvent, pools: NodePool[]): string {
   const name: string = e.involvedObject?.name ?? "";
   // NodePool kind itself
   if (e.involvedObject?.kind === "NodePool") return name;
-  // NodeClaim / Node naming convention: <pool>-<suffix>
-  for (const p of pools) {
+  // NodeClaim / Node naming convention: <pool>-<suffix>.
+  // Match longest pool name first so e.g. "ml-ms-abc" is attributed to
+  // "ml-ms" and not to "ml" (both would match a plain prefix check).
+  const sortedPools = [...pools].sort(
+    (a, b) => (b.metadata?.name?.length ?? 0) - (a.metadata?.name?.length ?? 0),
+  );
+  for (const p of sortedPools) {
     const pn = p.metadata?.name ?? "";
     if (pn && name.startsWith(pn + "-")) return pn;
   }
@@ -442,12 +447,18 @@ export const ScalingDecisions: React.FC = observer(() => {
   const rowRefMap = useRef(new Map<string, HTMLTableRowElement>()).current;
 
   // ── Karpenter-only events ──────────────────────────────────────────────────
+  // NOTE: depend on the array reference (MobX produces a new array on store
+  // updates) rather than `.length` — otherwise updates to existing events
+  // (lastTimestamp ticking forward, label changes, …) wouldn't invalidate
+  // downstream memos and the filter would silently work on stale timestamps.
   const karpenterEvents = useMemo(
     () => allEvents.filter(isKarpenterEvent),
-    [allEvents.length]
+    [allEvents]
   );
 
   // ── Group/pool annotation cache ────────────────────────────────────────────
+  // Same staleness concern as above — depend on the actual arrays, not their
+  // length, so refreshed timestamps propagate into `m.ts`.
   const eventMeta = useMemo(() => {
     const map = new Map<KubeEvent, { ts: number; group: string; pool: string }>();
     for (const e of karpenterEvents) {
@@ -458,15 +469,19 @@ export const ScalingDecisions: React.FC = observer(() => {
       });
     }
     return map;
-  }, [karpenterEvents, nodePools.length]);
+  }, [karpenterEvents, nodePools]);
 
   // ── Time range ─────────────────────────────────────────────────────────────
+  // Memoize so `now`/`startMs`/`endMs` are stable identities across renders
+  // (otherwise every render invalidates the bucketing memos below).
   const range = TIME_RANGES.find((r) => r.key === rangeKey) ?? TIME_RANGES[1]!;
-  const now = Date.now();
-  const startMs = range.ms === Infinity
-    ? Math.min(now, ...karpenterEvents.map(eventTs).filter((t) => t > 0))
-    : now - range.ms;
-  const endMs = now;
+  const { startMs, endMs } = useMemo(() => {
+    const n = Date.now();
+    const s = range.ms === Infinity
+      ? Math.min(n, ...karpenterEvents.map(eventTs).filter((t) => t > 0))
+      : n - range.ms;
+    return { startMs: s, endMs: n };
+  }, [rangeKey, karpenterEvents]);
 
   // ── Filtered events (pool + group + range) ─────────────────────────────────
   const filteredEvents = useMemo(() => {
@@ -726,8 +741,7 @@ export const ScalingDecisions: React.FC = observer(() => {
 
         {perPoolPoints
           .filter(({ pool, total }) => {
-            if (selectedPool && selectedPool !== pool) return false;
-            if (selectedPool === pool) return true;     // always show the actively-filtered pool
+            if (selectedPool) return selectedPool === pool;  // when filtering, only show that pool
             const hasNodes = (perPoolNodePoints[pool] ?? []).some((p) => (p.counts.nodes ?? 0) > 0);
             return total > 0 || hasNodes;
           })
