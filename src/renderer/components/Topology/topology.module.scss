@@ -1,0 +1,402 @@
+// ── Topology container ──────────────────────────────────────────────────────
+//
+// Visual language inspired by the Karpenter "Just-in-time capacity" diagram:
+// dark navy canvas, rounded "chip" cells, Freelens teal-green (#00a7a0) for
+// active controls, blue micro-dots for pods.
+
+$bg-canvas:    #0e1a2b;
+$bg-card:      #16263d;
+$bg-chip:      #1d3552;
+$bg-chip-hi:   #244069;
+$border-soft:  rgba(255, 255, 255, 0.08);
+$border-mid:   rgba(255, 255, 255, 0.14);
+$accent:       #00a7a0;          // Freelens primary / menuActiveBackground
+$accent-soft:  rgba(0, 167, 160, 0.30);
+$text-primary:   #e6edf6;
+$text-secondary: #8aa0bc;
+$cap-on-demand:  #4dd0c1;        // teal — on-demand
+$cap-spot:       #c98ad6;        // soft purple — spot
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0 24px;
+  width: 100%;
+}
+
+// ── KPI strip ───────────────────────────────────────────────────────────────
+
+.kpiStrip {
+  display: flex;
+  flex-wrap: wrap;
+  background: $bg-card;
+  border: 1px solid $border-soft;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.kpi {
+  flex: 1 1 140px;
+  min-width: 110px;
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-right: 1px solid $border-soft;
+}
+.kpi:last-child { border-right: none; }
+
+.kpiLabel {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $text-secondary;
+}
+.kpiValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: $text-primary;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+.kpiSub {
+  font-size: 11px;
+  color: $text-secondary;
+}
+
+// ── Status / capacity bar (always visible at top) ───────────────────────────
+
+.statusLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  font-size: 11px;
+  color: $text-secondary;
+  background: $bg-card;
+  border: 1px solid $border-soft;
+  border-radius: 10px;
+}
+
+.statusLegendGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.statusLegendGroupLabel {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $text-secondary;
+  opacity: 0.7;
+  margin-right: 2px;
+}
+
+.statusLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $text-primary;
+}
+
+.statusSwatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
+}
+
+.capDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.capDotOnDemand { background: $cap-on-demand; }
+.capDotSpot     {
+  background: $cap-spot;
+  // tiny stripe pattern to differentiate spot at the swatch level too
+  background-image: linear-gradient(45deg,
+    rgba(255,255,255,0.25) 25%, transparent 25%,
+    transparent 50%, rgba(255,255,255,0.25) 50%,
+    rgba(255,255,255,0.25) 75%, transparent 75%, transparent);
+  background-size: 4px 4px;
+}
+
+.statusLegendDivider {
+  width: 1px;
+  height: 18px;
+  background: $border-soft;
+  display: inline-block;
+}
+
+.statusLegendHint {
+  margin-left: auto;
+  font-style: italic;
+  opacity: 0.85;
+  color: $text-secondary;
+}
+
+// ── Toolbar ─────────────────────────────────────────────────────────────────
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 8px 12px;
+  background: $bg-card;
+  border: 1px solid $border-soft;
+  border-radius: 10px;
+}
+
+.toolGroup { display: flex; align-items: center; gap: 8px; }
+
+.toolLabel {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $text-secondary;
+  margin-right: 2px;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid $border-soft;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+.segmentedButton {
+  padding: 5px 12px;
+  background: transparent;
+  border: none;
+  color: $text-secondary;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.segmentedButton:hover {
+  background: rgba(255,255,255,0.04);
+  color: $text-primary;
+}
+.segmentedButtonActive {
+  background: $accent;
+  color: #0a1620;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(0, 167, 160, 0.5) inset, 0 1px 0 rgba(255,255,255,0.18) inset;
+}
+.segmentedButtonActive:hover {
+  background: lighten($accent, 4%);
+  color: #0a1620;
+}
+
+// ── Body: chart + side legend ───────────────────────────────────────────────
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) 300px;
+  gap: 14px;
+  align-items: stretch;
+}
+
+@media (max-width: 1100px) {
+  .body { grid-template-columns: 1fr; }
+}
+
+.chartCard {
+  position: relative;
+  background:
+    radial-gradient(1200px 600px at 30% 0%, rgba(0, 167, 160, 0.05), transparent 60%),
+    radial-gradient(900px 600px at 100% 100%, rgba(74, 144, 226, 0.06), transparent 60%),
+    $bg-canvas;
+  border: 1px solid $border-soft;
+  border-radius: 10px;
+  padding: 14px;
+  min-height: 560px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35) inset;
+}
+
+.chartInner {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+// ── Treemap: group panel + chip ────────────────────────────────────────────
+
+.treemapSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.groupPanel {
+  fill: $bg-card;
+  stroke: $border-soft;
+  stroke-width: 1;
+}
+.groupHeaderText {
+  fill: $text-primary;
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.groupHeaderCount {
+  fill: $text-secondary;
+  font-size: 10px;
+  font-weight: 600;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.chipBody {
+  fill: $bg-chip;
+  stroke: $border-mid;
+  stroke-width: 1;
+  transition: fill 0.15s, stroke 0.15s, filter 0.15s;
+}
+.chipBody:hover {
+  fill: $bg-chip-hi;
+  stroke: $accent-soft;
+  filter: drop-shadow(0 0 6px rgba(0, 167, 160, 0.25));
+}
+.chipBodyDimmed { opacity: 0.28; }
+
+// Capacity-type accent: a tiny corner ribbon on the chip.
+.chipCapDotOnDemand { fill: $cap-on-demand; }
+.chipCapDotSpot     { fill: $cap-spot; }
+
+.chipLabel {
+  fill: $text-primary;
+  font-size: 10px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  pointer-events: none;
+  letter-spacing: 0.01em;
+}
+.chipSubLabel {
+  fill: $text-secondary;
+  font-size: 9px;
+  pointer-events: none;
+}
+
+.podDot      { fill: rgba(74, 144, 226, 0.9); }
+.podDotEmpty { fill: rgba(255, 255, 255, 0.10); }
+
+// Pod usage mini-bar (bottom edge of every chip)
+.podBarTrack { fill: rgba(255, 255, 255, 0.08); }
+.podBarFill  { fill: $accent; }
+.podBarText  {
+  fill: $text-secondary;
+  font-size: 9px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  pointer-events: none;
+}
+
+.statusDot     { pointer-events: none; }
+.statusDotRing { fill: rgba(0, 0, 0, 0.55); }
+
+// ── Side legend (interactive group list) ────────────────────────────────────
+
+.legendCard {
+  background: $bg-card;
+  border: 1px solid $border-soft;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+  max-height: 720px;
+}
+
+.legendTitle {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $text-secondary;
+  margin: 4px 4px 8px;
+}
+
+.legendRow {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: $text-primary;
+  transition: background 0.12s, border-color 0.12s;
+  border: 1px solid transparent;
+}
+.legendRow:hover {
+  background: rgba(255,255,255,0.03);
+}
+.legendRowActive {
+  background: rgba(0, 167, 160, 0.10);
+  border-color: $accent-soft;
+}
+
+.legendDot     { width: 10px; height: 10px; border-radius: 3px; }
+.legendName    { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legendCount   {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: $text-secondary;
+}
+
+.legendStatusBar {
+  grid-column: 2 / span 2;
+  display: flex;
+  height: 3px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.05);
+  margin-top: 4px;
+}
+.legendStatusSegment { height: 100%; }
+
+// ── Tooltip ─────────────────────────────────────────────────────────────────
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(14, 26, 43, 0.97);
+  border: 1px solid $border-mid;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.6);
+  color: $text-primary;
+  font-size: 12px;
+  min-width: 200px;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+// ── Empty state ─────────────────────────────────────────────────────────────
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: $text-secondary;
+  font-size: 14px;
+  font-style: italic;
+}

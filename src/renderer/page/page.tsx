@@ -25,7 +25,7 @@ import { getKubeEventStore, fetchAllNamespaceEvents } from "../k8s/core/karpente
 import { getCrdStore } from "../k8s/core/crd";
 import { ScalingDecisions } from "../components/ScalingDecisions/ScalingDecisions";
 import { NodeClassesTab } from "../components/NodeClassesTab/NodeClassesTab";
-import { ClusterPieView } from "../components/ClusterPieView/ClusterPieView";
+import { Topology } from "../components/Topology/Topology";
 import { KarpenterPageLoading } from "../components/shared/LoadingSkeleton";
 import { getNodeStatus, getInstanceType } from "../utils/kube-helpers";
 import type { CondStatus } from "../utils/kube-helpers";
@@ -37,7 +37,7 @@ const {
 interface KarpenterDashboardState {
   nodePools: NodePool[];
   data: number[];
-  activeTab: "cluster" | "overview" | "nodeclasses" | "scaling";
+  activeTab: "topology" | "overview" | "nodeclasses" | "scaling";
   search: string;
   /** undefined = still loading, null = not installed, string = version */
   karpenterVersion: string | null | undefined;
@@ -56,7 +56,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
   public readonly state: Readonly<KarpenterDashboardState> = {
     nodePools: [],
     data: [],
-    activeTab: "cluster",
+    activeTab: "overview",
     search: "",
     karpenterVersion: undefined,
   };
@@ -261,11 +261,11 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
       ? nodeClaimStore.items.filter(isClaimingNodeClaim)
       : [];
 
-    const tabs: { id: "cluster" | "overview" | "nodeclasses" | "scaling"; label: string }[] = [
-      { id: "cluster",    label: "Cluster View" },
-      { id: "overview",   label: "Overview" },
+    const tabs: { id: "topology" | "overview" | "nodeclasses" | "scaling"; label: string }[] = [
+      { id: "overview",    label: "Overview" },
+      { id: "topology",    label: "Topology" },
       { id: "nodeclasses", label: "Node Classes" },
-      { id: "scaling",    label: "Scaling Decisions" },
+      { id: "scaling",     label: "Scaling Decisions" },
     ];
 
     return (
@@ -320,10 +320,12 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
 
           {/* ── Tab content ── */}
           <div className={style.fluxContent}>
-            {activeTab === "cluster" && (
-              <ClusterPieView
+            {activeTab === "topology" && (
+              <Topology
                 nodePools={nodePoolStore.items}
                 allNodes={nodeStore.items}
+                filterText={search}
+                onFilterChange={(name) => this.setState({ search: name })}
               />
             )}
             {activeTab === "overview" && (
