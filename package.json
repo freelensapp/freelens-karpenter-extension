@@ -31,7 +31,7 @@
     "biome:check": "corepack pnpm biome check",
     "biome:fix": "corepack pnpm biome check --fix",
     "biome:migrate": "corepack pnpm biome migrate --write",
-    "prebuild": "corepack pnpm typecheck",
+    "prebuild": "corepack pnpm type:check",
     "build": "electron-vite build",
     "build:production": "VITE_PRESERVE_MODULES=false electron-vite build",
     "bump-version": "corepack pnpm version --no-commit-hooks --no-git-tag-version",
