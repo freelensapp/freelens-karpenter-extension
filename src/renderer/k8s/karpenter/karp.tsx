@@ -8,7 +8,7 @@ import styleInline from "./karp.scss?inline";
 import { NodePool, getNodePoolStore } from "./store";
 
 const {
-  Component: { KubeObjectListLayout},
+  Component: { KubeObjectListLayout },
 } = Renderer;
 
 enum sortBy {
@@ -33,12 +33,9 @@ export class KarpenterNodePools extends React.Component<{ extension: Renderer.Le
           }}
           searchFilters={[(nodePool: NodePool) => nodePool.getSearchFields()]}
           renderHeaderTitle="Node Pools"
-          renderTableHeader={[
-            { title: "Name", className: "name", sortBy: sortBy.name },
-          ]}
+          renderTableHeader={[{ title: "Name", className: "name", sortBy: sortBy.name }]}
           renderTableContents={(nodepool: NodePool) => {
             const tooltipId = `nodepool-${nodepool.getId()}`;
-
 
             return [
               <>

@@ -4,8 +4,20 @@
   "entry": ["out/{main,preload}/index.js!", "src/main/index.ts", "src/renderer/index.tsx"],
   "project": ["*.{js,mjs,ts}", "out/**/*.js!", "src/**/*.{ts,tsx}"],
 
-  "ignoreBinaries": ["build:.*"],
-  "ignoreDependencies": [],
+  "ignoreBinaries": ["build:.*", "electron-rebuild"],
+  "ignoreDependencies": [
+    // used as vite plugin
+    "@babel/plugin-proposal-decorators",
+    // provided by the application
+    "@freelensapp/extensions",
+    // currently reported as unused by Knip production scan in this extension setup
+    "@ogre-tools/injectable",
+    "@types/d3",
+    "d3",
+    "mobx",
+    "mobx-react",
+    "moment"
+  ],
 
   "typescript": {
     "config": ["tsconfig.json"]

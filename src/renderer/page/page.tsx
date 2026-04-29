@@ -6,29 +6,24 @@ import React from "react";
 // must be named `*.module.scss` for the default export to work
 import style from "./page.module.scss";
 
-// must be `?inline` for explicit CSS to use in `<style>` tag
-import styleInline from "./page.module.scss?inline";
-import { NodePool, getNodePoolStore } from "../k8s/karpenter/store";
-import {
-  NodeClaim,
-  getNodeClaimStore,
-  isClaimingNodeClaim,
-  getNodeClaimPoolName,
-} from "../k8s/karpenter/store";
 import { observer } from "mobx-react";
-import { PieChart } from "../components/PieChart/pie-chart";
 import { KarpenterCard } from "../components/KarpenterCard/KarpenterCard";
-import { getNodeStore } from "../k8s/core/node-store";
-import { getEC2NodeClassStore } from "../k8s/karpenter/ec2nodeclass-store";
-import { getAKSNodeClassStore } from "../k8s/karpenter/aksNodeclass-store";
-import { getKubeEventStore, fetchAllNamespaceEvents } from "../k8s/core/karpenter-events-store";
-import { getCrdStore } from "../k8s/core/crd";
-import { ScalingDecisions } from "../components/ScalingDecisions/ScalingDecisions";
 import { NodeClassesTab } from "../components/NodeClassesTab/NodeClassesTab";
+import { PieChart } from "../components/PieChart/pie-chart";
+import { ScalingDecisions } from "../components/ScalingDecisions/ScalingDecisions";
 import { Topology } from "../components/Topology/Topology";
 import { KarpenterPageLoading } from "../components/shared/LoadingSkeleton";
-import { getNodeStatus, getInstanceType } from "../utils/kube-helpers";
+import { getCrdStore } from "../k8s/core/crd";
+import { fetchAllNamespaceEvents, getKubeEventStore } from "../k8s/core/karpenter-events-store";
+import { getNodeStore } from "../k8s/core/node-store";
+import { getAKSNodeClassStore } from "../k8s/karpenter/aksNodeclass-store";
+import { getEC2NodeClassStore } from "../k8s/karpenter/ec2nodeclass-store";
+import { NodePool, getNodePoolStore } from "../k8s/karpenter/store";
+import { NodeClaim, getNodeClaimPoolName, getNodeClaimStore, isClaimingNodeClaim } from "../k8s/karpenter/store";
+import { getInstanceType, getNodeStatus } from "../utils/kube-helpers";
 import type { CondStatus } from "../utils/kube-helpers";
+// must be `?inline` for explicit CSS to use in `<style>` tag
+import styleInline from "./page.module.scss?inline";
 
 const {
   // KubeObjectListLayout kept for potential future use
@@ -44,7 +39,10 @@ interface KarpenterDashboardState {
 }
 
 @observer
-export class KarpenterDashboard extends React.Component<{ extension: Renderer.LensExtension }, KarpenterDashboardState> {
+export class KarpenterDashboard extends React.Component<
+  { extension: Renderer.LensExtension },
+  KarpenterDashboardState
+> {
   private readonly watches: (() => void)[] = [];
   private readonly abortController = new AbortController();
   private nodePoolStore?: ReturnType<typeof getNodePoolStore>;
@@ -83,9 +81,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
       const crdStore = getCrdStore();
       await crdStore.loadAll({ onLoadFailure: () => undefined });
       // Look for nodepools.karpenter.sh CRD — presence confirms Karpenter is installed
-      const crd = crdStore.items.find(
-        (c) => (c as any).metadata?.name === "nodepools.karpenter.sh"
-      );
+      const crd = crdStore.items.find((c) => (c as any).metadata?.name === "nodepools.karpenter.sh");
       if (!crd) {
         this.setState({ karpenterVersion: null });
         return;
@@ -98,16 +94,14 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
       this.aksNodeClassStore = getAKSNodeClassStore();
       this.kubeEventStore = getKubeEventStore();
 
-      await Promise.all([
-        this.nodePoolStore,
-        this.nodeStore,
-        this.nodeClaimStore,
-        this.ec2NodeClassStore,
-        this.aksNodeClassStore,
-      ].filter((store): store is NonNullable<typeof store> => Boolean(store)).map(async (store) => {
-        await store.loadAll({ onLoadFailure: () => undefined });
-        this.watches.push(store.subscribe());
-      }));
+      await Promise.all(
+        [this.nodePoolStore, this.nodeStore, this.nodeClaimStore, this.ec2NodeClassStore, this.aksNodeClassStore]
+          .filter((store): store is NonNullable<typeof store> => Boolean(store))
+          .map(async (store) => {
+            await store.loadAll({ onLoadFailure: () => undefined });
+            this.watches.push(store.subscribe());
+          }),
+      );
 
       // Load events explicitly from Karpenter namespaces (events live in "default"),
       // then keep watching. fetchAllNamespaceEvents calls loadAll({namespaces:[...]}) internally.
@@ -116,9 +110,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
 
       // 1️⃣ Try to read the karpenter-controller Deployment image tag
       //    (the most reliable source of the real semver, e.g. "1.9.0")
-      const version = await this.fetchVersionFromDeployment() ??
-        this.extractVersionFromCrd(crd) ??
-        "installed";
+      const version = (await this.fetchVersionFromDeployment()) ?? this.extractVersionFromCrd(crd) ?? "installed";
 
       this.setState({ karpenterVersion: version });
     } catch {
@@ -144,7 +136,7 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
     const namespaces = ["karpenter", "karpenter-system"];
     for (const ns of namespaces) {
       try {
-        const items: any[] = await deploymentApi.list({ namespace: ns }).catch(() => null) ?? [];
+        const items: any[] = (await deploymentApi.list({ namespace: ns }).catch(() => null)) ?? [];
         if (!Array.isArray(items)) continue;
         for (const dep of items) {
           // Only look at deployments that are likely karpenter-controller
@@ -186,7 +178,8 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
       annotations["karpenter.sh/version"] ||
       annotations["app.kubernetes.io/version"] ||
       labels["app.kubernetes.io/version"] ||
-      labels["karpenter.sh/version"] || "";
+      labels["karpenter.sh/version"] ||
+      "";
     if (!raw) return null;
     // Strip leading "v" if present (e.g. "v1.9.0" → "1.9.0")
     return raw.replace(/^v/, "");
@@ -201,8 +194,26 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
         <>
           <style>{styleInline}</style>
           <Renderer.Component.TabLayout scrollable={false} contentClass={style.tabContent}>
-            <div style={{ display: "flex", borderBottom: "1px solid var(--borderColor, #2d2d2d)", marginBottom: 0, flexShrink: 0 }}>
-              <button style={{ padding: "10px 22px", background: "none", border: "none", borderBottom: "2px solid #00a7e1", color: "var(--textColorPrimary, #fff)", cursor: "default", fontSize: 14, fontWeight: 600 }}>
+            <div
+              style={{
+                display: "flex",
+                borderBottom: "1px solid var(--borderColor, #2d2d2d)",
+                marginBottom: 0,
+                flexShrink: 0,
+              }}
+            >
+              <button
+                style={{
+                  padding: "10px 22px",
+                  background: "none",
+                  border: "none",
+                  borderBottom: "2px solid #00a7e1",
+                  color: "var(--textColorPrimary, #fff)",
+                  cursor: "default",
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
                 Overview
               </button>
             </div>
@@ -215,10 +226,15 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
                 </p>
                 <p className={style.karpenterNotInstalledMsg}>
                   Install Karpenter to manage autoscaling node pools. See the{" "}
-                  <a href="https://karpenter.sh/docs/getting-started/" target="_blank" rel="noreferrer" style={{ color: "#00a7e1" }}>
+                  <a
+                    href="https://karpenter.sh/docs/getting-started/"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: "#00a7e1" }}
+                  >
                     official documentation
-                  </a>
-                  {" "}for setup instructions.
+                  </a>{" "}
+                  for setup instructions.
                 </p>
               </div>
             </div>
@@ -245,9 +261,9 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
     const nodeClaimStore = this.nodeClaimStore;
     const getNodePoolsWithNodes = () => {
       return nodePoolStore.items
-        .map(nodePool => {
+        .map((nodePool) => {
           const nodes = nodeStore.items.filter(
-            node => node.metadata?.labels?.["karpenter.sh/nodepool"] === nodePool.metadata?.name
+            (node) => node.metadata?.labels?.["karpenter.sh/nodepool"] === nodePool.metadata?.name,
           );
           return { nodePool, nodes };
         })
@@ -257,15 +273,13 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
     const nodePoolsWithNodes = getNodePoolsWithNodes();
 
     // NodeClaims that have been launched but not yet bound to a Node
-    const claimingClaims: NodeClaim[] = nodeClaimStore
-      ? nodeClaimStore.items.filter(isClaimingNodeClaim)
-      : [];
+    const claimingClaims: NodeClaim[] = nodeClaimStore ? nodeClaimStore.items.filter(isClaimingNodeClaim) : [];
 
     const tabs: { id: "topology" | "overview" | "nodeclasses" | "scaling"; label: string }[] = [
-      { id: "overview",    label: "Overview" },
-      { id: "topology",    label: "Topology" },
+      { id: "overview", label: "Overview" },
+      { id: "topology", label: "Topology" },
       { id: "nodeclasses", label: "Node Classes" },
-      { id: "scaling",     label: "Scaling Decisions" },
+      { id: "scaling", label: "Scaling Decisions" },
     ];
 
     return (
@@ -273,14 +287,16 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
         <style>{styleInline}</style>
         <Renderer.Component.TabLayout scrollable={false} contentClass={style.tabContent}>
           {/* ── Tab bar ── */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            borderBottom: "1px solid var(--borderColor, #2d2d2d)",
-            marginBottom: 0,
-            flexShrink: 0,
-          }}>
-            {tabs.map(tab => (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              borderBottom: "1px solid var(--borderColor, #2d2d2d)",
+              marginBottom: 0,
+              flexShrink: 0,
+            }}
+          >
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => this.setState({ activeTab: tab.id })}
@@ -301,18 +317,20 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
             ))}
             {/* Karpenter version badge */}
             {karpenterVersion && karpenterVersion !== undefined && (
-              <span style={{
-                marginLeft: "auto",
-                marginRight: 16,
-                padding: "2px 10px",
-                borderRadius: 12,
-                background: "var(--borderColor, #2a2a36)",
-                color: "#00a7e1",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.04em",
-                border: "1px solid #00a7e133",
-              }}>
+              <span
+                style={{
+                  marginLeft: "auto",
+                  marginRight: 16,
+                  padding: "2px 10px",
+                  borderRadius: 12,
+                  background: "var(--borderColor, #2a2a36)",
+                  color: "#00a7e1",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: "0.04em",
+                  border: "1px solid #00a7e133",
+                }}
+              >
                 Karpenter {karpenterVersion}
               </span>
             )}
@@ -333,15 +351,13 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
                 {renderLimits(nodePoolsWithNodes, nodeStore.items, claimingClaims, search, (name) => {
                   this.setState({ search: name });
                 })}
-                {renderBody2(nodePoolStore, nodeStore, nodeClaimStore, search, (name) => this.setState({ search: name }))}
+                {renderBody2(nodePoolStore, nodeStore, nodeClaimStore, search, (name) =>
+                  this.setState({ search: name }),
+                )}
               </>
             )}
-            {activeTab === "nodeclasses" && (
-              <NodeClassesTab />
-            )}
-            {activeTab === "scaling" && (
-              <ScalingDecisions />
-            )}
+            {activeTab === "nodeclasses" && <NodeClassesTab />}
+            {activeTab === "scaling" && <ScalingDecisions />}
           </div>
         </Renderer.Component.TabLayout>
       </>
@@ -349,19 +365,31 @@ export class KarpenterDashboard extends React.Component<{ extension: Renderer.Le
   }
 }
 
-const renderLimits = (nodePoolsWithNodes: any[], nodes: any[], claimingClaims: NodeClaim[], search: string, onPoolClick: (name: string) => void) => {
+const renderLimits = (
+  nodePoolsWithNodes: any[],
+  nodes: any[],
+  claimingClaims: NodeClaim[],
+  search: string,
+  onPoolClick: (name: string) => void,
+) => {
   return (
     <div style={{ marginBottom: 16 }}>
       {getOverwiewChart(nodePoolsWithNodes, nodes, claimingClaims, search, onPoolClick)}
     </div>
   );
-}
+};
 
-function getOverwiewChart(nodePoolsWithNodes: any[], nodes: any[], claimingClaims: NodeClaim[], search: string, onPoolClick: (name: string) => void) {
+function getOverwiewChart(
+  nodePoolsWithNodes: any[],
+  nodes: any[],
+  claimingClaims: NodeClaim[],
+  search: string,
+  onPoolClick: (name: string) => void,
+) {
   const limits = {
     cpu: "1000m",
-    memory: "2000m"
-  }
+    memory: "2000m",
+  };
   // Build per-pool claiming counts (claims with no Node yet, grouped by NodePool label)
   const claimingByPool: Record<string, number> = {};
   for (const c of claimingClaims) {
@@ -371,7 +399,7 @@ function getOverwiewChart(nodePoolsWithNodes: any[], nodes: any[], claimingClaim
   return (
     <div className="row">
       <PieChart
-        title={'Overview'}
+        title={"Overview"}
         objects={nodePoolsWithNodes}
         nodes={nodes}
         limits={limits}
@@ -389,11 +417,11 @@ function getOverwiewChart(nodePoolsWithNodes: any[], nodes: any[], claimingClaim
 // ── Filter helpers ────────────────────────────────────────────────────────────
 
 const STATUS_QUICK_FILTERS: { status: CondStatus; label: string; color: string }[] = [
-  { status: "Ready",        label: "Ready",        color: "#48c78e" },
+  { status: "Ready", label: "Ready", color: "#48c78e" },
   { status: "Provisioning", label: "Provisioning", color: "#ffc107" },
-  { status: "Claiming",     label: "Claiming",     color: "#5ad1fc" },
-  { status: "Terminating",  label: "Terminating",  color: "#ff7043" },
-  { status: "NotReady",     label: "Not Ready",    color: "#f14668" },
+  { status: "Claiming", label: "Claiming", color: "#5ad1fc" },
+  { status: "Terminating", label: "Terminating", color: "#ff7043" },
+  { status: "NotReady", label: "Not Ready", color: "#f14668" },
 ];
 
 /**
@@ -455,10 +483,7 @@ function nodePoolMatchesFilter(
   }
 
   // status: token or quick-filter chips
-  const allStatusFilters = [
-    ...statusTokens,
-    ...quickStatuses.map((s) => s.toLowerCase()),
-  ];
+  const allStatusFilters = [...statusTokens, ...quickStatuses.map((s) => s.toLowerCase())];
   if (allStatusFilters.length > 0) {
     const hasMatchingNode = nodes.some((node: any) => {
       const s = getNodeStatus(node).toLowerCase();
@@ -466,8 +491,7 @@ function nodePoolMatchesFilter(
     });
     // Claiming status matches against pending NodeClaims (no node bound yet)
     const hasMatchingClaim =
-      allStatusFilters.some((f) => "claiming".includes(f) || f.includes("claiming")) &&
-      claims.length > 0;
+      allStatusFilters.some((f) => "claiming".includes(f) || f.includes("claiming")) && claims.length > 0;
     if (!hasMatchingNode && !hasMatchingClaim) return false;
   }
 
@@ -485,7 +509,13 @@ function nodePoolMatchesFilter(
 
 // ── NodePool list ─────────────────────────────────────────────────────────────
 
-const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStore?: any; search: string; setSearch: (v: string) => void }> = observer(({ nodePoolStore, nodeStore, nodeClaimStore, search, setSearch }) => {
+const NodePoolList: React.FC<{
+  nodePoolStore: any;
+  nodeStore: any;
+  nodeClaimStore?: any;
+  search: string;
+  setSearch: (v: string) => void;
+}> = observer(({ nodePoolStore, nodeStore, nodeClaimStore, search, setSearch }) => {
   const [showEmpty, setShowEmpty] = React.useState(false);
   const [quickStatuses, setQuickStatuses] = React.useState<CondStatus[]>([]);
 
@@ -494,9 +524,7 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStor
   const { statusTokens, typeTokens, poolStatusTokens, nameTerms } = parseSearchTokens(search);
 
   const toggleQuickStatus = (s: CondStatus) =>
-    setQuickStatuses((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
+    setQuickStatuses((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
 
   // All NodeClaims that haven't yet been bound to a Node — grouped by pool below
   const claimingClaims: NodeClaim[] = nodeClaimStore
@@ -516,10 +544,19 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStor
 
   const allFiltered = allNodePools.filter((np: NodePool) => {
     const nodes = nodeStore.items.filter(
-      (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === np.metadata?.name
+      (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === np.metadata?.name,
     );
     const claims = claimsByPool[np.metadata?.name ?? ""] ?? [];
-    return nodePoolMatchesFilter(np, nodes, nameTerms, statusTokens, typeTokens, quickStatuses, poolStatusTokens, claims);
+    return nodePoolMatchesFilter(
+      np,
+      nodes,
+      nameTerms,
+      statusTokens,
+      typeTokens,
+      quickStatuses,
+      poolStatusTokens,
+      claims,
+    );
   });
 
   const nodePools = showEmpty
@@ -527,7 +564,7 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStor
     : allFiltered.filter((np: NodePool) => {
         const poolName = np.metadata?.name ?? "";
         const nodeCount = nodeStore.items.filter(
-          (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName
+          (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName,
         ).length;
         // Keep pools that have either nodes OR claiming NodeClaims
         return nodeCount > 0 || (claimsByPool[poolName]?.length ?? 0) > 0;
@@ -536,7 +573,7 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStor
   const emptyCount = allNodePools.filter((np: NodePool) => {
     const poolName = np.metadata?.name ?? "";
     const nodeCount = nodeStore.items.filter(
-      (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName
+      (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName,
     ).length;
     return nodeCount === 0 && (claimsByPool[poolName]?.length ?? 0) === 0;
   }).length;
@@ -557,10 +594,12 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStor
             type="text"
             placeholder="Filter… (name, status:ready, type:m5.xlarge)"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
           {search.trim() && (
-            <button className={style.nodePoolSearchClear} onClick={() => setSearch("")} title="Clear">✕</button>
+            <button className={style.nodePoolSearchClear} onClick={() => setSearch("")} title="Clear">
+              ✕
+            </button>
           )}
         </div>
 
@@ -584,7 +623,7 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStor
 
         {emptyCount > 0 && (
           <button
-            onClick={() => setShowEmpty(v => !v)}
+            onClick={() => setShowEmpty((v) => !v)}
             className={`${style.nodePoolEmptyBtn}${showEmpty ? ` ${style.nodePoolEmptyBtnActive}` : ""}`}
             title={showEmpty ? "Hide NodePools with no nodes" : "Show NodePools with no nodes"}
           >
@@ -596,25 +635,18 @@ const NodePoolList: React.FC<{ nodePoolStore: any; nodeStore: any; nodeClaimStor
       {nodePools.map((nodePool: NodePool) => {
         const poolName = nodePool.metadata?.name ?? "";
         const nodes = nodeStore.items.filter(
-          (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName
+          (node: any) => node.metadata?.labels?.["karpenter.sh/nodepool"] === poolName,
         );
         const claims = claimsByPool[poolName] ?? [];
         return (
           <div key={nodePool.metadata?.uid ?? nodePool.metadata?.name} className={style.nodePoolRow}>
-            <KarpenterCard
-              nodePool={nodePool}
-              nodes={nodes}
-              claims={claims}
-              nodeStore={nodeStore}
-            />
+            <KarpenterCard nodePool={nodePool} nodes={nodes} claims={claims} nodeStore={nodeStore} />
           </div>
         );
       })}
 
       {nodePools.length === 0 && hasActiveFilter && (
-        <div className={style.noResults}>
-          No NodePools match the current filters.
-        </div>
+        <div className={style.noResults}>No NodePools match the current filters.</div>
       )}
     </div>
   );
@@ -626,7 +658,15 @@ const renderBody2 = (
   nodeClaimStore: any,
   search: string,
   setSearch: (v: string) => void,
-) => <NodePoolList nodePoolStore={nodePoolStore} nodeStore={nodeStore} nodeClaimStore={nodeClaimStore} search={search} setSearch={setSearch} />;
+) => (
+  <NodePoolList
+    nodePoolStore={nodePoolStore}
+    nodeStore={nodeStore}
+    nodeClaimStore={nodeClaimStore}
+    search={search}
+    setSearch={setSearch}
+  />
+);
 /*
 const renderBody = (nodePoolsWithNodes: any[]) => {
   // Split nodePoolsWithNodes in chunks of 2

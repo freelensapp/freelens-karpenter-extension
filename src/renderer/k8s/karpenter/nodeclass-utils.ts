@@ -8,22 +8,22 @@
  */
 
 import { Renderer } from "@freelensapp/extensions";
-import { getEC2NodeClassStore } from "./ec2nodeclass-store";
 import { getAKSNodeClassStore } from "./aksNodeclass-store";
+import { getEC2NodeClassStore } from "./ec2nodeclass-store";
 
 export type NodeClassProvider = "aws" | "azure" | "unknown";
 
 /** API base paths per provider */
 export const NODE_CLASS_API: Record<NodeClassProvider, string> = {
-  aws:     "/apis/karpenter.k8s.aws/v1/ec2nodeclasses",
-  azure:   "/apis/karpenter.azure.com/v1alpha2/aksnodeclasses",
+  aws: "/apis/karpenter.k8s.aws/v1/ec2nodeclasses",
+  azure: "/apis/karpenter.azure.com/v1alpha2/aksnodeclasses",
   unknown: "",
 };
 
 /** The kind string as it appears in nodeClassRef.kind */
 export const NODE_CLASS_KIND: Record<NodeClassProvider, string> = {
-  aws:     "EC2NodeClass",
-  azure:   "AKSNodeClass",
+  aws: "EC2NodeClass",
+  azure: "AKSNodeClass",
   unknown: "NodeClass",
 };
 
@@ -59,8 +59,8 @@ function guessFromStores(): NodeClassProvider {
  * The route is /crd/:group/:name (plural resource name).
  */
 const NODE_CLASS_LIST_PATH: Record<NodeClassProvider, string> = {
-  aws:     "/crd/karpenter.k8s.aws/ec2nodeclasses",
-  azure:   "/crd/karpenter.azure.com/aksnodeclasses",
+  aws: "/crd/karpenter.k8s.aws/ec2nodeclasses",
+  azure: "/crd/karpenter.azure.com/aksnodeclasses",
   unknown: "/crd/definitions",
 };
 
@@ -76,9 +76,7 @@ export function openNodeClassDetail(name: string, provider: NodeClassProvider): 
   if (!selfLink) return;
   const listPath = NODE_CLASS_LIST_PATH[provider];
   const enc = encodeURIComponent(selfLink);
-  (Renderer.Navigation as any).navigate(
-    `${listPath}?kube-details=${enc}&kube-selected=${enc}`
-  );
+  (Renderer.Navigation as any).navigate(`${listPath}?kube-details=${enc}&kube-selected=${enc}`);
 }
 
 /** Return items from the correct store */
@@ -86,23 +84,18 @@ export function getNodeClassItems(provider: NodeClassProvider): any[] {
   const ec2NodeClassStore = getEC2NodeClassStore();
   const aksNodeClassStore = getAKSNodeClassStore();
   if (provider === "azure") return (aksNodeClassStore?.items ?? []) as any[];
-  if (provider === "aws")   return (ec2NodeClassStore?.items ?? []) as any[];
+  if (provider === "aws") return (ec2NodeClassStore?.items ?? []) as any[];
   // Unknown: try both
-  const items = [
-    ...(ec2NodeClassStore?.items ?? []),
-    ...(aksNodeClassStore?.items ?? []),
-  ] as any[];
+  const items = [...(ec2NodeClassStore?.items ?? []), ...(aksNodeClassStore?.items ?? [])] as any[];
   return items;
 }
 
 /** Load all node class stores */
 export function loadAllNodeClassStores(): Promise<void[]> {
-  const stores = [getEC2NodeClassStore(), getAKSNodeClassStore()].filter(
-    (store): store is NonNullable<typeof store> => Boolean(store),
+  const stores = [getEC2NodeClassStore(), getAKSNodeClassStore()].filter((store): store is NonNullable<typeof store> =>
+    Boolean(store),
   );
-  return Promise.all([
-    ...stores.map((store) => store.loadAll().catch(() => undefined)),
-  ]) as Promise<void[]>;
+  return Promise.all([...stores.map((store) => store.loadAll().catch(() => undefined))]) as Promise<void[]>;
 }
 
 /** Subscribe to all node class stores */
@@ -110,7 +103,15 @@ export function subscribeAllNodeClassStores(): (() => void)[] {
   const unsubs: (() => void)[] = [];
   const ec2NodeClassStore = getEC2NodeClassStore();
   const aksNodeClassStore = getAKSNodeClassStore();
-  try { if (ec2NodeClassStore) unsubs.push(ec2NodeClassStore.subscribe()); } catch { /* not available */ }
-  try { if (aksNodeClassStore) unsubs.push(aksNodeClassStore.subscribe()); } catch { /* not available */ }
+  try {
+    if (ec2NodeClassStore) unsubs.push(ec2NodeClassStore.subscribe());
+  } catch {
+    /* not available */
+  }
+  try {
+    if (aksNodeClassStore) unsubs.push(aksNodeClassStore.subscribe());
+  } catch {
+    /* not available */
+  }
   return unsubs;
 }

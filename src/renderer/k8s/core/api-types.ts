@@ -44,7 +44,10 @@ export interface KubeObjectConstructorData {
   readonly apiBase?: string;
 }
 
-export type KubeObjectConstructor<K extends Renderer.K8sApi.KubeObject, Data> = (new (data: Data) => K) & KubeObjectConstructorData;
+export type KubeObjectConstructor<K extends Renderer.K8sApi.KubeObject, Data> = (new (
+  data: Data,
+) => K) &
+  KubeObjectConstructorData;
 
 export interface OwnerReference {
   apiVersion: string;

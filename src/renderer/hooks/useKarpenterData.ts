@@ -8,9 +8,14 @@
  * - Caches event fetch results (via karpenter-events-store TTL)
  */
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type RawKubeEvent,
+  fetchAllNamespaceEvents,
+  getCachedAllNamespaceEvents,
+  getKubeEventStore,
+} from "../k8s/core/karpenter-events-store";
 import { type Node } from "../k8s/core/node-store";
-import { type RawKubeEvent, fetchAllNamespaceEvents, getCachedAllNamespaceEvents, getKubeEventStore } from "../k8s/core/karpenter-events-store";
 import { buildPodCountMap, getInstanceType } from "../utils/kube-helpers";
 
 // ── Pod count map cache (per-render, shared across all cards) ─────────────────
@@ -50,7 +55,9 @@ export function useKarpenterCardData(nodes: Node[]): KarpenterCardData {
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   const podCountMap = useMemo(() => getPodCountMap(), [nodes.length]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -63,7 +70,7 @@ export function useKarpenterCardData(nodes: Node[]): KarpenterCardData {
         return acc;
       }, {}),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodes.length, nodes.map((n) => n.metadata?.name).join(",")]
+    [nodes.length, nodes.map((n) => n.metadata?.name).join(",")],
   );
 
   const refreshEvents = useCallback(() => {
@@ -91,58 +98,65 @@ export function usePoolEvents(
   poolName: string,
   nodeNameSet: Set<string>,
   claimNameSet: Set<string>,
-  storeItemCount: number,   // pass kubeEventStore.items.length for reactivity
+  storeItemCount: number, // pass kubeEventStore.items.length for reactivity
 ): PoolEventsData {
-  const [fetchedEvents, setFetchedEvents] = useState<RawKubeEvent[]>(
-    () => getCachedAllNamespaceEvents()
-  );
+  const [fetchedEvents, setFetchedEvents] = useState<RawKubeEvent[]>(() => getCachedAllNamespaceEvents());
   const [isLoading, setIsLoading] = useState(true);
   const mountedRef = useRef(true);
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   const doFetch = useCallback(() => {
     setIsLoading(true);
-    fetchAllNamespaceEvents().then((evts) => {
-      if (!mountedRef.current) return;
-      setFetchedEvents(evts);
-      setIsLoading(false);
-    }).catch(() => {
-      if (mountedRef.current) setIsLoading(false);
-    });
+    fetchAllNamespaceEvents()
+      .then((evts) => {
+        if (!mountedRef.current) return;
+        setFetchedEvents(evts);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        if (mountedRef.current) setIsLoading(false);
+      });
   }, []); // no deps — fetchAllNamespaceEvents has internal TTL cache
 
   // Fetch once on mount / poolName change
-  useEffect(() => { doFetch(); }, [poolName]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    doFetch();
+  }, [poolName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredFetch = useMemo(
     () => filterPoolEvents(fetchedEvents, poolName, nodeNameSet, claimNameSet),
-    [fetchedEvents, poolName, nodeNameSet, claimNameSet]
+    [fetchedEvents, poolName, nodeNameSet, claimNameSet],
   );
 
   const filteredStore = useMemo(
-    () => filterPoolEvents(
-      getKubeEventStore().items.map((e) => e as unknown as RawKubeEvent),
-      poolName, nodeNameSet, claimNameSet,
-    ),
+    () =>
+      filterPoolEvents(
+        getKubeEventStore().items.map((e) => e as unknown as RawKubeEvent),
+        poolName,
+        nodeNameSet,
+        claimNameSet,
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [storeItemCount, poolName, nodeNameSet, claimNameSet]
+    [storeItemCount, poolName, nodeNameSet, claimNameSet],
   );
 
   const allMatchedEvents = useMemo(() => {
     const seen = new Set<string>();
     const merged: RawKubeEvent[] = [];
     for (const e of [...filteredFetch, ...filteredStore]) {
-      const key = (e as any).metadata?.uid
-        ?? `${e.involvedObject?.name}:${e.reason}:${e.lastTimestamp}`;
-      if (!seen.has(key)) { seen.add(key); merged.push(e); }
+      const key = (e as any).metadata?.uid ?? `${e.involvedObject?.name}:${e.reason}:${e.lastTimestamp}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push(e);
+      }
     }
-    return merged
-      .sort((a, b) => eventTs(b) - eventTs(a))
-      .slice(0, 60);
+    return merged.sort((a, b) => eventTs(b) - eventTs(a)).slice(0, 60);
   }, [filteredFetch, filteredStore]);
 
   return {
@@ -157,15 +171,13 @@ export function usePoolEvents(
 // ── Pure helpers (used by hook + card) ────────────────────────────────────────
 
 export function eventTs(e: RawKubeEvent): number {
-  return new Date(
-    e.lastTimestamp || e.eventTime || e.metadata?.creationTimestamp || 0
-  ).getTime();
+  return new Date(e.lastTimestamp || e.eventTime || e.metadata?.creationTimestamp || 0).getTime();
 }
 
 export function fmtAgo(ts: number): string {
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1)  return "<1m ago";
+  if (mins < 1) return "<1m ago";
   if (mins < 60) return `${mins}m ago`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h ago`;
@@ -182,8 +194,8 @@ export function filterPoolEvents(
     const name = e.involvedObject?.name ?? "";
     const kind = e.involvedObject?.kind ?? "";
     if (kind === "NodePool" && name === poolName) return true;
-    if ((kind === "NodeClaim" || kind === "Machine") &&
-        (claimNameSet.has(name) || name.startsWith(poolName + "-"))) return true;
+    if ((kind === "NodeClaim" || kind === "Machine") && (claimNameSet.has(name) || name.startsWith(poolName + "-")))
+      return true;
     if (kind === "Node" && nodeNameSet.has(name)) return true;
     return false;
   });

@@ -19,13 +19,13 @@
  *   - Hover a table row    → chart highlights the bucket the event falls in.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { getKubeEventStore, KubeEvent } from "../../k8s/core/karpenter-events-store";
-import { getNodePoolStore, NodePool } from "../../k8s/karpenter/store";
-import { getNodeStore, type Node } from "../../k8s/core/node-store";
-import { getNodeClaimName } from "../../utils/kube-helpers";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { COLOR, EVENT_REASON_CONFIG, EVENT_REASON_FALLBACK } from "../../config/theme";
+import { KubeEvent, getKubeEventStore } from "../../k8s/core/karpenter-events-store";
+import { type Node, getNodeStore } from "../../k8s/core/node-store";
+import { NodePool, getNodePoolStore } from "../../k8s/karpenter/store";
+import { getNodeClaimName } from "../../utils/kube-helpers";
 import { TimelineChart, type TimelinePoint, type TimelineSeries } from "./timeline-chart";
 
 import styles from "./scaling-decisions.module.scss";
@@ -46,30 +46,37 @@ function getAge(timestamp: string | undefined): string {
 
 function eventTs(event: KubeEvent): number {
   return new Date(
-    (event as any).lastTimestamp ||
-    (event as any).eventTime ||
-    event.metadata?.creationTimestamp ||
-    0
+    (event as any).lastTimestamp || (event as any).eventTime || event.metadata?.creationTimestamp || 0,
   ).getTime();
 }
 
 // ── Karpenter event classification ───────────────────────────────────────────
 
-const KARPENTER_KINDS = new Set([
-  "NodePool", "NodeClaim", "Machine",
-  "EC2NodeClass", "AKSNodeClass", "NodeClass",
-]);
+const KARPENTER_KINDS = new Set(["NodePool", "NodeClaim", "Machine", "EC2NodeClass", "AKSNodeClass", "NodeClass"]);
 
 const KARPENTER_NAMESPACES = new Set(["karpenter", "karpenter-system"]);
 
 const KARPENTER_REASONS = new Set([
-  "Provisioned", "Launched", "Registered", "Initialized",
-  "NotLaunched", "NotRegistered", "NotInitialized",
-  "Disrupted", "Disrupting", "Consolidated", "Drifted",
-  "NominatedNode", "Nominated",
-  "ScaledUp", "ScaledDown",
-  "InsufficientCapacity", "Terminating", "Terminated",
-  "FailedScheduling", "DisruptionBlocked",
+  "Provisioned",
+  "Launched",
+  "Registered",
+  "Initialized",
+  "NotLaunched",
+  "NotRegistered",
+  "NotInitialized",
+  "Disrupted",
+  "Disrupting",
+  "Consolidated",
+  "Drifted",
+  "NominatedNode",
+  "Nominated",
+  "ScaledUp",
+  "ScaledDown",
+  "InsufficientCapacity",
+  "Terminating",
+  "Terminated",
+  "FailedScheduling",
+  "DisruptionBlocked",
 ]);
 
 function isKarpenterEvent(event: KubeEvent): boolean {
@@ -114,9 +121,7 @@ function getEventNodePool(e: KubeEvent, pools: NodePool[]): string {
   // NodeClaim / Node naming convention: <pool>-<suffix>.
   // Match longest pool name first so e.g. "ml-ms-abc" is attributed to
   // "ml-ms" and not to "ml" (both would match a plain prefix check).
-  const sortedPools = [...pools].sort(
-    (a, b) => (b.metadata?.name?.length ?? 0) - (a.metadata?.name?.length ?? 0),
-  );
+  const sortedPools = [...pools].sort((a, b) => (b.metadata?.name?.length ?? 0) - (a.metadata?.name?.length ?? 0));
   for (const p of sortedPools) {
     const pn = p.metadata?.name ?? "";
     if (pn && name.startsWith(pn + "-")) return pn;
@@ -130,18 +135,18 @@ function getEventNodePool(e: KubeEvent, pools: NodePool[]): string {
 // ── Reason groups available in the legend ────────────────────────────────────
 
 const GROUP_DEFS: { key: string; label: string; color: string }[] = [
-  { key: "scale-up",   label: "Scale up",   color: COLOR.success },
+  { key: "scale-up", label: "Scale up", color: COLOR.success },
   { key: "scale-down", label: "Scale down", color: COLOR.terminating },
-  { key: "drift",      label: "Drift",      color: COLOR.warning },
-  { key: "error",      label: "Errors",     color: COLOR.danger },
-  { key: "other",      label: "Other",      color: COLOR.textSecondary },
+  { key: "drift", label: "Drift", color: COLOR.warning },
+  { key: "error", label: "Errors", color: COLOR.danger },
+  { key: "other", label: "Other", color: COLOR.textSecondary },
 ];
 
 const TIME_RANGES = [
-  { key: "1h",   label: "1h",   ms: 3600_000 },
-  { key: "6h",   label: "6h",   ms: 6 * 3600_000 },
-  { key: "24h",  label: "24h",  ms: 24 * 3600_000 },
-  { key: "all",  label: "All",  ms: Infinity },
+  { key: "1h", label: "1h", ms: 3600_000 },
+  { key: "6h", label: "6h", ms: 6 * 3600_000 },
+  { key: "24h", label: "24h", ms: 24 * 3600_000 },
+  { key: "all", label: "All", ms: Infinity },
 ];
 
 // ── Bucketing ────────────────────────────────────────────────────────────────
@@ -151,14 +156,14 @@ function pickBucketMs(rangeMs: number, eventCount: number): number {
   const target = 45;
   const raw = rangeMs / target;
   const candidates = [
-    30_000,        // 30s
-    60_000,        // 1m
-    2 * 60_000,    // 2m
-    5 * 60_000,    // 5m
-    10 * 60_000,   // 10m
-    15 * 60_000,   // 15m
-    30 * 60_000,   // 30m
-    60 * 60_000,   // 1h
+    30_000, // 30s
+    60_000, // 1m
+    2 * 60_000, // 2m
+    5 * 60_000, // 5m
+    10 * 60_000, // 10m
+    15 * 60_000, // 15m
+    30 * 60_000, // 30m
+    60 * 60_000, // 1h
     2 * 60 * 60_000,
     6 * 60 * 60_000,
     12 * 60 * 60_000,
@@ -194,9 +199,7 @@ function buildBuckets(
     slot[g] = (slot[g] ?? 0) + 1;
     buckets.set(t, slot);
   }
-  return [...buckets.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([t, counts]) => ({ t, counts }));
+  return [...buckets.entries()].sort(([a], [b]) => a - b).map(([t, counts]) => ({ t, counts }));
 }
 
 // ── Tables ───────────────────────────────────────────────────────────────────
@@ -214,7 +217,13 @@ interface DecisionTableProps {
 }
 
 const DecisionTable: React.FC<DecisionTableProps> = ({
-  title, events, isPod, highlightBucket, bucketMs, onHoverEvent, rowRefMap,
+  title,
+  events,
+  isPod,
+  highlightBucket,
+  bucketMs,
+  onHoverEvent,
+  rowRefMap,
 }) => (
   <div className={styles.tableWrapper}>
     <div className={styles.tableTitle}>
@@ -242,8 +251,7 @@ const DecisionTable: React.FC<DecisionTableProps> = ({
         )}
         {events.map((event, idx) => {
           const ts = eventTs(event);
-          const inBucket = highlightBucket != null &&
-            ts >= highlightBucket && ts < highlightBucket + bucketMs;
+          const inBucket = highlightBucket != null && ts >= highlightBucket && ts < highlightBucket + bucketMs;
           const uid = event.metadata?.uid ?? `${idx}`;
           return (
             <tr
@@ -257,15 +265,10 @@ const DecisionTable: React.FC<DecisionTableProps> = ({
               onMouseLeave={() => onHoverEvent?.(null)}
             >
               <td>
-                <span className={event.type === "Warning" ? styles.typeWarning : styles.typeNormal}>
-                  {event.type}
-                </span>
+                <span className={event.type === "Warning" ? styles.typeWarning : styles.typeNormal}>{event.type}</span>
               </td>
               <td className={styles.reasonCell}>
-                <span
-                  className={styles.reasonDot}
-                  style={{ background: getEventColor(event) }}
-                />
+                <span className={styles.reasonDot} style={{ background: getEventColor(event) }} />
                 {event.reason}
               </td>
               <td className={styles.sourceCell}>
@@ -312,18 +315,25 @@ interface MetricPanelProps {
 /** Grafana-style chart panel: header bar with title + metric tabs + optional
  *  pool selector, body with an area chart and crosshair tooltip. */
 const MetricPanel: React.FC<MetricPanelProps> = ({
-  title, subtitle, points, bucketMs,
-  enabledGroups, toggleGroup,
-  selectedBucket, onSelectBucket, externalHoverT,
-  poolName, activePool, onPoolToggle,
+  title,
+  subtitle,
+  points,
+  bucketMs,
+  enabledGroups,
+  toggleGroup,
+  selectedBucket,
+  onSelectBucket,
+  externalHoverT,
+  poolName,
+  activePool,
+  onPoolToggle,
   kind = "events",
 }) => {
   // Series: events → one per enabled group; nodes → just one "Nodes" series.
-  const visibleSeries: TimelineSeries[] = kind === "nodes"
-    ? [{ key: "nodes", label: "Nodes", color: COLOR.info }]
-    : GROUP_DEFS
-        .filter((g) => enabledGroups.has(g.key))
-        .map((g) => ({ key: g.key, label: g.label, color: g.color }));
+  const visibleSeries: TimelineSeries[] =
+    kind === "nodes"
+      ? [{ key: "nodes", label: "Nodes", color: COLOR.info }]
+      : GROUP_DEFS.filter((g) => enabledGroups.has(g.key)).map((g) => ({ key: g.key, label: g.label, color: g.color }));
 
   const isActivePool = poolName && activePool === poolName;
 
@@ -430,9 +440,7 @@ const MetricPanel: React.FC<MetricPanelProps> = ({
 export const ScalingDecisions: React.FC = observer(() => {
   const [selectedPool, setSelectedPool] = useState<string>("");
   const [rangeKey, setRangeKey] = useState<string>("6h");
-  const [enabledGroups, setEnabledGroups] = useState<Set<string>>(
-    () => new Set(GROUP_DEFS.map((g) => g.key))
-  );
+  const [enabledGroups, setEnabledGroups] = useState<Set<string>>(() => new Set(GROUP_DEFS.map((g) => g.key)));
   const [selectedBucket, setSelectedBucket] = useState<number | null>(null);
   const [hoveredTs, setHoveredTs] = useState<number | null>(null);
 
@@ -451,10 +459,7 @@ export const ScalingDecisions: React.FC = observer(() => {
   // updates) rather than `.length` — otherwise updates to existing events
   // (lastTimestamp ticking forward, label changes, …) wouldn't invalidate
   // downstream memos and the filter would silently work on stale timestamps.
-  const karpenterEvents = useMemo(
-    () => allEvents.filter(isKarpenterEvent),
-    [allEvents]
-  );
+  const karpenterEvents = useMemo(() => allEvents.filter(isKarpenterEvent), [allEvents]);
 
   // ── Group/pool annotation cache ────────────────────────────────────────────
   // Same staleness concern as above — depend on the actual arrays, not their
@@ -477,9 +482,7 @@ export const ScalingDecisions: React.FC = observer(() => {
   const range = TIME_RANGES.find((r) => r.key === rangeKey) ?? TIME_RANGES[1]!;
   const { startMs, endMs } = useMemo(() => {
     const n = Date.now();
-    const s = range.ms === Infinity
-      ? Math.min(n, ...karpenterEvents.map(eventTs).filter((t) => t > 0))
-      : n - range.ms;
+    const s = range.ms === Infinity ? Math.min(n, ...karpenterEvents.map(eventTs).filter((t) => t > 0)) : n - range.ms;
     return { startMs: s, endMs: n };
   }, [rangeKey, karpenterEvents]);
 
@@ -495,20 +498,17 @@ export const ScalingDecisions: React.FC = observer(() => {
     });
   }, [karpenterEvents, eventMeta, enabledGroups, selectedPool, startMs, endMs]);
 
-  const sortedFiltered = useMemo(
-    () => [...filteredEvents].sort((a, b) => eventTs(b) - eventTs(a)),
-    [filteredEvents]
-  );
+  const sortedFiltered = useMemo(() => [...filteredEvents].sort((a, b) => eventTs(b) - eventTs(a)), [filteredEvents]);
 
   // ── Bucketing ──────────────────────────────────────────────────────────────
   const bucketMs = useMemo(
     () => pickBucketMs(endMs - startMs, filteredEvents.length),
-    [startMs, endMs, filteredEvents.length]
+    [startMs, endMs, filteredEvents.length],
   );
 
   const globalPoints: TimelinePoint[] = useMemo(
     () => buildBuckets(filteredEvents, startMs, endMs, bucketMs, (e) => eventMeta.get(e)?.group ?? "other"),
-    [filteredEvents, startMs, endMs, bucketMs, eventMeta]
+    [filteredEvents, startMs, endMs, bucketMs, eventMeta],
   );
 
   // Per-pool sparklines: build once for *all* pools, ignoring pool filter so the
@@ -554,14 +554,14 @@ export const ScalingDecisions: React.FC = observer(() => {
   //   countAt(now)   = liveCount
   //   countAt(t)     = countAt(now) - (# +1 in (t, now]) + (# -1 in (t, now])
   //   peak(window)   = max over all bucket boundaries → reflected on Y-axis
-  const ADD_REASONS    = new Set(["Launched", "DisruptionLaunched"]);
+  const ADD_REASONS = new Set(["Launched", "DisruptionLaunched"]);
   const REMOVE_REASONS = new Set(["Terminated"]);
 
   const perPoolNodePoints = useMemo(() => {
     // 1. Live count + live claim names per pool.
     //    A node whose claim has NO Launched event in the window is a
     //    "baseline" node — it predates the window and must count throughout.
-    const liveByPool:       Record<string, number>      = {};
+    const liveByPool: Record<string, number> = {};
     const liveClaimsByPool: Record<string, Set<string>> = {};
     for (const node of allNodes) {
       const pool = (node as any).metadata?.labels?.["karpenter.sh/nodepool"];
@@ -575,7 +575,7 @@ export const ScalingDecisions: React.FC = observer(() => {
     //    remove ts. Each claim contributes at most one +1 and one -1.
     type Delta = { ts: number; delta: number };
     const deltasByPool: Record<string, Delta[]> = {};
-    const firstAdd:    Record<string, Map<string, number>> = {};
+    const firstAdd: Record<string, Map<string, number>> = {};
     const firstRemove: Record<string, Map<string, number>> = {};
 
     for (const e of karpenterEvents) {
@@ -597,8 +597,8 @@ export const ScalingDecisions: React.FC = observer(() => {
     }
     for (const pool of new Set([...Object.keys(firstAdd), ...Object.keys(firstRemove)])) {
       const arr = (deltasByPool[pool] = [] as Delta[]);
-      for (const ts of (firstAdd[pool]?.values()    ?? [])) arr.push({ ts, delta: +1 });
-      for (const ts of (firstRemove[pool]?.values() ?? [])) arr.push({ ts, delta: -1 });
+      for (const ts of firstAdd[pool]?.values() ?? []) arr.push({ ts, delta: +1 });
+      for (const ts of firstRemove[pool]?.values() ?? []) arr.push({ ts, delta: -1 });
       arr.sort((a, b) => a.ts - b.ts);
     }
 
@@ -618,8 +618,8 @@ export const ScalingDecisions: React.FC = observer(() => {
 
       // Baseline = live nodes whose claim was NOT launched in the window.
       // They've been alive throughout → add to every bucket.
-      const liveClaims    = liveClaimsByPool[pool] ?? new Set<string>();
-      const launchedSet   = firstAdd[pool] ?? new Map<string, number>();
+      const liveClaims = liveClaimsByPool[pool] ?? new Set<string>();
+      const launchedSet = firstAdd[pool] ?? new Map<string, number>();
       let baseline = 0;
       for (const c of liveClaims) if (!launchedSet.has(c)) baseline++;
 
@@ -686,8 +686,8 @@ export const ScalingDecisions: React.FC = observer(() => {
       <style>{stylesInline}</style>
       <h2 className={styles.title}>Scaling decisions</h2>
       <p className={styles.subtitle}>
-        Karpenter events grouped by reason, plotted over time. Click a bucket on the chart
-        to filter the tables; hover a row to see when it happened.
+        Karpenter events grouped by reason, plotted over time. Click a bucket on the chart to filter the tables; hover a
+        row to see when it happened.
       </p>
 
       {/* ── Filter row ─────────────────────────────────────────────────── */}
@@ -696,7 +696,10 @@ export const ScalingDecisions: React.FC = observer(() => {
         <select
           className={styles.filterSelect}
           value={selectedPool}
-          onChange={(e) => { setSelectedPool(e.target.value); setSelectedBucket(null); }}
+          onChange={(e) => {
+            setSelectedPool(e.target.value);
+            setSelectedBucket(null);
+          }}
         >
           <option value="">All NodePools ({nodePools.length})</option>
           {nodePools.map((np) => (
@@ -714,7 +717,10 @@ export const ScalingDecisions: React.FC = observer(() => {
             <button
               key={r.key}
               className={`${styles.segBtn} ${rangeKey === r.key ? styles.segBtnActive : ""}`}
-              onClick={() => { setRangeKey(r.key); setSelectedBucket(null); }}
+              onClick={() => {
+                setRangeKey(r.key);
+                setSelectedBucket(null);
+              }}
             >
               {r.label}
             </button>
@@ -741,13 +747,13 @@ export const ScalingDecisions: React.FC = observer(() => {
 
         {perPoolPoints
           .filter(({ pool, total }) => {
-            if (selectedPool) return selectedPool === pool;  // when filtering, only show that pool
+            if (selectedPool) return selectedPool === pool; // when filtering, only show that pool
             const hasNodes = (perPoolNodePoints[pool] ?? []).some((p) => (p.counts.nodes ?? 0) > 0);
             return total > 0 || hasNodes;
           })
           .map(({ pool, total }) => {
             const nodePts = perPoolNodePoints[pool] ?? [];
-            const currentNodes = nodePts.length > 0 ? nodePts[nodePts.length - 1]!.counts.nodes ?? 0 : 0;
+            const currentNodes = nodePts.length > 0 ? (nodePts[nodePts.length - 1]!.counts.nodes ?? 0) : 0;
             return (
               <MetricPanel
                 key={pool}

@@ -12,12 +12,7 @@ interface SkeletonLineProps {
 }
 
 /** Single animated skeleton line / block */
-export function SkeletonLine({
-  width = "100%",
-  height = 14,
-  borderRadius = 4,
-  style,
-}: SkeletonLineProps) {
+export function SkeletonLine({ width = "100%", height = 14, borderRadius = 4, style }: SkeletonLineProps) {
   return (
     <span
       style={{
@@ -25,7 +20,8 @@ export function SkeletonLine({
         width,
         height,
         borderRadius,
-        background: "linear-gradient(90deg, rgba(128,128,128,0.08) 25%, rgba(128,128,128,0.18) 50%, rgba(128,128,128,0.08) 75%)",
+        background:
+          "linear-gradient(90deg, rgba(128,128,128,0.08) 25%, rgba(128,128,128,0.18) 50%, rgba(128,128,128,0.08) 75%)",
         backgroundSize: "200% 100%",
         animation: `skeletonPulse ${TIMING.skeletonPulse} ease-in-out infinite`,
         ...style,
@@ -140,9 +136,7 @@ export function PageLoading({ message = "Loading...", description, preview }: Pa
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
         <Spinner size={30} />
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <strong style={{ color: "var(--textColorPrimary, #fff)", fontSize: 18, fontWeight: 700 }}>
-            {message}
-          </strong>
+          <strong style={{ color: "var(--textColorPrimary, #fff)", fontSize: 18, fontWeight: 700 }}>{message}</strong>
           {description && (
             <span style={{ color: "var(--textColorSecondary, #888)", fontSize: 13, lineHeight: 1.5 }}>
               {description}

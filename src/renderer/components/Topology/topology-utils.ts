@@ -13,36 +13,48 @@
 import { type Node } from "../../k8s/core/node-store";
 import { type NodePool } from "../../k8s/karpenter/store";
 import {
+  type CondStatus,
   getInstanceType,
-  getNodeStatus,
   getNodeMaxPods,
+  getNodeStatus,
   parseCpuCores,
   parseMemGi,
-  type CondStatus,
 } from "../../utils/kube-helpers";
 
 // ── Palettes ─────────────────────────────────────────────────────────────────
 
 export const GROUP_PALETTE = [
-  "#00a7e1", "#48c78e", "#ffc107", "#ff7043", "#ab80ff",
-  "#f06292", "#4fc3f7", "#81c784", "#ffb74d", "#ba68c8",
-  "#4dd0e1", "#aed581", "#ff8a65", "#7986cb", "#26c6da",
+  "#00a7e1",
+  "#48c78e",
+  "#ffc107",
+  "#ff7043",
+  "#ab80ff",
+  "#f06292",
+  "#4fc3f7",
+  "#81c784",
+  "#ffb74d",
+  "#ba68c8",
+  "#4dd0e1",
+  "#aed581",
+  "#ff8a65",
+  "#7986cb",
+  "#26c6da",
 ];
 export const OTHER_GROUP_COLOR = "#607d8b";
 
 export const STATUS_COLOR: Record<CondStatus, string> = {
-  Ready:        "#48c78e",
+  Ready: "#48c78e",
   Provisioning: "#ffc107",
-  Claiming:     "#5ad1fc",
-  Terminating:  "#ff7043",
-  NotReady:     "#f14668",
-  Unknown:      "#9e9e9e",
+  Claiming: "#5ad1fc",
+  Terminating: "#ff7043",
+  NotReady: "#f14668",
+  Unknown: "#9e9e9e",
 };
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type GroupBy = "pool" | "zone" | "instanceType" | "nodeClass";
-export type SizeBy  = "cpu"  | "memory" | "pods" | "equal";
+export type SizeBy = "cpu" | "memory" | "pods" | "equal";
 
 export interface NodeGroup {
   id: string;
@@ -61,11 +73,7 @@ export function getNodePoolName(node: Node): string | undefined {
 
 export function getNodeZone(node: Node): string {
   const labels: Record<string, string> = (node as any).metadata?.labels ?? {};
-  return (
-    labels["topology.kubernetes.io/zone"] ||
-    labels["failure-domain.beta.kubernetes.io/zone"] ||
-    "unknown"
-  );
+  return labels["topology.kubernetes.io/zone"] || labels["failure-domain.beta.kubernetes.io/zone"] || "unknown";
 }
 
 export function getNodeCapacityType(node: Node): "spot" | "on-demand" | "unknown" {
@@ -81,10 +89,7 @@ export function getNodeCapacityType(node: Node): "spot" | "on-demand" | "unknown
 }
 
 /** Look up the NodeClass referenced by the NodePool that owns this node. */
-export function getNodeClassRef(
-  node: Node,
-  nodePoolsByName: Map<string, NodePool>,
-): string {
+export function getNodeClassRef(node: Node, nodePoolsByName: Map<string, NodePool>): string {
   const poolName = getNodePoolName(node);
   if (!poolName) return "unknown";
   const np = nodePoolsByName.get(poolName);
@@ -95,24 +100,24 @@ export function getNodeClassRef(
 
 // ── Grouping ─────────────────────────────────────────────────────────────────
 
-export function groupNodes(
-  allNodes: Node[],
-  nodePools: NodePool[],
-  groupBy: GroupBy,
-): NodeGroup[] {
+export function groupNodes(allNodes: Node[], nodePools: NodePool[], groupBy: GroupBy): NodeGroup[] {
   const nodePoolsByName = new Map(nodePools.map((np) => [np.metadata?.name ?? "", np]));
 
   // Only show Karpenter-managed nodes here. Non-managed nodes go in "Other".
   const karpenterNodes = allNodes.filter((n) => !!getNodePoolName(n));
-  const otherNodes     = allNodes.filter((n) => !getNodePoolName(n));
+  const otherNodes = allNodes.filter((n) => !getNodePoolName(n));
 
   const buckets = new Map<string, Node[]>();
   const keyFor = (n: Node): string => {
     switch (groupBy) {
-      case "pool":         return getNodePoolName(n) ?? "unknown";
-      case "zone":         return getNodeZone(n);
-      case "instanceType": return getInstanceType(n);
-      case "nodeClass":    return getNodeClassRef(n, nodePoolsByName);
+      case "pool":
+        return getNodePoolName(n) ?? "unknown";
+      case "zone":
+        return getNodeZone(n);
+      case "instanceType":
+        return getInstanceType(n);
+      case "nodeClass":
+        return getNodeClassRef(n, nodePoolsByName);
     }
   };
 
@@ -153,10 +158,14 @@ export function groupNodes(
 
 export function nodeSize(node: Node, sizeBy: SizeBy): number {
   switch (sizeBy) {
-    case "cpu":    return parseCpuCores((node as any).status?.allocatable?.cpu ?? (node as any).status?.capacity?.cpu ?? 0) || 1;
-    case "memory": return parseMemGi  ((node as any).status?.allocatable?.memory ?? (node as any).status?.capacity?.memory ?? 0) || 1;
-    case "pods":   return getNodeMaxPods(node) || 1;
-    case "equal":  return 1;
+    case "cpu":
+      return parseCpuCores((node as any).status?.allocatable?.cpu ?? (node as any).status?.capacity?.cpu ?? 0) || 1;
+    case "memory":
+      return parseMemGi((node as any).status?.allocatable?.memory ?? (node as any).status?.capacity?.memory ?? 0) || 1;
+    case "pods":
+      return getNodeMaxPods(node) || 1;
+    case "equal":
+      return 1;
   }
 }
 
@@ -179,8 +188,15 @@ export interface TopologyKpi {
 }
 
 export function computeKpi(allNodes: Node[], nodePools: NodePool[]): TopologyKpi {
-  let karpenter = 0, ready = 0, provisioning = 0, notReady = 0, terminating = 0;
-  let cpu = 0, mem = 0, spot = 0, onDemand = 0;
+  let karpenter = 0,
+    ready = 0,
+    provisioning = 0,
+    notReady = 0,
+    terminating = 0;
+  let cpu = 0,
+    mem = 0,
+    spot = 0,
+    onDemand = 0;
   for (const n of allNodes) {
     if (getNodePoolName(n)) karpenter++;
     const s = getNodeStatus(n);
@@ -189,7 +205,7 @@ export function computeKpi(allNodes: Node[], nodePools: NodePool[]): TopologyKpi
     else if (s === "Terminating") terminating++;
     else if (s === "NotReady") notReady++;
     cpu += parseCpuCores((n as any).status?.allocatable?.cpu ?? (n as any).status?.capacity?.cpu ?? 0);
-    mem += parseMemGi  ((n as any).status?.allocatable?.memory ?? (n as any).status?.capacity?.memory ?? 0);
+    mem += parseMemGi((n as any).status?.allocatable?.memory ?? (n as any).status?.capacity?.memory ?? 0);
     const ct = getNodeCapacityType(n);
     if (ct === "spot") spot++;
     else if (ct === "on-demand") onDemand++;
@@ -198,7 +214,10 @@ export function computeKpi(allNodes: Node[], nodePools: NodePool[]): TopologyKpi
     poolCount: nodePools.length,
     totalNodes: allNodes.length,
     karpenterNodes: karpenter,
-    ready, provisioning, notReady, terminating,
+    ready,
+    provisioning,
+    notReady,
+    terminating,
     totalCpuCores: cpu,
     totalMemGi: mem,
     spotNodes: spot,
@@ -213,10 +232,21 @@ export function computeKpi(allNodes: Node[], nodePools: NodePool[]): TopologyKpi
 // Produces axis-aligned rectangles with aspect ratios close to 1.
 // Input weights are arbitrary positive numbers; output rects fill `area`.
 
-export interface Rect { x: number; y: number; w: number; h: number; }
-export interface SquarifiedItem<T> { item: T; rect: Rect; }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface SquarifiedItem<T> {
+  item: T;
+  rect: Rect;
+}
 
-interface Weighted<T> { item: T; value: number; }
+interface Weighted<T> {
+  item: T;
+  value: number;
+}
 
 export function squarify<T>(items: Weighted<T>[], area: Rect): SquarifiedItem<T>[] {
   const out: SquarifiedItem<T>[] = [];
@@ -262,7 +292,8 @@ function layoutRow<T>(items: Weighted<T>[], rect: Rect, out: SquarifiedItem<T>[]
 function worstRatio<T>(row: Weighted<T>[], shortSide: number): number {
   if (row.length === 0) return Infinity;
   const sum = row.reduce((s, r) => s + r.value, 0);
-  let max = -Infinity, min = Infinity;
+  let max = -Infinity,
+    min = Infinity;
   for (const r of row) {
     if (r.value > max) max = r.value;
     if (r.value < min) min = r.value;

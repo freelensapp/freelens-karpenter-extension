@@ -33,8 +33,6 @@ export class NodeMetrics extends KubeObject<NamespaceScopedMetadata, void, void>
   }
 }
 
-
-
 export class Node extends KubeObject {
   static readonly kind = "Node";
   static readonly namespaced = false;
@@ -70,17 +68,21 @@ export class NodeStore extends KubeObjectStore<Node, NodeApi> {
   async loadAll(): Promise<Node[] | undefined> {
     const result = await super.loadAll();
     // Load metrics in background — don't block or throw
-    this.loadUsageMetrics().then(() => {
-      this.items.forEach(node => {
-        const usage = this.usageMetrics[node.getName()];
-        if (usage) {
-          node.status = {
-            ...node.status as any,
-            usage,
-          };
-        }
+    this.loadUsageMetrics()
+      .then(() => {
+        this.items.forEach((node) => {
+          const usage = this.usageMetrics[node.getName()];
+          if (usage) {
+            node.status = {
+              ...(node.status as any),
+              usage,
+            };
+          }
+        });
+      })
+      .catch(() => {
+        /* ignore */
       });
-    }).catch(() => {/* ignore */});
     return result;
   }
 }

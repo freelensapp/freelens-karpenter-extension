@@ -69,8 +69,8 @@ export default defineConfig({
       externalizeDepsPlugin({
         // do not bundle modules provided by the host app
         include: [
-          "@freelensapp/extensions", 
-          "electron", 
+          "@freelensapp/extensions",
+          "electron",
           "react",
           "mobx",
           "mobx-react",
@@ -86,7 +86,7 @@ export default defineConfig({
         // the modules are provided by the host app as a global variable
         externals: {
           "@freelensapp/extensions": "global.LensExtensions",
-           mobx: "global.Mobx",
+          mobx: "global.Mobx",
           "mobx-react": "global.MobxReact",
           react: "global.React",
           "react-dom": "global.ReactDom",

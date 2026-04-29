@@ -95,10 +95,10 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
   }, []);
 
   // ── Layout ────────────────────────────────────────────────────────────────
-  const padL = compact ? 4  : 36;
-  const padR = compact ? 4  : 8;
-  const padT = compact ? 4  : (title ? 22 : 6);
-  const padB = compact ? 4  : (showAxis ? 22 : 6);
+  const padL = compact ? 4 : 36;
+  const padR = compact ? 4 : 8;
+  const padT = compact ? 4 : title ? 22 : 6;
+  const padB = compact ? 4 : showAxis ? 22 : 6;
   const innerW = Math.max(10, width - padL - padR);
   const innerH = Math.max(10, height - padT - padB);
 
@@ -186,7 +186,10 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
     let bestDiff = Infinity;
     for (let i = 0; i < points.length; i++) {
       const diff = Math.abs(points[i]!.t - externalHoverT);
-      if (diff < bestDiff) { bestDiff = diff; best = i; }
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        best = i;
+      }
     }
     return best >= 0 ? best : null;
   }, [externalHoverT, points]);
@@ -243,8 +246,10 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
           return (
             <g key={`y-${v}`}>
               <line
-                x1={padL} x2={padL + innerW}
-                y1={y} y2={y}
+                x1={padL}
+                x2={padL + innerW}
+                y1={y}
+                y2={y}
                 stroke={COLOR.border}
                 strokeDasharray="2 3"
                 opacity={0.5}
@@ -257,83 +262,71 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
         })}
 
         {/* Selected bucket highlight */}
-        {selectedT != null && (() => {
-          const idx = points.findIndex((p) => p.t === selectedT);
-          if (idx < 0) return null;
-          return (
-            <rect
-              x={padL + idx * colW}
-              y={padT}
-              width={colW}
-              height={innerH}
-              fill={COLOR.info}
-              opacity={0.12}
-            />
-          );
-        })()}
+        {selectedT != null &&
+          (() => {
+            const idx = points.findIndex((p) => p.t === selectedT);
+            if (idx < 0) return null;
+            return (
+              <rect x={padL + idx * colW} y={padT} width={colW} height={innerH} fill={COLOR.info} opacity={0.12} />
+            );
+          })()}
 
         {/* Stacked bars (mode = "bars") */}
-        {mode === "bars" && stacked.map((p, i) => (
-          <g key={`b-${i}`}>
-            {p.bands.map((band) => {
-              if (band.value === 0) return null;
-              const y0 = yOf(band.start);
-              const y1 = yOf(band.end);
-              return (
-                <rect
-                  key={band.key}
-                  x={xOf(i)}
-                  y={y1}
-                  width={barW}
-                  height={Math.max(1, y0 - y1)}
-                  fill={band.color}
-                  opacity={activeIdx === i ? 1 : 0.85}
-                />
-              );
-            })}
-          </g>
-        ))}
+        {mode === "bars" &&
+          stacked.map((p, i) => (
+            <g key={`b-${i}`}>
+              {p.bands.map((band) => {
+                if (band.value === 0) return null;
+                const y0 = yOf(band.start);
+                const y1 = yOf(band.end);
+                return (
+                  <rect
+                    key={band.key}
+                    x={xOf(i)}
+                    y={y1}
+                    width={barW}
+                    height={Math.max(1, y0 - y1)}
+                    fill={band.color}
+                    opacity={activeIdx === i ? 1 : 0.85}
+                  />
+                );
+              })}
+            </g>
+          ))}
 
         {/* Area + line per series (mode = "area") */}
-        {mode === "area" && series.map((s) => {
-          if (points.length === 0) return null;
-          const pts = points.map((p, i) => ({
-            x: xCenter(i),
-            y: yOf(p.counts[s.key] ?? 0),
-            v: p.counts[s.key] ?? 0,
-          }));
-          const linePath = pts
-            .map((pt, i) => `${i === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
-            .join(" ");
-          const baseY = yOf(0);
-          const areaPath =
-            `M ${pts[0]!.x} ${baseY} ` +
-            pts.map((pt) => `L ${pt.x} ${pt.y}`).join(" ") +
-            ` L ${pts[pts.length - 1]!.x} ${baseY} Z`;
-          return (
-            <g key={`area-${s.key}`}>
-              <path d={areaPath} fill={s.color} opacity={0.18} />
-              <path
-                d={linePath}
-                fill="none"
-                stroke={s.color}
-                strokeWidth={1.6}
-                opacity={0.95}
-              />
-              {/* Point dot at active index */}
-              {activeIdx != null && pts[activeIdx] && (
-                <circle
-                  cx={pts[activeIdx]!.x}
-                  cy={pts[activeIdx]!.y}
-                  r={3.5}
-                  fill={s.color}
-                  stroke="#0c0e12"
-                  strokeWidth={1.2}
-                />
-              )}
-            </g>
-          );
-        })}
+        {mode === "area" &&
+          series.map((s) => {
+            if (points.length === 0) return null;
+            const pts = points.map((p, i) => ({
+              x: xCenter(i),
+              y: yOf(p.counts[s.key] ?? 0),
+              v: p.counts[s.key] ?? 0,
+            }));
+            const linePath = pts.map((pt, i) => `${i === 0 ? "M" : "L"} ${pt.x} ${pt.y}`).join(" ");
+            const baseY = yOf(0);
+            const areaPath =
+              `M ${pts[0]!.x} ${baseY} ` +
+              pts.map((pt) => `L ${pt.x} ${pt.y}`).join(" ") +
+              ` L ${pts[pts.length - 1]!.x} ${baseY} Z`;
+            return (
+              <g key={`area-${s.key}`}>
+                <path d={areaPath} fill={s.color} opacity={0.18} />
+                <path d={linePath} fill="none" stroke={s.color} strokeWidth={1.6} opacity={0.95} />
+                {/* Point dot at active index */}
+                {activeIdx != null && pts[activeIdx] && (
+                  <circle
+                    cx={pts[activeIdx]!.x}
+                    cy={pts[activeIdx]!.y}
+                    r={3.5}
+                    fill={s.color}
+                    stroke="#0c0e12"
+                    strokeWidth={1.2}
+                  />
+                )}
+              </g>
+            );
+          })}
 
         {/* Hover/external crosshair */}
         {activeIdx != null && (
@@ -351,74 +344,84 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
         )}
 
         {/* X-axis labels */}
-        {!compact && showAxis && points.map((p, i) => {
-          if (i % xLabelStep !== 0 && i !== n - 1) return null;
-          return (
-            <text
-              key={`x-${i}`}
-              x={padL + i * colW + colW / 2}
-              y={height - 6}
-              fontSize={9}
-              textAnchor="middle"
-              fill={COLOR.textTertiary}
-            >
-              {fmtBucket(p.t, bucketMs)}
-            </text>
-          );
-        })}
+        {!compact &&
+          showAxis &&
+          points.map((p, i) => {
+            if (i % xLabelStep !== 0 && i !== n - 1) return null;
+            return (
+              <text
+                key={`x-${i}`}
+                x={padL + i * colW + colW / 2}
+                y={height - 6}
+                fontSize={9}
+                textAnchor="middle"
+                fill={COLOR.textTertiary}
+              >
+                {fmtBucket(p.t, bucketMs)}
+              </text>
+            );
+          })}
       </svg>
 
       {/* Tooltip */}
-      {activeIdx != null && !compact && (() => {
-        const p = stacked[activeIdx]!;
-        const xPx = xCenter(activeIdx);
-        // Choose left/right placement so tooltip stays inside the chart
-        const placeRight = xPx < width / 2;
-        const left = (xPx / width) * 100;
-        const tipDate = new Date(p.t);
-        const fmtTime = bucketMs >= 24 * 3600_000
-          ? tipDate.toLocaleString(undefined, { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" })
-          : tipDate.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-        return (
-          <div
-            style={{
-              position: "absolute",
-              left: `${left}%`,
-              top: padT + 6,
-              transform: placeRight ? "translateX(8px)" : "translateX(calc(-100% - 8px))",
-              background: "rgba(20, 23, 28, 0.96)",
-              border: `1px solid ${COLOR.border}`,
-              borderRadius: 4,
-              padding: "6px 10px",
-              fontSize: 11,
-              pointerEvents: "none",
-              whiteSpace: "nowrap",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
-              zIndex: 5,
-              minWidth: 140,
-            }}
-          >
-            <div style={{ color: COLOR.textSecondary, marginBottom: 4, fontFamily: "monospace" }}>
-              Time: <strong style={{ color: COLOR.textPrimary }}>{fmtTime}</strong>
+      {activeIdx != null &&
+        !compact &&
+        (() => {
+          const p = stacked[activeIdx]!;
+          const xPx = xCenter(activeIdx);
+          // Choose left/right placement so tooltip stays inside the chart
+          const placeRight = xPx < width / 2;
+          const left = (xPx / width) * 100;
+          const tipDate = new Date(p.t);
+          const fmtTime =
+            bucketMs >= 24 * 3600_000
+              ? tipDate.toLocaleString(undefined, {
+                  month: "short",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : tipDate.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+          return (
+            <div
+              style={{
+                position: "absolute",
+                left: `${left}%`,
+                top: padT + 6,
+                transform: placeRight ? "translateX(8px)" : "translateX(calc(-100% - 8px))",
+                background: "rgba(20, 23, 28, 0.96)",
+                border: `1px solid ${COLOR.border}`,
+                borderRadius: 4,
+                padding: "6px 10px",
+                fontSize: 11,
+                pointerEvents: "none",
+                whiteSpace: "nowrap",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                zIndex: 5,
+                minWidth: 140,
+              }}
+            >
+              <div style={{ color: COLOR.textSecondary, marginBottom: 4, fontFamily: "monospace" }}>
+                Time: <strong style={{ color: COLOR.textPrimary }}>{fmtTime}</strong>
+              </div>
+              {p.bands
+                .filter((b) => b.value > 0)
+                .map((b) => {
+                  const s = series.find((x) => x.key === b.key);
+                  return (
+                    <div key={b.key} style={{ display: "flex", alignItems: "center", gap: 6, color: b.color }}>
+                      <span
+                        style={{ width: 8, height: 8, background: b.color, borderRadius: 2, display: "inline-block" }}
+                      />
+                      <span style={{ flex: 1 }}>{s?.label ?? b.key}:</span>
+                      <strong style={{ color: COLOR.textPrimary }}>{b.value}</strong>
+                    </div>
+                  );
+                })}
+              {p.total === 0 && <div style={{ color: COLOR.textTertiary, fontStyle: "italic" }}>(no events)</div>}
             </div>
-            {p.bands
-              .filter((b) => b.value > 0)
-              .map((b) => {
-                const s = series.find((x) => x.key === b.key);
-                return (
-                  <div key={b.key} style={{ display: "flex", alignItems: "center", gap: 6, color: b.color }}>
-                    <span style={{ width: 8, height: 8, background: b.color, borderRadius: 2, display: "inline-block" }} />
-                    <span style={{ flex: 1 }}>{s?.label ?? b.key}:</span>
-                    <strong style={{ color: COLOR.textPrimary }}>{b.value}</strong>
-                  </div>
-                );
-              })}
-            {p.total === 0 && (
-              <div style={{ color: COLOR.textTertiary, fontStyle: "italic" }}>(no events)</div>
-            )}
-          </div>
-        );
-      })()}
+          );
+        })()}
     </div>
   );
 };

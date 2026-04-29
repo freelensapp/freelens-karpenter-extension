@@ -1,7 +1,8 @@
 import { Renderer } from "@freelensapp/extensions";
 import type { KubeObjectMetadata } from "../core/metadata";
 
-const LensExtensionKubeObject = ((Renderer.K8sApi as any).LensExtensionKubeObject ?? Renderer.K8sApi.KubeObject) as typeof Renderer.K8sApi.KubeObject;
+const LensExtensionKubeObject = ((Renderer.K8sApi as any).LensExtensionKubeObject ??
+  Renderer.K8sApi.KubeObject) as typeof Renderer.K8sApi.KubeObject;
 
 export class EC2NodeClass extends LensExtensionKubeObject<KubeObjectMetadata, any, any> {
   static readonly kind = "EC2NodeClass";

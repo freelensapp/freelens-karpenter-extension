@@ -3,8 +3,8 @@
  * All visual configuration comes from theme.ts — do not add colors here.
  */
 
-import type { CondStatus } from "../../utils/kube-helpers";
 import { STATUS_VISUAL } from "../../config/theme";
+import type { CondStatus } from "../../utils/kube-helpers";
 
 interface StatusBadgeProps {
   status: CondStatus;

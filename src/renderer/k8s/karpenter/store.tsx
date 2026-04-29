@@ -1,7 +1,8 @@
 import { Renderer } from "@freelensapp/extensions";
 import type { KubeObjectMetadata } from "../core/metadata";
 
-const LensExtensionKubeObject = ((Renderer.K8sApi as any).LensExtensionKubeObject ?? Renderer.K8sApi.KubeObject) as typeof Renderer.K8sApi.KubeObject;
+const LensExtensionKubeObject = ((Renderer.K8sApi as any).LensExtensionKubeObject ??
+  Renderer.K8sApi.KubeObject) as typeof Renderer.K8sApi.KubeObject;
 
 // Karpenter NodePool spec (simplified example)
 /*export interface NodePoolSpec {
@@ -54,8 +55,6 @@ export interface NodePoolStatus {
 }
 */
 
-
-
 export class NodePool extends LensExtensionKubeObject<KubeObjectMetadata, any, any> {
   static readonly kind = "NodePool";
   static readonly namespaced = false;
@@ -70,8 +69,7 @@ export class NodePool extends LensExtensionKubeObject<KubeObjectMetadata, any, a
 
 export class NodePoolApi extends Renderer.K8sApi.KubeApi<NodePool> {}
 
-export class NodePoolStore extends Renderer.K8sApi.KubeObjectStore<NodePool, NodePoolApi> {
-}
+export class NodePoolStore extends Renderer.K8sApi.KubeObjectStore<NodePool, NodePoolApi> {}
 
 export function getNodePoolStore(): Renderer.K8sApi.KubeObjectStore<NodePool> {
   return (NodePool as any).getStore() as Renderer.K8sApi.KubeObjectStore<NodePool>;
@@ -93,8 +91,7 @@ export class NodeClaim extends LensExtensionKubeObject<KubeObjectMetadata, any, 
 
 export class NodeClaimApi extends Renderer.K8sApi.KubeApi<NodeClaim> {}
 
-export class NodeClaimStore extends Renderer.K8sApi.KubeObjectStore<NodeClaim, NodeClaimApi> {
-}
+export class NodeClaimStore extends Renderer.K8sApi.KubeObjectStore<NodeClaim, NodeClaimApi> {}
 
 export function getNodeClaimStore(): Renderer.K8sApi.KubeObjectStore<NodeClaim> {
   return (NodeClaim as any).getStore() as Renderer.K8sApi.KubeObjectStore<NodeClaim>;
@@ -113,9 +110,5 @@ export function isClaimingNodeClaim(nc: NodeClaim): boolean {
 export function getNodeClaimPoolName(nc: NodeClaim): string {
   const labels: Record<string, string> = (nc as any).metadata?.labels ?? {};
   const annotations: Record<string, string> = (nc as any).metadata?.annotations ?? {};
-  return (
-    labels["karpenter.sh/nodepool"] ||
-    annotations["karpenter.sh/nodepool"] ||
-    ""
-  );
+  return labels["karpenter.sh/nodepool"] || annotations["karpenter.sh/nodepool"] || "";
 }

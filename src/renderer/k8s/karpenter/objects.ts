@@ -1,5 +1,5 @@
 export const karpenterObjects = [
-    {
+  {
     kind: "KarpenterNodePool",
     apiVersions: [
       "provisioning.karpenter.sh/v1beta1",
@@ -7,4 +7,4 @@ export const karpenterObjects = [
       "provisioning.karpenter.sh/v1",
     ],
   },
-]
+];

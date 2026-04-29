@@ -1,19 +1,11 @@
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
-import { getEC2NodeClassStore } from "../../k8s/karpenter/ec2nodeclass-store";
-import { getAKSNodeClassStore } from "../../k8s/karpenter/aksNodeclass-store";
-import { getNodePoolStore } from "../../k8s/karpenter/store";
 import { getNodeStore } from "../../k8s/core/node-store";
-import {
-  openNodeClassDetail,
-  NODE_CLASS_KIND,
-  type NodeClassProvider,
-} from "../../k8s/karpenter/nodeclass-utils";
-import {
-  getNodePoolStatus,
-  getNodeClassStatus,
-  openNodePoolDetail,
-} from "../../utils/kube-helpers";
+import { getAKSNodeClassStore } from "../../k8s/karpenter/aksNodeclass-store";
+import { getEC2NodeClassStore } from "../../k8s/karpenter/ec2nodeclass-store";
+import { NODE_CLASS_KIND, type NodeClassProvider, openNodeClassDetail } from "../../k8s/karpenter/nodeclass-utils";
+import { getNodePoolStore } from "../../k8s/karpenter/store";
+import { getNodeClassStatus, getNodePoolStatus, openNodePoolDetail } from "../../utils/kube-helpers";
 import { StatusBadge } from "../shared/StatusBadge";
 import style from "./nodeclasses-tab.module.scss";
 import styleInline from "./nodeclasses-tab.module.scss?inline";
@@ -38,10 +30,8 @@ function NodePoolRow({
   const totalMemory = (nodePool as any).status?.resources?.memory ?? "—";
 
   // Disruption policy
-  const consolidation =
-    (nodePool as any).spec?.disruption?.consolidationPolicy ?? "—";
-  const expireAfter =
-    (nodePool as any).spec?.disruption?.expireAfter ?? "—";
+  const consolidation = (nodePool as any).spec?.disruption?.consolidationPolicy ?? "—";
+  const expireAfter = (nodePool as any).spec?.disruption?.expireAfter ?? "—";
 
   // Limits
   const limitCpu = (nodePool as any).spec?.limits?.cpu ?? "—";
@@ -50,7 +40,7 @@ function NodePoolRow({
   return (
     <tr
       className={style.poolRow}
-      onClick={event => {
+      onClick={(event) => {
         event.stopPropagation();
         openNodePoolDetail(nodePool);
       }}
@@ -95,32 +85,28 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
   const metaItems: { label: string; value: string | number }[] = [];
 
   if (provider === "aws") {
-    if (spec.amiFamily)        metaItems.push({ label: "Image Family",     value: spec.amiFamily });
+    if (spec.amiFamily) metaItems.push({ label: "Image Family", value: spec.amiFamily });
     if (spec.instanceProfile ?? spec.role)
-                               metaItems.push({ label: "Instance Profile", value: spec.instanceProfile ?? spec.role });
+      metaItems.push({ label: "Instance Profile", value: spec.instanceProfile ?? spec.role });
     const amiCount = (spec.amiSelectorTerms ?? []).length;
-    if (amiCount > 0)          metaItems.push({ label: "AMI Selectors",    value: amiCount });
+    if (amiCount > 0) metaItems.push({ label: "AMI Selectors", value: amiCount });
     const subnetCount = (spec.subnetSelectorTerms ?? []).length;
-    if (subnetCount > 0)       metaItems.push({ label: "Subnets",          value: subnetCount });
+    if (subnetCount > 0) metaItems.push({ label: "Subnets", value: subnetCount });
     const sgCount = (spec.securityGroupSelectorTerms ?? []).length;
-    if (sgCount > 0)           metaItems.push({ label: "Security Groups",  value: sgCount });
+    if (sgCount > 0) metaItems.push({ label: "Security Groups", value: sgCount });
   } else {
-    if (spec.imageFamily)      metaItems.push({ label: "Image Family",     value: spec.imageFamily });
-    if (spec.osDiskSizeGB != null)
-                               metaItems.push({ label: "OS Disk",          value: `${spec.osDiskSizeGB} GB` });
-    if (spec.kubeletConfig)    metaItems.push({ label: "Kubelet Config",   value: "✓" });
+    if (spec.imageFamily) metaItems.push({ label: "Image Family", value: spec.imageFamily });
+    if (spec.osDiskSizeGB != null) metaItems.push({ label: "OS Disk", value: `${spec.osDiskSizeGB} GB` });
+    if (spec.kubeletConfig) metaItems.push({ label: "Kubelet Config", value: "✓" });
     const subnetCount = (spec.subnetSelectorTerms ?? []).length;
-    if (subnetCount > 0)       metaItems.push({ label: "Subnets",          value: subnetCount });
+    if (subnetCount > 0) metaItems.push({ label: "Subnets", value: subnetCount });
   }
 
   // Associated NodePools — memoized to avoid filtering on every render
   const associatedPools = useMemo(
-    () =>
-      nodePoolStore.items.filter(
-        (np: any) => np.spec?.template?.spec?.nodeClassRef?.name === name
-      ),
+    () => nodePoolStore.items.filter((np: any) => np.spec?.template?.spec?.nodeClassRef?.name === name),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodePoolStore.items.length, name]
+    [nodePoolStore.items.length, name],
   );
 
   // Node counts per NodePool — computed once, passed down as props
@@ -131,7 +117,7 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
       if (pool) map[pool] = (map[pool] ?? 0) + 1;
     }
     return map;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeStore.items.length]);
 
   return (
@@ -139,16 +125,13 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
       <style>{styleInline}</style>
 
       {/* Header */}
-      <div
-        className={style.nodeClassHeader}
-        onClick={() => setExpanded(e => !e)}
-      >
+      <div className={style.nodeClassHeader} onClick={() => setExpanded((e) => !e)}>
         <div className={style.nodeClassTitleRow}>
           <span className={style.nodeClassIcon}>⚙️</span>
           <span className={style.nodeClassKind}>{kindLabel}</span>
           <span
             className={style.nodeClassName}
-            onClick={event => {
+            onClick={(event) => {
               event.stopPropagation();
               openNodeClassDetail(name, provider);
             }}
@@ -183,15 +166,15 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
           ) : (
             <table className={style.poolsTable}>
               <colgroup>
-                <col style={{ width: "20%" }} />  {/* NodePool */}
-                <col style={{ width: "10%" }} />  {/* Status */}
-                <col style={{ width: "6%" }} />   {/* Nodes */}
-                <col style={{ width: "10%" }} />  {/* CPU Used */}
-                <col style={{ width: "12%" }} />  {/* Memory Used */}
-                <col style={{ width: "14%" }} />  {/* Limits */}
-                <col style={{ width: "16%" }} />  {/* Consolidation */}
-                <col style={{ width: "10%" }} />  {/* Expire After */}
-                <col style={{ width: "2%" }} />   {/* arrow */}
+                <col style={{ width: "20%" }} /> {/* NodePool */}
+                <col style={{ width: "10%" }} /> {/* Status */}
+                <col style={{ width: "6%" }} /> {/* Nodes */}
+                <col style={{ width: "10%" }} /> {/* CPU Used */}
+                <col style={{ width: "12%" }} /> {/* Memory Used */}
+                <col style={{ width: "14%" }} /> {/* Limits */}
+                <col style={{ width: "16%" }} /> {/* Consolidation */}
+                <col style={{ width: "10%" }} /> {/* Expire After */}
+                <col style={{ width: "2%" }} /> {/* arrow */}
               </colgroup>
               <thead>
                 <tr>
@@ -229,21 +212,17 @@ export const NodeClassesTab: React.FC = observer(() => {
   const ec2NodeClassStore = getEC2NodeClassStore();
   const aksNodeClassStore = getAKSNodeClassStore();
   // Merge items from both AWS and Azure stores
-  const nodeClasses = [
-    ...(ec2NodeClassStore?.items ?? []),
-    ...(aksNodeClassStore?.items ?? []),
-  ];
+  const nodeClasses = [...(ec2NodeClassStore?.items ?? []), ...(aksNodeClassStore?.items ?? [])];
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
-    ? nodeClasses.filter((nc: any) =>
-        (nc.metadata?.name ?? "").toLowerCase().includes(search.trim().toLowerCase())
-      )
+    ? nodeClasses.filter((nc: any) => (nc.metadata?.name ?? "").toLowerCase().includes(search.trim().toLowerCase()))
     : nodeClasses;
 
-  const emptyMessage = (ec2NodeClassStore?.items.length ?? 0) === 0 && (aksNodeClassStore?.items.length ?? 0) === 0
-    ? "No NodeClasses found (checked EC2NodeClass and AKSNodeClass)"
-    : "No results for this filter";
+  const emptyMessage =
+    (ec2NodeClassStore?.items.length ?? 0) === 0 && (aksNodeClassStore?.items.length ?? 0) === 0
+      ? "No NodeClasses found (checked EC2NodeClass and AKSNodeClass)"
+      : "No results for this filter";
 
   return (
     <div className={style.tabRoot}>
@@ -258,7 +237,7 @@ export const NodeClassesTab: React.FC = observer(() => {
           type="text"
           placeholder="Filter by name…"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 

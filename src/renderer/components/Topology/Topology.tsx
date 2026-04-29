@@ -8,24 +8,13 @@
  *   - Footer   (Status legend)
  */
 
-import React, { useMemo, useState } from "react";
 import { observer } from "mobx-react";
+import React, { useMemo, useState } from "react";
 import { type Node } from "../../k8s/core/node-store";
 import { type NodePool } from "../../k8s/karpenter/store";
-import {
-  buildPodCountMap,
-  getNodeStatus,
-  type CondStatus,
-} from "../../utils/kube-helpers";
-import {
-  computeKpi,
-  groupNodes,
-  STATUS_COLOR,
-  type GroupBy,
-  type SizeBy,
-  type NodeGroup,
-} from "./topology-utils";
+import { type CondStatus, buildPodCountMap, getNodeStatus } from "../../utils/kube-helpers";
 import { ResponsiveTreemap } from "./TreemapView";
+import { type GroupBy, type NodeGroup, STATUS_COLOR, type SizeBy, computeKpi, groupNodes } from "./topology-utils";
 import style from "./topology.module.scss";
 import styleInline from "./topology.module.scss?inline";
 
@@ -43,7 +32,10 @@ interface TopologyProps {
 // ── Segmented control ────────────────────────────────────────────────────────
 
 function Segmented<T extends string>({
-  options, value, onChange, ariaLabel,
+  options,
+  value,
+  onChange,
+  ariaLabel,
 }: {
   options: { value: T; label: string }[];
   value: T;
@@ -69,14 +61,20 @@ function Segmented<T extends string>({
 
 // ── KPI strip ────────────────────────────────────────────────────────────────
 
-const Kpi: React.FC<{ label: string; value: string | number; sub?: string; color?: string }> =
-  ({ label, value, sub, color }) => (
-    <div className={style.kpi}>
-      <span className={style.kpiLabel}>{label}</span>
-      <span className={style.kpiValue} style={color ? { color } : undefined}>{value}</span>
-      {sub && <span className={style.kpiSub}>{sub}</span>}
-    </div>
-  );
+const Kpi: React.FC<{ label: string; value: string | number; sub?: string; color?: string }> = ({
+  label,
+  value,
+  sub,
+  color,
+}) => (
+  <div className={style.kpi}>
+    <span className={style.kpiLabel}>{label}</span>
+    <span className={style.kpiValue} style={color ? { color } : undefined}>
+      {value}
+    </span>
+    {sub && <span className={style.kpiSub}>{sub}</span>}
+  </div>
+);
 
 // ── Side legend (interactive) ────────────────────────────────────────────────
 
@@ -115,7 +113,7 @@ const SideLegend: React.FC<{
             <span className={style.legendName}>{g.label}</span>
             <span className={style.legendCount}>{g.nodes.length}</span>
             <div className={style.legendStatusBar} aria-hidden="true">
-              {(["Ready","Provisioning","Claiming","NotReady","Terminating","Unknown"] as CondStatus[])
+              {(["Ready", "Provisioning", "Claiming", "NotReady", "Terminating", "Unknown"] as CondStatus[])
                 .filter((s) => counts[s] > 0)
                 .map((s) => (
                   <span
@@ -138,7 +136,12 @@ const SideLegend: React.FC<{
 
 function countByStatus(nodes: Node[]): Record<CondStatus, number> {
   const acc: Record<CondStatus, number> = {
-    Ready: 0, Provisioning: 0, Claiming: 0, NotReady: 0, Terminating: 0, Unknown: 0,
+    Ready: 0,
+    Provisioning: 0,
+    Claiming: 0,
+    NotReady: 0,
+    Terminating: 0,
+    Unknown: 0,
   };
   for (const n of nodes) acc[getNodeStatus(n)]++;
   return acc;
@@ -146,10 +149,14 @@ function countByStatus(nodes: Node[]): Record<CondStatus, number> {
 
 function groupByTitle(g: GroupBy): string {
   switch (g) {
-    case "pool":         return "Node Pools";
-    case "zone":         return "Zones";
-    case "instanceType": return "Instance Types";
-    case "nodeClass":    return "Node Classes";
+    case "pool":
+      return "Node Pools";
+    case "zone":
+      return "Zones";
+    case "instanceType":
+      return "Instance Types";
+    case "nodeClass":
+      return "Node Classes";
   }
 }
 
@@ -159,7 +166,7 @@ const StatusBar: React.FC = () => (
   <div className={style.statusLegend} aria-label="Legend">
     <span className={style.statusLegendGroup}>
       <span className={style.statusLegendGroupLabel}>Status</span>
-      {(["Ready","Provisioning","Claiming","NotReady","Terminating"] as CondStatus[]).map((s) => (
+      {(["Ready", "Provisioning", "Claiming", "NotReady", "Terminating"] as CondStatus[]).map((s) => (
         <span key={s} className={style.statusLegendItem}>
           <span className={style.statusSwatch} style={{ background: STATUS_COLOR[s] }} />
           {s}
@@ -186,111 +193,115 @@ const StatusBar: React.FC = () => (
 
 // ── Main component ───────────────────────────────────────────────────────────
 
-export const Topology: React.FC<TopologyProps> = observer(({
-  nodePools, allNodes, filterText = "", onFilterChange,
-}) => {
-  const [groupBy,  setGroupBy]  = useState<GroupBy>("pool");
-  const [sizeBy,   setSizeBy]   = useState<SizeBy>("cpu");
-  const [highlightedGroupId, setHighlightedGroupId] = useState<string | undefined>(undefined);
+export const Topology: React.FC<TopologyProps> = observer(
+  ({ nodePools, allNodes, filterText = "", onFilterChange }) => {
+    const [groupBy, setGroupBy] = useState<GroupBy>("pool");
+    const [sizeBy, setSizeBy] = useState<SizeBy>("cpu");
+    const [highlightedGroupId, setHighlightedGroupId] = useState<string | undefined>(undefined);
 
-  const podCountMap = useMemo(() => buildPodCountMap(), [allNodes.length]); // eslint-disable-line react-hooks/exhaustive-deps
+    const podCountMap = useMemo(() => buildPodCountMap(), [allNodes.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const groups = useMemo(
-    () => groupNodes(allNodes, nodePools, groupBy),
-    [allNodes, nodePools, groupBy],
-  );
+    const groups = useMemo(() => groupNodes(allNodes, nodePools, groupBy), [allNodes, nodePools, groupBy]);
 
-  const kpi = useMemo(() => computeKpi(allNodes, nodePools), [allNodes, nodePools]);
+    const kpi = useMemo(() => computeKpi(allNodes, nodePools), [allNodes, nodePools]);
 
-  const onLegendToggle = (id: string) => {
-    setHighlightedGroupId((prev) => (prev === id ? undefined : id));
-  };
+    const onLegendToggle = (id: string) => {
+      setHighlightedGroupId((prev) => (prev === id ? undefined : id));
+    };
 
-  const empty = allNodes.length === 0;
+    const empty = allNodes.length === 0;
 
-  return (
-    <div className={style.root}>
-      <style>{styleInline}</style>
-      {/* ── KPI strip ──────────────────────────────────────────────── */}
-      <div className={style.kpiStrip}>
-        <Kpi label="Node Pools"    value={kpi.poolCount} />
-        <Kpi label="Nodes"         value={kpi.totalNodes}
-             sub={`${kpi.karpenterCoverage}% Karpenter-managed`} />
-        <Kpi label="Ready"         value={kpi.ready} color={STATUS_COLOR.Ready} />
-        <Kpi label="Provisioning"  value={kpi.provisioning} color={STATUS_COLOR.Provisioning} />
-        <Kpi label="Not Ready"     value={kpi.notReady + kpi.terminating}
-             sub={kpi.terminating > 0 ? `${kpi.terminating} terminating` : undefined}
-             color={STATUS_COLOR.NotReady} />
-        <Kpi label="Capacity"      value={`${kpi.totalCpuCores.toFixed(0)} vCPU`}
-             sub={`${kpi.totalMemGi.toFixed(0)} GiB`} />
-        <Kpi label="Spot / On-Demand"
-             value={`${kpi.spotNodes} / ${kpi.onDemandNodes}`} />
-      </div>
-
-      {/* ── Status / capacity legend (always visible) ──────────────── */}
-      <StatusBar />
-
-      {/* ── Toolbar ────────────────────────────────────────────────── */}
-      <div className={style.toolbar}>
-        <div className={style.toolGroup}>
-          <span className={style.toolLabel}>Group by</span>
-          <Segmented<GroupBy>
-            ariaLabel="Group nodes by"
-            value={groupBy}
-            onChange={(v) => { setGroupBy(v); setHighlightedGroupId(undefined); }}
-            options={[
-              { value: "pool",         label: "Pool" },
-              { value: "zone",         label: "Zone" },
-              { value: "instanceType", label: "Type" },
-              { value: "nodeClass",    label: "NodeClass" },
-            ]}
+    return (
+      <div className={style.root}>
+        <style>{styleInline}</style>
+        {/* ── KPI strip ──────────────────────────────────────────────── */}
+        <div className={style.kpiStrip}>
+          <Kpi label="Node Pools" value={kpi.poolCount} />
+          <Kpi label="Nodes" value={kpi.totalNodes} sub={`${kpi.karpenterCoverage}% Karpenter-managed`} />
+          <Kpi label="Ready" value={kpi.ready} color={STATUS_COLOR.Ready} />
+          <Kpi label="Provisioning" value={kpi.provisioning} color={STATUS_COLOR.Provisioning} />
+          <Kpi
+            label="Not Ready"
+            value={kpi.notReady + kpi.terminating}
+            sub={kpi.terminating > 0 ? `${kpi.terminating} terminating` : undefined}
+            color={STATUS_COLOR.NotReady}
           />
+          <Kpi
+            label="Capacity"
+            value={`${kpi.totalCpuCores.toFixed(0)} vCPU`}
+            sub={`${kpi.totalMemGi.toFixed(0)} GiB`}
+          />
+          <Kpi label="Spot / On-Demand" value={`${kpi.spotNodes} / ${kpi.onDemandNodes}`} />
         </div>
 
-        <div className={style.toolGroup}>
-          <span className={style.toolLabel}>Size by</span>
-          <Segmented<SizeBy>
-            ariaLabel="Size cells by"
-            value={sizeBy}
-            onChange={setSizeBy}
-            options={[
-              { value: "cpu",    label: "CPU" },
-              { value: "memory", label: "Memory" },
-              { value: "pods",   label: "Pods" },
-              { value: "equal",  label: "Equal" },
-            ]}
-          />
-        </div>
-      </div>
+        {/* ── Status / capacity legend (always visible) ──────────────── */}
+        <StatusBar />
 
-      {/* ── Body ─────────────────────────────────────────────────── */}
-      {empty ? (
-        <div className={style.empty}>No nodes found in the cluster.</div>
-      ) : (
-        <div className={style.body}>
-          <div className={style.chartCard}>
-            <div className={style.chartInner}>
-              <ResponsiveTreemap
-                groups={groups}
-                sizeBy={sizeBy}
-                podCountMap={podCountMap}
-                filterText={(filterText ?? "").toLowerCase()}
-                highlightedGroupId={highlightedGroupId}
-              />
-            </div>
+        {/* ── Toolbar ────────────────────────────────────────────────── */}
+        <div className={style.toolbar}>
+          <div className={style.toolGroup}>
+            <span className={style.toolLabel}>Group by</span>
+            <Segmented<GroupBy>
+              ariaLabel="Group nodes by"
+              value={groupBy}
+              onChange={(v) => {
+                setGroupBy(v);
+                setHighlightedGroupId(undefined);
+              }}
+              options={[
+                { value: "pool", label: "Pool" },
+                { value: "zone", label: "Zone" },
+                { value: "instanceType", label: "Type" },
+                { value: "nodeClass", label: "NodeClass" },
+              ]}
+            />
           </div>
 
-          <SideLegend
-            groups={groups}
-            highlightedGroupId={highlightedGroupId}
-            onToggle={(id) => {
-              onLegendToggle(id);
-              onFilterChange?.(highlightedGroupId === id ? "" : id);
-            }}
-            groupBy={groupBy}
-          />
+          <div className={style.toolGroup}>
+            <span className={style.toolLabel}>Size by</span>
+            <Segmented<SizeBy>
+              ariaLabel="Size cells by"
+              value={sizeBy}
+              onChange={setSizeBy}
+              options={[
+                { value: "cpu", label: "CPU" },
+                { value: "memory", label: "Memory" },
+                { value: "pods", label: "Pods" },
+                { value: "equal", label: "Equal" },
+              ]}
+            />
+          </div>
         </div>
-      )}
-    </div>
-  );
-});
+
+        {/* ── Body ─────────────────────────────────────────────────── */}
+        {empty ? (
+          <div className={style.empty}>No nodes found in the cluster.</div>
+        ) : (
+          <div className={style.body}>
+            <div className={style.chartCard}>
+              <div className={style.chartInner}>
+                <ResponsiveTreemap
+                  groups={groups}
+                  sizeBy={sizeBy}
+                  podCountMap={podCountMap}
+                  filterText={(filterText ?? "").toLowerCase()}
+                  highlightedGroupId={highlightedGroupId}
+                />
+              </div>
+            </div>
+
+            <SideLegend
+              groups={groups}
+              highlightedGroupId={highlightedGroupId}
+              onToggle={(id) => {
+                onLegendToggle(id);
+                onFilterChange?.(highlightedGroupId === id ? "" : id);
+              }}
+              groupBy={groupBy}
+            />
+          </div>
+        )}
+      </div>
+    );
+  },
+);

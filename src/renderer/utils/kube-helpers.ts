@@ -20,27 +20,18 @@ export type CondStatus = "Ready" | "NotReady" | "Provisioning" | "Claiming" | "T
  * Generic: find a condition by type in a conditions array and return
  * a normalized status string.
  */
-export function getConditionStatus(
-  conditions: any[],
-  type: string
-): CondStatus {
+export function getConditionStatus(conditions: any[], type: string): CondStatus {
   const c = conditions?.find((c: any) => c.type === type);
   if (!c) return "Unknown";
   return c.status === "True" ? "Ready" : "NotReady";
 }
 
 export function getNodePoolStatus(nodePool: NodePool): CondStatus {
-  return getConditionStatus(
-    (nodePool as any).status?.conditions ?? [],
-    "Ready"
-  );
+  return getConditionStatus((nodePool as any).status?.conditions ?? [], "Ready");
 }
 
 export function getNodeClassStatus(nodeClass: any): CondStatus {
-  return getConditionStatus(
-    (nodeClass as any).status?.conditions ?? [],
-    "Ready"
-  );
+  return getConditionStatus((nodeClass as any).status?.conditions ?? [], "Ready");
 }
 
 export function getNodeStatus(node: Node): CondStatus {
@@ -56,24 +47,18 @@ export function getNodeStatus(node: Node): CondStatus {
   const labels = (node as any).metadata?.labels ?? {};
   const annotations = (node as any).metadata?.annotations ?? {};
   const isKarpenter =
-    !!labels["karpenter.sh/nodeclaim"] ||
-    !!labels["karpenter.sh/nodepool"] ||
-    !!annotations["karpenter.sh/nodeclaim"];
+    !!labels["karpenter.sh/nodeclaim"] || !!labels["karpenter.sh/nodepool"] || !!annotations["karpenter.sh/nodeclaim"];
 
   if (isKarpenter) {
     const taints: Array<{ key: string }> = (node as any).spec?.taints ?? [];
 
     // Karpenter disruption taint → node is being drained/consolidated
-    const hasDisruptionTaint = taints.some(
-      (t) => t.key === "karpenter.sh/disruption"
-    );
+    const hasDisruptionTaint = taints.some((t) => t.key === "karpenter.sh/disruption");
     if (hasDisruptionTaint) return "Terminating";
 
     // Bootstrap taints are added by k8s while the node is initializing
     const hasBootstrapTaint = taints.some(
-      (t) =>
-        t.key === "node.kubernetes.io/not-ready" ||
-        t.key === "node.kubernetes.io/uninitialized"
+      (t) => t.key === "node.kubernetes.io/not-ready" || t.key === "node.kubernetes.io/uninitialized",
     );
 
     // A brand-new node (< 5 min) that isn't Ready yet is still provisioning
@@ -131,16 +116,14 @@ export function getNodeMemory(node: Node): string {
 export function getNodeClaimName(node: Node | undefined): string {
   if (!node?.metadata) return "";
   const labels: Record<string, string> = (node as any).metadata?.labels ?? {};
-  const annotations: Record<string, string> =
-    (node as any).metadata?.annotations ?? {};
+  const annotations: Record<string, string> = (node as any).metadata?.annotations ?? {};
   return (
     labels["karpenter.sh/nodeclaim"] ||
     annotations["karpenter.sh/nodeclaim"] ||
     labels["karpenter.sh/provisioner-name"] ||
     annotations["karpenter.sh/provisioner-name"] ||
-    (node as any).metadata?.ownerReferences?.find(
-      (ref: any) => ref.kind === "NodeClaim" || ref.kind === "Machine"
-    )?.name ||
+    (node as any).metadata?.ownerReferences?.find((ref: any) => ref.kind === "NodeClaim" || ref.kind === "Machine")
+      ?.name ||
     ""
   );
 }
@@ -153,9 +136,7 @@ export function getNodeMaxPods(node: Node): number {
 }
 
 export function getInstanceType(node: Node): string {
-  return (
-    (node as any).metadata?.labels?.["node.kubernetes.io/instance-type"] ?? "—"
-  );
+  return (node as any).metadata?.labels?.["node.kubernetes.io/instance-type"] ?? "—";
 }
 
 // ── Memory / CPU parsing ──────────────────────────────────────────────────────
@@ -190,8 +171,7 @@ export function parseCpuCores(cpu: string | number): number {
 export function buildPodCountMap(): Record<string, number> {
   try {
     const podsStore =
-      (Renderer.K8sApi as any).podsStore ??
-      (Renderer.K8sApi.apiManager as any).getStore?.("/api/v1/pods");
+      (Renderer.K8sApi as any).podsStore ?? (Renderer.K8sApi.apiManager as any).getStore?.("/api/v1/pods");
     if (!podsStore?.items) return {};
     const map: Record<string, number> = {};
     for (const pod of podsStore.items as any[]) {
@@ -225,15 +205,11 @@ export function openNodeDetail(node: Node): void {
 
 export function openNodePoolDetail(nodePool: NodePool): void {
   const selfLink: string =
-    (nodePool as any).metadata?.selfLink ||
-    `/apis/karpenter.sh/v1/nodepools/${nodePool.metadata?.name ?? ""}`;
+    (nodePool as any).metadata?.selfLink || `/apis/karpenter.sh/v1/nodepools/${nodePool.metadata?.name ?? ""}`;
   navigateToDetail("/crd/karpenter.sh/nodepools", selfLink);
 }
 
 export function openNodeClaimDetail(name: string): void {
   if (!name) return;
-  navigateToDetail(
-    "/crd/karpenter.sh/nodeclaims",
-    `/apis/karpenter.sh/v1/nodeclaims/${name}`
-  );
+  navigateToDetail("/crd/karpenter.sh/nodeclaims", `/apis/karpenter.sh/v1/nodeclaims/${name}`);
 }
