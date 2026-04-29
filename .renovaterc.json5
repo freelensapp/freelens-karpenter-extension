@@ -28,7 +28,13 @@
     // it must be the oldest possible version to get binary compatibility with older OSes
     "ubuntu",
     // manual updates only
-    "@freelensapp/extensions"
+    "@freelensapp/extensions",
+    // must match version from Freelens
+    "mobx",
+    "mobx-react",
+    "react",
+    "react-dom",
+    "react-router-dom",
   ],
   "packageRules": [
     // peerDependencies are widen
@@ -42,15 +48,41 @@
     // non-major updates only
     {
       "matchDepNames": [
-        "@types/node",
         "@types/react",
-        "electron",
-        "npm"
+        "npm",
       ],
       "matchUpdateTypes": [
         "major"
       ],
       "enabled": false
+    },
+    // patch updates only
+    {
+      "matchDepNames": [
+        "@types/node",
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "enabled": false
+    },
+    // postupdate script
+    {
+      "matchDepNames": [
+        "@biomejs/biome",
+      ],
+      "postUpdateOptions": [
+        "runScripts"
+      ]
+    },
+    // keep vitest packages aligned
+    {
+      "matchPackageNames": [
+        "vitest",
+        "@vitest/**"
+      ],
+      "groupName": "vitest"
     }
   ],
   "customManagers": [
@@ -87,11 +119,11 @@
       "extractVersionTemplate": "^v?(?<version>.*)$",
       "managerFilePatterns": [
         "/^\\.github/workflows/.*\\.ya?ml$/",
-        "/^\\.trunk/trunk.yaml/",
+        "/^\\.trunk/trunk.yaml$/",
         "/^\\.tool-versions$/"
       ],
       "matchStrings": [
-        "(\\s+|.*?@)(?<currentValue>\\S+)\\s*#\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(\\s+versioning=(?<versioning>\\S+))?(\\s+registryUrl=(?<registryUrl>\\S+))?\\s*\\n"
+        "(\\s+|.*?@)(?<currentValue>\\S+?)!?\\s*#\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(\\s+versioning=(?<versioning>\\S+))?(\\s+registryUrl=(?<registryUrl>\\S+))?\\s*\\n"
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     }
