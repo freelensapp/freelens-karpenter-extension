@@ -20,7 +20,7 @@ import { getAKSNodeClassStore } from "../k8s/karpenter/aksNodeclass-store";
 import { getEC2NodeClassStore } from "../k8s/karpenter/ec2nodeclass-store";
 import { NodePool, getNodePoolStore } from "../k8s/karpenter/store";
 import { NodeClaim, getNodeClaimPoolName, getNodeClaimStore, isClaimingNodeClaim } from "../k8s/karpenter/store";
-import { getInstanceType, getNodeStatus } from "../utils/kube-helpers";
+import { getInstanceType, getNodeStatus, getPodsStore } from "../utils/kube-helpers";
 import type { CondStatus } from "../utils/kube-helpers";
 // must be `?inline` for explicit CSS to use in `<style>` tag
 import styleInline from "./page.module.scss?inline";
@@ -51,6 +51,7 @@ export class KarpenterDashboard extends React.Component<
   private ec2NodeClassStore?: ReturnType<typeof getEC2NodeClassStore>;
   private aksNodeClassStore?: ReturnType<typeof getAKSNodeClassStore>;
   private kubeEventStore?: ReturnType<typeof getKubeEventStore>;
+  private podsStore?: any;
   public readonly state: Readonly<KarpenterDashboardState> = {
     nodePools: [],
     data: [],
@@ -93,6 +94,7 @@ export class KarpenterDashboard extends React.Component<
       this.ec2NodeClassStore = getEC2NodeClassStore();
       this.aksNodeClassStore = getAKSNodeClassStore();
       this.kubeEventStore = getKubeEventStore();
+      this.podsStore = getPodsStore();
 
       await Promise.all(
         [this.nodePoolStore, this.nodeStore, this.nodeClaimStore, this.ec2NodeClassStore, this.aksNodeClassStore]
@@ -102,6 +104,25 @@ export class KarpenterDashboard extends React.Component<
             this.watches.push(store.subscribe());
           }),
       );
+
+      // Pods are namespace-scoped: passing namespaces:[] would load nothing
+      // (Freelens' isLoadingAll() returns false unless the list actually
+      // contains every namespace). Replicate core's loadPodsFromAllNamespaces:
+      // load the namespace store first, then use its items as the namespace list.
+      if (this.podsStore) {
+        try {
+          const namespaceStore = (Renderer.K8sApi as any).namespaceStore;
+          let namespaces: string[] = [];
+          if (namespaceStore) {
+            await namespaceStore.loadAll({ namespaces: [], onLoadFailure: () => undefined });
+            namespaces = (namespaceStore.items ?? []).map((n: any) => n.getName?.() ?? n.metadata?.name).filter(Boolean);
+          }
+          await this.podsStore.loadAll({ namespaces, onLoadFailure: () => undefined });
+          this.watches.push(this.podsStore.subscribe());
+        } catch {
+          // best-effort: pod counts will simply remain empty if this fails
+        }
+      }
 
       // Load events explicitly from Karpenter namespaces (events live in "default"),
       // then keep watching. fetchAllNamespaceEvents calls loadAll({namespaces:[...]}) internally.

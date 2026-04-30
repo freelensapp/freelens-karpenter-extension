@@ -60,7 +60,7 @@ export function useKarpenterCardData(nodes: Node[]): KarpenterCardData {
     };
   }, []);
 
-  const podCountMap = useMemo(() => getPodCountMap(), [nodes.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  const podCountMap = getPodCountMap();
 
   const instanceTypeCounts = useMemo(
     () =>

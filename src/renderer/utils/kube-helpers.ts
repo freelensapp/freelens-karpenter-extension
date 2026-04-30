@@ -163,6 +163,10 @@ export function parseCpuCores(cpu: string | number): number {
 
 // ── Pod count helpers ─────────────────────────────────────────────────────────
 
+export function getPodsStore(): any {
+  return (Renderer.K8sApi as any).podsStore ?? (Renderer.K8sApi.apiManager as any).getStore?.("/api/v1/pods");
+}
+
 /**
  * Build a {nodeName → podCount} map from the pods store.
  * Call this ONCE per render and pass the result down as a prop instead of
@@ -170,8 +174,7 @@ export function parseCpuCores(cpu: string | number): number {
  */
 export function buildPodCountMap(): Record<string, number> {
   try {
-    const podsStore =
-      (Renderer.K8sApi as any).podsStore ?? (Renderer.K8sApi.apiManager as any).getStore?.("/api/v1/pods");
+    const podsStore = getPodsStore();
     if (!podsStore?.items) return {};
     const map: Record<string, number> = {};
     for (const pod of podsStore.items as any[]) {

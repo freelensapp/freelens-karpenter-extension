@@ -199,7 +199,7 @@ export const Topology: React.FC<TopologyProps> = observer(
     const [sizeBy, setSizeBy] = useState<SizeBy>("cpu");
     const [highlightedGroupId, setHighlightedGroupId] = useState<string | undefined>(undefined);
 
-    const podCountMap = useMemo(() => buildPodCountMap(), [allNodes.length]); // eslint-disable-line react-hooks/exhaustive-deps
+    const podCountMap = buildPodCountMap();
 
     const groups = useMemo(() => groupNodes(allNodes, nodePools, groupBy), [allNodes, nodePools, groupBy]);
 
