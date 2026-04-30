@@ -47,7 +47,8 @@ corepack pnpm pack
 
 ### Install built extension
 
-The tarball for the extension will be placed in the current directory.<br />
+The tarball for the extension will be placed in the current directory.
+
 In Freelens, navigate to the Extensions list and provide the path to the tarball
 to be loaded, or drag and drop the extension tarball into the Freelens window.
 After loading for a moment, the extension should appear in the list of enabled
