@@ -115,7 +115,9 @@ export class KarpenterDashboard extends React.Component<
           let namespaces: string[] = [];
           if (namespaceStore) {
             await namespaceStore.loadAll({ namespaces: [], onLoadFailure: () => undefined });
-            namespaces = (namespaceStore.items ?? []).map((n: any) => n.getName?.() ?? n.metadata?.name).filter(Boolean);
+            namespaces = (namespaceStore.items ?? [])
+              .map((n: any) => n.getName?.() ?? n.metadata?.name)
+              .filter(Boolean);
           }
           await this.podsStore.loadAll({ namespaces, onLoadFailure: () => undefined });
           this.watches.push(this.podsStore.subscribe());
