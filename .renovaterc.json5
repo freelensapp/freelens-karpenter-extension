@@ -4,17 +4,6 @@
     "config:recommended",
     ":semanticCommitsDisabled"
   ],
-  // force onboarding flow when the repository is not yet onboarded
-  "onboarding": true,
-  "requireConfig": "required",
-  "onboardingBranch": "renovate/configure",
-  "onboardingConfig": {
-    "extends": [
-      "config:recommended",
-      ":dependencyDashboard"
-    ]
-  },
-  "dependencyDashboard": true,
   "prHourlyLimit": 20,
   "addLabels": [
     "renovate"
@@ -86,14 +75,6 @@
       "postUpdateOptions": [
         "runScripts"
       ]
-    },
-    // keep vitest packages aligned
-    {
-      "matchPackageNames": [
-        "vitest",
-        "@vitest/**"
-      ],
-      "groupName": "vitest"
     }
   ],
   "customManagers": [
