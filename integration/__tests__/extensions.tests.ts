@@ -50,10 +50,6 @@ describe("extensions page tests", () => {
       await window.waitForSelector('div[class*="installed-extensions-module__enabled--"]')
     ).textContent();
     expect(installedExtensionState).toBe("Enabled");
-    console.log('await window.click i[data-testid*="close-notification-for-notification_"]');
-    await window.click('i[data-testid*="close-notification-for-notification_"]');
-    console.log('await window.click div[class*=[close-button-module__closeButton--"][aria-label="Close"]');
-    await window.click('div[class*="close-button-module__closeButton--"][aria-label="Close"]');
   }, 15 * 1000);
 
   afterAll(
