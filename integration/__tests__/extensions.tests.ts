@@ -7,6 +7,8 @@ import { expect } from "@jest/globals";
 import type { ConsoleMessage, ElectronApplication, Page } from "playwright";
 import * as utils from "../helpers/utils";
 
+const extensionPackageName = process.env.EXTENSION_PACKAGE_NAME || "@freelensapp/karpenter-extension";
+
 describe("extensions page tests", () => {
   let window: Page;
   let cleanup: undefined | (() => Promise<void>);
@@ -33,7 +35,7 @@ describe("extensions page tests", () => {
     // Trigger extension install
     const textbox = window.getByPlaceholder("Name or file path or URL");
     console.log("await textbox.fill");
-    await textbox.fill(process.env.EXTENSION_PATH || "@freelensapp/extension-example");
+    await textbox.fill(process.env.EXTENSION_PATH || extensionPackageName);
     const install_button_selector = 'button[class*="Button install-module__button--"]';
     console.log("await window.click [data-waiting=false]");
     await window.click(install_button_selector.concat("[data-waiting=false]"));
@@ -43,7 +45,7 @@ describe("extensions page tests", () => {
     const installedExtensionName = await (
       await window.waitForSelector('div[class*="installed-extensions-module__extensionName--"]')
     ).textContent();
-    expect(installedExtensionName).toBe("@freelensapp/extension-example");
+    expect(installedExtensionName).toBe(extensionPackageName);
     const installedExtensionState = await (
       await window.waitForSelector('div[class*="installed-extensions-module__enabled--"]')
     ).textContent();
