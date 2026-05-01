@@ -1,3 +1,7 @@
+# Keeps the pnpm lockfile deduplicated by running `pnpm dedupe` on a schedule or on demand,
+# then opening/updating a PR with any resulting lockfile changes for review.
+# Docs: https://pnpm.io/cli/dedupe
+
 name: Automated npm dedupe
 
 on:
