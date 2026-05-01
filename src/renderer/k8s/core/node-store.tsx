@@ -1,6 +1,8 @@
 import { Renderer } from "@freelensapp/extensions";
+
 const KubeObject = Renderer.K8sApi.KubeObject;
 const KubeObjectStore = Renderer.K8sApi.KubeObjectStore;
+
 import type { KubeJsonApiData, KubeObjectMetadata, KubeObjectScope, NamespaceScopedMetadata } from "./api-types";
 
 export interface NodeMetricsData extends KubeJsonApiData<KubeObjectMetadata<KubeObjectScope>, void, void> {

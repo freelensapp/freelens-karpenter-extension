@@ -4,6 +4,7 @@
  */
 
 import { STATUS_VISUAL } from "../../config/theme";
+
 import type { CondStatus } from "../../utils/kube-helpers";
 
 interface StatusBadgeProps {

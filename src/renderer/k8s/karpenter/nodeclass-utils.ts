@@ -31,11 +31,7 @@ export const NODE_CLASS_KIND: Record<NodeClassProvider, string> = {
  * Detect provider from a nodeClassRef object (from NodePool spec).
  * Falls back to looking at which store has items.
  */
-export function detectProvider(nodeClassRef?: {
-  kind?: string;
-  group?: string;
-  name?: string;
-}): NodeClassProvider {
+export function detectProvider(nodeClassRef?: { kind?: string; group?: string; name?: string }): NodeClassProvider {
   if (!nodeClassRef) return guessFromStores();
 
   const kind = nodeClassRef.kind ?? "";

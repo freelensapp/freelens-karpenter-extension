@@ -1,29 +1,33 @@
 import { Renderer } from "@freelensapp/extensions";
-
+import { observer } from "mobx-react";
 // transpiled .tsx code must have `React` symbol in the scope
 import React from "react";
-
-// must be named `*.module.scss` for the default export to work
-import style from "./page.module.scss";
-
-import { observer } from "mobx-react";
 import { KarpenterCard } from "../components/KarpenterCard/KarpenterCard";
 import { NodeClassesTab } from "../components/NodeClassesTab/NodeClassesTab";
 import { PieChart } from "../components/PieChart/pie-chart";
 import { ScalingDecisions } from "../components/ScalingDecisions/ScalingDecisions";
-import { Topology } from "../components/Topology/Topology";
 import { KarpenterPageLoading } from "../components/shared/LoadingSkeleton";
+import { Topology } from "../components/Topology/Topology";
 import { getCrdStore } from "../k8s/core/crd";
 import { fetchAllNamespaceEvents, getKubeEventStore } from "../k8s/core/karpenter-events-store";
 import { getNodeStore } from "../k8s/core/node-store";
 import { getAKSNodeClassStore } from "../k8s/karpenter/aksNodeclass-store";
 import { getEC2NodeClassStore } from "../k8s/karpenter/ec2nodeclass-store";
-import { NodePool, getNodePoolStore } from "../k8s/karpenter/store";
-import { NodeClaim, getNodeClaimPoolName, getNodeClaimStore, isClaimingNodeClaim } from "../k8s/karpenter/store";
+import {
+  getNodeClaimPoolName,
+  getNodeClaimStore,
+  getNodePoolStore,
+  isClaimingNodeClaim,
+  NodeClaim,
+  NodePool,
+} from "../k8s/karpenter/store";
 import { getInstanceType, getNodeStatus, getPodsStore } from "../utils/kube-helpers";
-import type { CondStatus } from "../utils/kube-helpers";
+// must be named `*.module.scss` for the default export to work
+import style from "./page.module.scss";
 // must be `?inline` for explicit CSS to use in `<style>` tag
 import styleInline from "./page.module.scss?inline";
+
+import type { CondStatus } from "../utils/kube-helpers";
 
 const {
   // KubeObjectListLayout kept for potential future use

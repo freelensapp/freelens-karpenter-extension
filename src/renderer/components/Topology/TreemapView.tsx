@@ -15,7 +15,7 @@
  */
 
 import { observer } from "mobx-react";
-import React, { useMemo, useState, useRef, useLayoutEffect } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { type Node } from "../../k8s/core/node-store";
 import {
   getInstanceType,
@@ -25,17 +25,17 @@ import {
   getNodeStatus,
   openNodeDetail,
 } from "../../utils/kube-helpers";
+import style from "./topology.module.scss";
 import {
-  type NodeGroup,
-  type Rect,
-  STATUS_COLOR,
-  type SizeBy,
   getNodeCapacityType,
   getNodeZone,
+  type NodeGroup,
   nodeSize,
+  type Rect,
+  type SizeBy,
+  STATUS_COLOR,
   squarify,
 } from "./topology-utils";
-import style from "./topology.module.scss";
 
 // ── Layout constants ─────────────────────────────────────────────────────────
 

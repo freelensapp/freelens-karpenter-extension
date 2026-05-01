@@ -1,6 +1,4 @@
 import style from "./card.module.scss";
-
-// must be `?inline` for explicit CSS to use in `<style>` tag
 import styleInline from "./card.module.scss?inline";
 
 export function Card({ children, className }: { children?: React.ReactNode; className?: string }) {

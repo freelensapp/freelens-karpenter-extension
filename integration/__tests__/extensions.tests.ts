@@ -4,8 +4,9 @@
  */
 
 import { expect } from "@jest/globals";
-import type { ConsoleMessage, ElectronApplication, Page } from "playwright";
 import * as utils from "../helpers/utils";
+
+import type { ConsoleMessage, ElectronApplication, Page } from "playwright";
 
 const extensionPackageName = process.env.EXTENSION_PACKAGE_NAME || "@freelensapp/karpenter-extension";
 

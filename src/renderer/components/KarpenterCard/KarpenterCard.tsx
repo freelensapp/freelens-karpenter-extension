@@ -12,11 +12,10 @@ import {
   TIMING,
 } from "../../config/theme";
 import { eventTs, fmtAgo, useKarpenterCardData, usePoolEvents } from "../../hooks/useKarpenterData";
-import { type RawKubeEvent, getKubeEventStore } from "../../k8s/core/karpenter-events-store";
+import { getKubeEventStore, type RawKubeEvent } from "../../k8s/core/karpenter-events-store";
 import { type Node } from "../../k8s/core/node-store";
 import { detectProvider, openNodeClassDetail } from "../../k8s/karpenter/nodeclass-utils";
-import { type NodePool } from "../../k8s/karpenter/store";
-import { type NodeClaim } from "../../k8s/karpenter/store";
+import { type NodeClaim, type NodePool } from "../../k8s/karpenter/store";
 import {
   getInstanceType,
   getNodeClaimName,
@@ -555,7 +554,10 @@ function InlineOverview({ resources, limits }: { resources: any; limits: any }) 
 function CardInfoBar({
   nodePool,
   instanceTypeCounts,
-}: { nodePool: NodePool; instanceTypeCounts: Record<string, number> }) {
+}: {
+  nodePool: NodePool;
+  instanceTypeCounts: Record<string, number>;
+}) {
   const nodeClassRef = (nodePool.spec as any)?.template?.spec?.nodeClassRef;
   const nodeClassName = nodeClassRef?.name ?? "—";
   const nodeClassKind = nodeClassRef?.kind ?? "EC2NodeClass";

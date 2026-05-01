@@ -16,13 +16,7 @@ import styleInline from "./nodeclasses-tab.module.scss?inline";
  * NodePoolRow receives pre-filtered `nodeCount` from the parent
  * to avoid running nodeStore.items.filter() inside every row.
  */
-function NodePoolRow({
-  nodePool,
-  nodeCount,
-}: {
-  nodePool: any;
-  nodeCount: number;
-}) {
+function NodePoolRow({ nodePool, nodeCount }: { nodePool: any; nodeCount: number }) {
   const name: string = nodePool.metadata?.name ?? "—";
   const status = getNodePoolStatus(nodePool);
 

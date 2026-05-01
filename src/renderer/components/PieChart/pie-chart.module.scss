@@ -116,8 +116,13 @@
   border-radius: 6px;
   cursor: pointer;
   padding: 4px 8px;
-  transition: border-color 0.15s, background 0.15s;
-  &:hover { border-color: #f14668; background: #f1466822; }
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+  &:hover {
+    border-color: #f14668;
+    background: #f1466822;
+  }
 }
 
 .statBoxBtnActive {
@@ -165,9 +170,16 @@
   border-left: 1px solid var(--borderColor, #2a2a36);
   padding-left: 20px;
 
-  &::-webkit-scrollbar { width: 3px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: var(--borderColor, #444); border-radius: 2px; }
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--borderColor, #444);
+    border-radius: 2px;
+  }
 }
 
 .poolBreakdownItem {
@@ -175,13 +187,15 @@
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  background: var(--layoutTabsBackground, rgba(128,128,128,0.08));
-  border: 1px solid var(--borderColor, rgba(128,128,128,0.2));
+  background: var(--layoutTabsBackground, rgba(128, 128, 128, 0.08));
+  border: 1px solid var(--borderColor, rgba(128, 128, 128, 0.2));
   border-radius: 5px;
   padding: 3px 7px 3px 5px;
   cursor: pointer;
   user-select: none;
-  transition: background 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
 
   &:hover {
     background: rgba(0, 167, 225, 0.12);
@@ -215,7 +229,7 @@
   font-weight: 700;
   font-size: 11px;
   color: var(--textColorSecondary, #aaa);
-  background: rgba(128,128,128,0.15);
+  background: rgba(128, 128, 128, 0.15);
   border-radius: 9px;
   padding: 0 5px;
   min-width: 18px;
@@ -227,22 +241,40 @@
 
 // lg: < 1200px — slightly reduce padding and stat size
 @media (max-width: 1199px) {
-  .leftCol, .rightCol { padding: 18px 22px; }
-  .statValue { font-size: 24px; }
-  .statsRow  { gap: 22px; }
+  .leftCol,
+  .rightCol {
+    padding: 18px 22px;
+  }
+  .statValue {
+    font-size: 24px;
+  }
+  .statsRow {
+    gap: 22px;
+  }
 }
 
 // md: < 992px — reduce donut size
 @media (max-width: 991px) {
-  .leftCol, .rightCol { padding: 16px 18px; }
-  .statValue { font-size: 22px; }
-  .statsRow  { gap: 18px; }
-  .poolBreakdown { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .leftCol,
+  .rightCol {
+    padding: 16px 18px;
+  }
+  .statValue {
+    font-size: 22px;
+  }
+  .statsRow {
+    gap: 18px;
+  }
+  .poolBreakdown {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
 }
 
 // sm: < 768px — stack vertically
 @media (max-width: 767px) {
-  .overviewBanner { flex-direction: column; }
+  .overviewBanner {
+    flex-direction: column;
+  }
 
   .divider {
     width: auto;
@@ -260,7 +292,9 @@
     gap: 14px;
   }
 
-  .statsRow { justify-content: center; }
+  .statsRow {
+    justify-content: center;
+  }
 
   .poolBreakdown {
     border-left: none;
@@ -274,8 +308,12 @@
 
 // xs: < 576px — compact
 @media (max-width: 575px) {
-  .statValue { font-size: 20px; }
-  .statsRow  { gap: 14px; }
+  .statValue {
+    font-size: 20px;
+  }
+  .statsRow {
+    gap: 14px;
+  }
   .poolBreakdown {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     max-height: 120px;

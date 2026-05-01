@@ -4,9 +4,6 @@
  */
 
 import { Renderer } from "@freelensapp/extensions";
-
-import { KarpenterDashboard } from "./page";
-
 //import { karpenterObjects } from "./k8s/karpenter/objects";
 // transpiled .tsx code must have `React` symbol in the scope
 // @ts-ignore
@@ -14,6 +11,7 @@ import React from "react";
 // must be `?raw` as we need SVG element
 //import svgIcon from "./icons/example.svg?raw";
 import svgIconLogo from "./icons/karpenter.svg?raw";
+import { KarpenterDashboard } from "./page";
 
 const {
   Component: { Icon },

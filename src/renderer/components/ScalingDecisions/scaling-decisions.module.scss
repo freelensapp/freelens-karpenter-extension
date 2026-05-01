@@ -92,9 +92,13 @@
   tbody tr {
     border-bottom: 1px solid var(--borderColor, #1e1e1e);
 
-    &:last-child { border-bottom: none; }
+    &:last-child {
+      border-bottom: none;
+    }
 
-    &:hover { background: rgba(0, 167, 225, 0.06); }
+    &:hover {
+      background: rgba(0, 167, 225, 0.06);
+    }
 
     td {
       padding: 7px 14px;
@@ -209,7 +213,9 @@
     color: var(--textColorSecondary, #aaa);
   }
 
-  strong { color: var(--textColorPrimary, #ccc); }
+  strong {
+    color: var(--textColorPrimary, #ccc);
+  }
 }
 
 .debugCols {
@@ -274,8 +280,13 @@
   cursor: pointer;
   border-right: 1px solid var(--borderColor, #2a2d35);
 
-  &:last-child { border-right: none; }
-  &:hover { background: rgba(0, 167, 225, 0.08); color: var(--textColorPrimary, #fff); }
+  &:last-child {
+    border-right: none;
+  }
+  &:hover {
+    background: rgba(0, 167, 225, 0.08);
+    color: var(--textColorPrimary, #fff);
+  }
 }
 
 .segBtnActive {
@@ -299,7 +310,9 @@
   cursor: pointer;
   opacity: 0.55;
 
-  &:hover { opacity: 1; }
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .groupChipActive {
@@ -339,7 +352,9 @@
   font-size: 11px;
   cursor: pointer;
 
-  &:hover { background: rgba(0, 167, 225, 0.22); }
+  &:hover {
+    background: rgba(0, 167, 225, 0.22);
+  }
 }
 
 .hoverHint {
@@ -372,9 +387,14 @@
   text-align: left;
   font: inherit;
   color: inherit;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 
-  &:hover { border-color: #00a7e1; background: rgba(0, 167, 225, 0.05); }
+  &:hover {
+    border-color: #00a7e1;
+    background: rgba(0, 167, 225, 0.05);
+  }
 }
 
 .poolCardActive {
@@ -447,7 +467,7 @@
   border: 1px solid #1f232b;
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset;
 }
 
 .panelActive {
@@ -492,7 +512,9 @@
   border-radius: 4px;
   cursor: pointer;
 
-  &:hover { background: rgba(0, 167, 225, 0.18); }
+  &:hover {
+    background: rgba(0, 167, 225, 0.18);
+  }
 }
 
 .panelPoolBtnActive {
@@ -532,9 +554,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
-  &:hover { color: #ccc; }
+  &:hover {
+    color: #ccc;
+  }
 }
 
 .metricTabActive {
@@ -577,5 +603,3 @@
   border-radius: 1px;
   display: inline-block;
 }
-
-
