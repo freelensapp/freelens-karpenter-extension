@@ -1,4 +1,5 @@
 import { Renderer } from "@freelensapp/extensions";
+
 import type { KubeObjectMetadata } from "../core/metadata";
 
 const LensExtensionKubeObject = ((Renderer.K8sApi as any).LensExtensionKubeObject ??

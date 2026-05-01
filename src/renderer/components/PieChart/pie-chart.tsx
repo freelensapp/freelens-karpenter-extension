@@ -1,11 +1,11 @@
 import { Renderer } from "@freelensapp/extensions";
 import React, { useMemo } from "react";
-
-import type { Node } from "../../k8s/core/node-store";
-import { NodePool } from "../../k8s/karpenter/store";
 import { getNodePoolStatus, getNodeStatus } from "../../utils/kube-helpers";
 import style from "./pie-chart.module.scss";
 import styleInline from "./pie-chart.module.scss?inline";
+
+import type { Node } from "../../k8s/core/node-store";
+import type { NodePool } from "../../k8s/karpenter/store";
 
 export interface PieChartProps {
   nodes: Node[];

@@ -18,18 +18,16 @@
  *     selected row scroll-into-view, vertical guide drawn on the chart.
  *   - Hover a table row    → chart highlights the bucket the event falls in.
  */
-
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { COLOR, EVENT_REASON_CONFIG, EVENT_REASON_FALLBACK } from "../../config/theme";
-import { KubeEvent, getKubeEventStore } from "../../k8s/core/karpenter-events-store";
-import { type Node, getNodeStore } from "../../k8s/core/node-store";
-import { NodePool, getNodePoolStore } from "../../k8s/karpenter/store";
+import { getKubeEventStore, KubeEvent } from "../../k8s/core/karpenter-events-store";
+import { getNodeStore, type Node } from "../../k8s/core/node-store";
+import { getNodePoolStore, NodePool } from "../../k8s/karpenter/store";
 import { getNodeClaimName } from "../../utils/kube-helpers";
-import { TimelineChart, type TimelinePoint, type TimelineSeries } from "./timeline-chart";
-
 import styles from "./scaling-decisions.module.scss";
 import stylesInline from "./scaling-decisions.module.scss?inline";
+import { TimelineChart, type TimelinePoint, type TimelineSeries } from "./timeline-chart";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

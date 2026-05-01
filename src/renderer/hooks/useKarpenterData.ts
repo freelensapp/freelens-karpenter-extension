@@ -10,10 +10,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  type RawKubeEvent,
   fetchAllNamespaceEvents,
   getCachedAllNamespaceEvents,
   getKubeEventStore,
+  type RawKubeEvent,
 } from "../k8s/core/karpenter-events-store";
 import { type Node } from "../k8s/core/node-store";
 import { buildPodCountMap, getInstanceType } from "../utils/kube-helpers";

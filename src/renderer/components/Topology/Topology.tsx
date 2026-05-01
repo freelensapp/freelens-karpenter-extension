@@ -12,11 +12,11 @@ import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import { type Node } from "../../k8s/core/node-store";
 import { type NodePool } from "../../k8s/karpenter/store";
-import { type CondStatus, buildPodCountMap, getNodeStatus } from "../../utils/kube-helpers";
+import { buildPodCountMap, type CondStatus, getNodeStatus } from "../../utils/kube-helpers";
 import { ResponsiveTreemap } from "./TreemapView";
-import { type GroupBy, type NodeGroup, STATUS_COLOR, type SizeBy, computeKpi, groupNodes } from "./topology-utils";
 import style from "./topology.module.scss";
 import styleInline from "./topology.module.scss?inline";
+import { computeKpi, type GroupBy, groupNodes, type NodeGroup, type SizeBy, STATUS_COLOR } from "./topology-utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

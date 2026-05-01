@@ -1,11 +1,8 @@
 import { Renderer } from "@freelensapp/extensions";
-
 import { observer } from "mobx-react";
-
 import React from "react";
-
 import styleInline from "./karp.scss?inline";
-import { NodePool, getNodePoolStore } from "./store";
+import { getNodePoolStore, NodePool } from "./store";
 
 const {
   Component: { KubeObjectListLayout },

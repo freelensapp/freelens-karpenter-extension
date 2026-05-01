@@ -47,8 +47,12 @@
   outline: none;
   min-width: 200px;
 
-  &::placeholder { color: var(--textColorTertiary, #555); }
-  &:focus { border-color: #00a7e1; }
+  &::placeholder {
+    color: var(--textColorTertiary, #555);
+  }
+  &:focus {
+    border-color: #00a7e1;
+  }
 }
 
 .empty {
@@ -200,8 +204,12 @@
     cursor: pointer;
     transition: background 0.1s;
 
-    &:last-child { border-bottom: none; }
-    &:hover { background: rgba(0, 167, 225, 0.06); }
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+      background: rgba(0, 167, 225, 0.06);
+    }
 
     td {
       padding: 8px 12px;

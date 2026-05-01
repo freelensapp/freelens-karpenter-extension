@@ -4,18 +4,18 @@
 // dark navy canvas, rounded "chip" cells, Freelens teal-green (#00a7a0) for
 // active controls, blue micro-dots for pods.
 
-$bg-canvas:    #0e1a2b;
-$bg-card:      #16263d;
-$bg-chip:      #1d3552;
-$bg-chip-hi:   #244069;
-$border-soft:  rgba(255, 255, 255, 0.08);
-$border-mid:   rgba(255, 255, 255, 0.14);
-$accent:       #00a7a0;          // Freelens primary / menuActiveBackground
-$accent-soft:  rgba(0, 167, 160, 0.30);
-$text-primary:   #e6edf6;
+$bg-canvas: #0e1a2b;
+$bg-card: #16263d;
+$bg-chip: #1d3552;
+$bg-chip-hi: #244069;
+$border-soft: rgba(255, 255, 255, 0.08);
+$border-mid: rgba(255, 255, 255, 0.14);
+$accent: #00a7a0; // Freelens primary / menuActiveBackground
+$accent-soft: rgba(0, 167, 160, 0.3);
+$text-primary: #e6edf6;
 $text-secondary: #8aa0bc;
-$cap-on-demand:  #4dd0c1;        // teal — on-demand
-$cap-spot:       #c98ad6;        // soft purple — spot
+$cap-on-demand: #4dd0c1; // teal — on-demand
+$cap-spot: #c98ad6; // soft purple — spot
 
 .root {
   display: flex;
@@ -34,7 +34,9 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   border: 1px solid $border-soft;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 6px 18px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.03) inset,
+    0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
 .kpi {
@@ -46,7 +48,9 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   gap: 2px;
   border-right: 1px solid $border-soft;
 }
-.kpi:last-child { border-right: none; }
+.kpi:last-child {
+  border-right: none;
+}
 
 .kpiLabel {
   font-size: 10px;
@@ -118,14 +122,22 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   border-radius: 2px;
   flex-shrink: 0;
 }
-.capDotOnDemand { background: $cap-on-demand; }
-.capDotSpot     {
+.capDotOnDemand {
+  background: $cap-on-demand;
+}
+.capDotSpot {
   background: $cap-spot;
   // tiny stripe pattern to differentiate spot at the swatch level too
-  background-image: linear-gradient(45deg,
-    rgba(255,255,255,0.25) 25%, transparent 25%,
-    transparent 50%, rgba(255,255,255,0.25) 50%,
-    rgba(255,255,255,0.25) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.25) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.25) 75%,
+    transparent 75%,
+    transparent
+  );
   background-size: 4px 4px;
 }
 
@@ -156,7 +168,11 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   border-radius: 10px;
 }
 
-.toolGroup { display: flex; align-items: center; gap: 8px; }
+.toolGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 .toolLabel {
   font-size: 11px;
@@ -180,17 +196,21 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   color: $text-secondary;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 .segmentedButton:hover {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
   color: $text-primary;
 }
 .segmentedButtonActive {
   background: $accent;
   color: #0a1620;
   font-weight: 600;
-  box-shadow: 0 0 0 1px rgba(0, 167, 160, 0.5) inset, 0 1px 0 rgba(255,255,255,0.18) inset;
+  box-shadow:
+    0 0 0 1px rgba(0, 167, 160, 0.5) inset,
+    0 1px 0 rgba(255, 255, 255, 0.18) inset;
 }
 .segmentedButtonActive:hover {
   background: lighten($accent, 4%);
@@ -207,14 +227,24 @@ $cap-spot:       #c98ad6;        // soft purple — spot
 }
 
 @media (max-width: 1100px) {
-  .body { grid-template-columns: 1fr; }
+  .body {
+    grid-template-columns: 1fr;
+  }
 }
 
 .chartCard {
   position: relative;
   background:
-    radial-gradient(1200px 600px at 30% 0%, rgba(0, 167, 160, 0.05), transparent 60%),
-    radial-gradient(900px 600px at 100% 100%, rgba(74, 144, 226, 0.06), transparent 60%),
+    radial-gradient(
+      1200px 600px at 30% 0%,
+      rgba(0, 167, 160, 0.05),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 600px at 100% 100%,
+      rgba(74, 144, 226, 0.06),
+      transparent 60%
+    ),
     $bg-canvas;
   border: 1px solid $border-soft;
   border-radius: 10px;
@@ -267,18 +297,27 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   fill: $bg-chip;
   stroke: $border-mid;
   stroke-width: 1;
-  transition: fill 0.15s, stroke 0.15s, filter 0.15s;
+  transition:
+    fill 0.15s,
+    stroke 0.15s,
+    filter 0.15s;
 }
 .chipBody:hover {
   fill: $bg-chip-hi;
   stroke: $accent-soft;
   filter: drop-shadow(0 0 6px rgba(0, 167, 160, 0.25));
 }
-.chipBodyDimmed { opacity: 0.28; }
+.chipBodyDimmed {
+  opacity: 0.28;
+}
 
 // Capacity-type accent: a tiny corner ribbon on the chip.
-.chipCapDotOnDemand { fill: $cap-on-demand; }
-.chipCapDotSpot     { fill: $cap-spot; }
+.chipCapDotOnDemand {
+  fill: $cap-on-demand;
+}
+.chipCapDotSpot {
+  fill: $cap-spot;
+}
 
 .chipLabel {
   fill: $text-primary;
@@ -293,21 +332,33 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   pointer-events: none;
 }
 
-.podDot      { fill: rgba(74, 144, 226, 0.9); }
-.podDotEmpty { fill: rgba(255, 255, 255, 0.10); }
+.podDot {
+  fill: rgba(74, 144, 226, 0.9);
+}
+.podDotEmpty {
+  fill: rgba(255, 255, 255, 0.1);
+}
 
 // Pod usage mini-bar (bottom edge of every chip)
-.podBarTrack { fill: rgba(255, 255, 255, 0.08); }
-.podBarFill  { fill: $accent; }
-.podBarText  {
+.podBarTrack {
+  fill: rgba(255, 255, 255, 0.08);
+}
+.podBarFill {
+  fill: $accent;
+}
+.podBarText {
   fill: $text-secondary;
   font-size: 9px;
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   pointer-events: none;
 }
 
-.statusDot     { pointer-events: none; }
-.statusDotRing { fill: rgba(0, 0, 0, 0.55); }
+.statusDot {
+  pointer-events: none;
+}
+.statusDotRing {
+  fill: rgba(0, 0, 0, 0.55);
+}
 
 // ── Side legend (interactive group list) ────────────────────────────────────
 
@@ -341,20 +392,30 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   cursor: pointer;
   font-size: 12px;
   color: $text-primary;
-  transition: background 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
   border: 1px solid transparent;
 }
 .legendRow:hover {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
 }
 .legendRowActive {
-  background: rgba(0, 167, 160, 0.10);
+  background: rgba(0, 167, 160, 0.1);
   border-color: $accent-soft;
 }
 
-.legendDot     { width: 10px; height: 10px; border-radius: 3px; }
-.legendName    { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.legendCount   {
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.legendName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.legendCount {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: 11px;
@@ -367,10 +428,12 @@ $cap-spot:       #c98ad6;        // soft purple — spot
   height: 3px;
   border-radius: 2px;
   overflow: hidden;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   margin-top: 4px;
 }
-.legendStatusSegment { height: 100%; }
+.legendStatusSegment {
+  height: 100%;
+}
 
 // ── Tooltip ─────────────────────────────────────────────────────────────────
 
