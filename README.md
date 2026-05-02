@@ -6,6 +6,52 @@ A visual interface to monitor Karpenter's resources and the actions it performs.
 
 Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robertobandini) and Alberto Lunghi [@albyrex](https://github.com/albyrex), who created the first version.
 
+## Features
+
+The extension provides a comprehensive dashboard for monitoring Karpenter's autoscaling behavior across your Kubernetes cluster.
+
+### Overview
+
+![Karpenter Overview Dashboard](assets/screenshots/overview.png)
+
+Displays key performance indicators including:
+- Total node count and breakdown by Karpenter-provisioned vs. existing nodes
+- Per-pool node distribution with current node claims and nodes
+- Resource utilization summaries for memory and CPU across the cluster
+
+### Topology
+
+![Karpenter Topology View](assets/screenshots/topology.png)
+
+Interactive treemap visualization that organizes nodes by:
+- Node pools (color-coded regions)
+- Zones and instance types (nested hierarchy)
+- Adjustable grouping to explore resource distribution at different levels
+
+Helps identify resource concentration and imbalances across your infrastructure.
+
+### Node Classes
+
+![Karpenter Node Classes](assets/screenshots/nodeclasses.png)
+
+Displays all configured NodeClass resources (AWS EC2NodeClass or Azure AKSNodeClass) with:
+- NodeClass names and providers (AWS or Azure)
+- Associated NodePool references
+- Configuration details for each class
+- Quick access to related node pools
+
+### Scaling Decisions
+
+![Karpenter Scaling Events - Part 1](assets/screenshots/scaling-decisions-1.png)
+
+![Karpenter Scaling Events - Part 2](assets/screenshots/scaling-decisions-2.png)
+
+Real-time event timeline showing Karpenter's scaling actions:
+- **Provisioning events**: When new nodes are created to meet workload demand
+- **Consolidation events**: When Karpenter optimizes node utilization
+- **Disruption events**: When nodes are removed or rescheduled
+- Timestamps and detailed event metadata for audit and debugging
+
 ## Build from the source
 
 ### Prerequisites
