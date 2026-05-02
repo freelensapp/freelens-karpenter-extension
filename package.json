@@ -65,7 +65,7 @@
     "openlens",
     "freelens"
   ],
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.28.2",
   "dependencies": {
     "@ogre-tools/injectable": "^17.11.1",
     "@types/d3": "^7.4.3",
