@@ -94,7 +94,6 @@ jobs:
             --tag ${dist_tag}
         env:
           NPM_CONFIG_PROVENANCE: "true"
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         continue-on-error: true
 
       - name: Publish npm packages (retry)
@@ -110,7 +109,6 @@ jobs:
             --tag ${dist_tag}
         env:
           NPM_CONFIG_PROVENANCE: "true"
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         continue-on-error: true
 
       - name: Publish npm packages (retry 2)
@@ -125,7 +123,6 @@ jobs:
             --tag ${dist_tag}
         env:
           NPM_CONFIG_PROVENANCE: "true"
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create release
         uses: softprops/action-gh-release@v2
