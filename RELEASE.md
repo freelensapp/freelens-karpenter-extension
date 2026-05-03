@@ -46,7 +46,7 @@ input `prerelease`, opening the PR for the next development version.
 
 ## Workflow chain
 
-```
+```text
 [Maintainer] workflow_dispatch → Automated npm version
                                           │
                                (PR merged into main)
