@@ -1,7 +1,7 @@
 # Release process
 
-Publishing a new release involves a single manual trigger that starts an
-automated chain across multiple workflows.
+Publishing a new release involves an automated chain up to publication, followed
+by a manual post-release version bump for ongoing development.
 
 ## Step 1 — Trigger: `Automated npm version`
 
@@ -39,10 +39,10 @@ Pushing the `vX.Y.Z` tag automatically triggers the `Release` workflow, which:
    containing a hyphen).
 4. Creates a GitHub Release with the generated `.tgz` attached.
 
-## Step 4 — Automatic: next `Automated npm version`
+## Step 4 — Manual: prepare next development version
 
-The creation of the GitHub Release triggers `Automated npm version` again with
-input `prerelease`, opening the PR for the next development version.
+After publishing the release, run **Automated npm version** manually with input
+`prerelease` to open the PR for the next development cycle.
 
 ## Workflow chain
 
@@ -56,10 +56,12 @@ input `prerelease`, opening the PR for the next development version.
                                  (tag v* pushed)
                                           ▼
                                        Release
+
+[Maintainer] workflow_dispatch → Automated npm version (prerelease)
                                           │
-                              (GitHub "released" event)
+                               (PR merged into main)
                                           ▼
-                             Automated npm version (prerelease)
+                                next development version on main
 ```
 
 ## Pre-release checklist

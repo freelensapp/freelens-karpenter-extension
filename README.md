@@ -58,6 +58,16 @@ Real-time event timeline showing Karpenter's scaling actions:
 - **Disruption events**: When nodes are removed or rescheduled
 - Timestamps and detailed event metadata for audit and debugging
 
+## Install
+
+To install or upgrade: open Freelens and go to Extensions (`ctrl`+`shift`+`E`
+or `cmd`+`shift`+`E`), and install `@freelensapp/karpenter-extension`.
+
+or:
+
+Use the following URL in the browser:
+[freelens://app/extensions/install/%40freelensapp%2Fkarpenter-extension](freelens://app/extensions/install/%40freelensapp%2Fkarpenter-extension)
+
 ## Build from the source
 
 ### Prerequisites
