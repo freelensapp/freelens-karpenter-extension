@@ -6,6 +6,12 @@ A visual interface to monitor Karpenter's resources and the actions it performs.
 
 Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robertobandini) and Alberto Lunghi [@albyrex](https://github.com/albyrex), who created the first version.
 
+## Compatibility
+
+At the moment, this extension is intended for clusters running Karpenter on:
+- **AWS EKS**
+- **Azure AKS**
+
 ## Features
 
 The extension provides a comprehensive dashboard for monitoring Karpenter's autoscaling behavior across your Kubernetes cluster.
