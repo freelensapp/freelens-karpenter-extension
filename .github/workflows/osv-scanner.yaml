@@ -1,3 +1,19 @@
+# Workflow summary:
+# - Purpose: monitor dependency vulnerabilities with OSV-Scanner on schedule, on PRs, and on direct runs.
+# - Depends on: none.
+# - Trigger:
+#   - Automatic event: on push to main and on every pull request, by GitHub Actions, to detect new vulnerabilities introduced by code/dependency changes.
+#   - Scheduled: every week on Monday at 20:38 UTC, by GitHub Actions scheduler, to keep a periodic security baseline.
+#   - Manual: via workflow_dispatch, by maintainers, to run security scans on demand.
+# - Steps:
+#   - Run the reusable OSV scan workflow for push/schedule/manual events.
+#   - Run the reusable OSV scan workflow for PR/merge queue events.
+#   - Publish findings to security results without failing the job on vulnerabilities.
+# - Docs:
+#   - https://osv.dev/
+#   - https://google.github.io/osv-scanner/
+#   - https://github.com/google/osv-scanner-action
+
 name: OSV-Scanner
 
 on:

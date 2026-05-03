@@ -1,3 +1,19 @@
+# Workflow summary:
+# - Purpose: validate end-to-end extension behavior by running integration tests against a matrix of Freelens versions.
+# - Depends on: none.
+# - Trigger:
+#   - Automatic event: on push to main and on every pull request, by GitHub Actions, to validate runtime integration before/after changes.
+#   - Manual: via workflow_dispatch, by maintainers, to run full integration validation on demand.
+# - Steps:
+#   - Checkout, install dependencies, build, and pack the extension.
+#   - Checkout the target Freelens version and prepare dependency/build caches.
+#   - Install Freelens dependencies, build app artifacts, and rebuild native modules for Electron.
+#   - Start a KinD Kubernetes cluster for integration scenarios.
+#   - Copy plugin integration tests into Freelens and run Playwright-based tests with retry.
+# - Docs:
+#   - https://kind.sigs.k8s.io/
+#   - https://playwright.dev/docs/intro
+
 name: Integration tests
 
 on:

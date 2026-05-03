@@ -1,3 +1,18 @@
+# Workflow summary:
+# - Purpose: create a release tag on main after an automated version PR is merged or explicitly approved.
+# - Depends on: output from workflow "Automated npm version" (expects PR title prefix "Automated npm version").
+# - Trigger:
+#   - Automatic event: on closed pull requests targeting main, by GitHub Actions, to create a tag when an "Automated npm version" PR is merged.
+#   - Comment command: on issue comments, by maintainers, to create a tag when /tag is posted on a closed "Automated npm version" issue.
+# - Steps:
+#   - Checkout main with full git history.
+#   - Read the version from package.json.
+#   - Verify the version is a stable release (X.Y.Z only).
+#   - Create tag vX.Y.Z on the current main branch via GitHub API.
+# - Docs:
+#   - https://docs.github.com/rest/git/refs
+#   - https://github.com/actions/github-script
+
 name: Automated tag
 
 on:

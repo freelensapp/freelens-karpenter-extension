@@ -1,3 +1,21 @@
+# Workflow summary:
+# - Purpose: keep Trunk tooling and config up to date through automated pull requests.
+# - Depends on: none.
+# - Trigger:
+#   - Scheduled: every day at 06:02 UTC, by GitHub Actions scheduler, to keep Trunk tooling updated.
+#   - Automatic event: on push to main when files under .trunk/** change, by GitHub Actions, to align upgrades with config updates.
+#   - Comment command: on issue comments, by maintainers, to rerun when /rerun is posted on an "Automated trunk upgrade" issue.
+#   - Manual: via workflow_dispatch, by maintainers, to force an upgrade run on demand.
+# - Steps:
+#   - Checkout code and prepare Node.js/pnpm environment with cache.
+#   - Install dependencies with retry.
+#   - Run trunk upgrade and generate PR title/body metadata from output.
+#   - Detect repository changes and optionally run Trunk checks.
+#   - Commit updates to automation branch and create/update PR, or close stale PR when no changes exist.
+# - Docs:
+#   - https://docs.trunk.io/
+#   - https://cli.github.com/manual/gh_pr
+
 name: Automated trunk upgrade
 
 on:
