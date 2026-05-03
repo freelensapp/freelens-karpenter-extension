@@ -1,3 +1,21 @@
+# Workflow summary:
+# - Purpose: apply Biome migration updates automatically and propose them through PR.
+# - Depends on: none.
+# - Trigger:
+#   - Scheduled: every day at 06:02 UTC, by GitHub Actions scheduler, to keep Biome migrations current.
+#   - Automatic event: on push to main when biome.jsonc or package.json changes, by GitHub Actions, to react to Biome config/dependency updates.
+#   - Comment command: on issue comments, by maintainers, to rerun when /rerun is posted on an "Automated biome migrate" issue.
+#   - Manual: via workflow_dispatch, by maintainers, to run migration on demand.
+# - Steps:
+#   - Checkout code and prepare Node.js/pnpm environment with cache.
+#   - Install dependencies with retry.
+#   - Run Biome migration command and capture output.
+#   - Detect repository changes.
+#   - Commit changes to automation branch and create/update PR, or close stale PR when no changes exist.
+# - Docs:
+#   - https://biomejs.dev/guides/upgrade-to-biome-v2/
+#   - https://cli.github.com/manual/gh_pr
+
 name: Automated biome migrate
 
 on:

@@ -1,3 +1,21 @@
+# Workflow summary:
+# - Purpose: detect vulnerable dependencies and propose automatic fixes via PR.
+# - Depends on: none.
+# - Trigger:
+#   - Scheduled: every day at 07:16 UTC, by GitHub Actions scheduler, to keep dependency security hygiene up to date.
+#   - Comment command: on issue comments, by maintainers, to rerun when /rerun is posted on an "Automated npm audit" issue.
+#   - Manual: via workflow_dispatch, by maintainers, to run an immediate audit/fix cycle on demand.
+# - Steps:
+#   - Checkout code and prepare Node.js/pnpm environment with cache.
+#   - Install dependencies with retry.
+#   - Run dependency vulnerability report and apply audit fixes.
+#   - Build PR body from audit logs.
+#   - Commit changes to automation branch and create/update PR, or close stale PR when no changes exist.
+# - Docs:
+#   - https://docs.npmjs.com/cli/v11/commands/npm-audit
+#   - https://pnpm.io/cli/audit
+#   - https://cli.github.com/manual/gh_pr
+
 name: Automated npm audit
 
 on:

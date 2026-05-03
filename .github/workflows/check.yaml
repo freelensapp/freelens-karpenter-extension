@@ -1,3 +1,18 @@
+# Workflow summary:
+# - Purpose: execute the main CI quality gates before merge.
+# - Depends on: none.
+# - Trigger:
+#   - Automatic event: on push to main and on every pull request, by GitHub Actions, to validate build and static checks continuously.
+#   - Manual: via workflow_dispatch, by maintainers, to run quality gates on demand.
+# - Steps:
+#   - Checkout code and setup Node.js plus pnpm cache.
+#   - Install dependencies with retry.
+#   - Build production packages.
+#   - Run type checking, lint checking, and Knip checks.
+# - Docs:
+#   - https://pnpm.io/cli/install
+#   - https://knip.dev/
+
 name: Check
 
 on:

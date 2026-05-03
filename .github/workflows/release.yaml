@@ -1,3 +1,19 @@
+# Workflow summary:
+# - Purpose: publish release artifacts to npm and GitHub when a version tag is pushed.
+# - Depends on: version tags (v*) usually created by workflow "Automated tag".
+# - Trigger:
+#   - Automatic event: on push of tags matching v*, by GitHub Actions, to publish a new package release.
+# - Steps:
+#   - Checkout code for the pushed tag and verify tag/package version match.
+#   - Setup Node.js and pnpm with cache, then install dependencies with retry.
+#   - Build and pack all packages.
+#   - Publish npm packages with correct dist-tag (latest or next) and retries.
+#   - Create GitHub release and attach generated .tgz artifacts.
+# - Docs:
+#   - https://docs.npmjs.com/cli/v11/commands/npm-publish
+#   - https://docs.github.com/repositories/releasing-projects-on-github/about-releases
+#   - https://github.com/softprops/action-gh-release
+
 name: Release
 
 on:
