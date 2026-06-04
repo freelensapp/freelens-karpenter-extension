@@ -12,6 +12,8 @@ At the moment, this extension is intended for clusters running Karpenter on:
 - **AWS EKS**
 - **Azure AKS**
 
+Freelens compatibility: **Freelens v1.9.0 and later**.
+
 ## Features
 
 The extension provides a comprehensive dashboard for monitoring Karpenter's autoscaling behavior across your Kubernetes cluster.
@@ -85,8 +87,8 @@ nvm install
 mise install
 # or
 winget install CoreyButler.NVMforWindows
-nvm install 22.14.0
-nvm use 22.14.0
+nvm install 24.15.0
+nvm use 24.15.0
 ```
 
 Install Pnpm:
