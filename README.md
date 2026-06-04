@@ -12,6 +12,8 @@ At the moment, this extension is intended for clusters running Karpenter on:
 - **AWS EKS**
 - **Azure AKS**
 
+Freelens compatibility: **Freelens v1.9.0 and later**.
+
 ## Features
 
 The extension provides a comprehensive dashboard for monitoring Karpenter's autoscaling behavior across your Kubernetes cluster.
