@@ -250,6 +250,7 @@ interface Weighted<T> {
 
 export function squarify<T>(items: Weighted<T>[], area: Rect): SquarifiedItem<T>[] {
   const out: SquarifiedItem<T>[] = [];
+  if (!(area.w > 0) || !(area.h > 0)) return out;
   const sorted = items
     .filter((i) => i.value > 0)
     .slice()
@@ -267,6 +268,8 @@ export function squarify<T>(items: Weighted<T>[], area: Rect): SquarifiedItem<T>
 
 function layoutRow<T>(items: Weighted<T>[], rect: Rect, out: SquarifiedItem<T>[]) {
   if (items.length === 0) return;
+  // Catch zero, negative, and NaN dimensions (can arise after repeated shrinking)
+  if (!(rect.w > 0) || !(rect.h > 0)) return;
   const shortSide = Math.min(rect.w, rect.h);
   const row: Weighted<T>[] = [];
   let bestRatio = Infinity;
@@ -274,14 +277,18 @@ function layoutRow<T>(items: Weighted<T>[], rect: Rect, out: SquarifiedItem<T>[]
   for (const it of items) {
     const candidate = [...row, it];
     const ratio = worstRatio(candidate, shortSide);
-    if (ratio <= bestRatio) {
+    // Always accept the first item — NaN from a degenerate rect must not leave row empty,
+    // which would cause items.slice(0) to recurse on the same list indefinitely.
+    if (row.length === 0 || ratio <= bestRatio) {
       row.push(it);
       bestRatio = ratio;
     } else {
       // Emit current row, recurse on the rest with the remaining rect
       const rowArea = row.reduce((s, r) => s + r.value, 0);
       placeRow(row, rect, out);
-      const newRect = shrinkRect(rect, rowArea / shortSide);
+      const consumed = rowArea / shortSide;
+      if (!(consumed > 0)) return;
+      const newRect = shrinkRect(rect, consumed);
       layoutRow(items.slice(row.length), newRect, out);
       return;
     }
