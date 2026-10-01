@@ -24,8 +24,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(mobx@6.15.4)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       moment:
-        specifier: ^2.30.1
-        version: 2.30.1
+        specifier: ^2.31.0
+        version: 2.31.0
     devDependencies:
       '@electron-toolkit/tsconfig':
         specifier: ^1.0.1
@@ -2221,8 +2221,8 @@ packages:
   moment-timezone@0.6.2:
     resolution: {integrity: sha512-lDsQv8FoGdBUdf0+TjGsq2orxKuXdwFlQ6Zw6TX3xIcTwTfEpCLyKqvEauvCHJ8iu3KBV8+uPhlv70YsNGdUBQ==}
 
-  moment@2.30.1:
-    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
+  moment@2.31.0:
+    resolution: {integrity: sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw==}
 
   monaco-editor@0.54.0:
     resolution: {integrity: sha512-hx45SEUoLatgWxHKCmlLJH81xBo0uXP4sRkESUpmDQevfi+e7K1VuiSprK6UpQ8u4zOcKNiH0pMvHvlMWA/4cw==}
@@ -3453,7 +3453,7 @@ snapshots:
       mobx-react: 7.6.0(mobx@6.15.4)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       mobx-react-lite: 4.1.1(mobx@6.15.4)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       mobx-utils: 6.1.1(mobx@6.15.4)
-      moment: 2.30.1
+      moment: 2.31.0
       moment-timezone: 0.6.2
       monaco-editor: 0.54.0
       node-pty: 1.2.0-beta.12
@@ -3579,14 +3579,14 @@ snapshots:
       byline: 5.0.0
       lodash: 4.18.1
       mobx: 6.15.4
-      moment: 2.30.1
+      moment: 2.31.0
 
   '@freelensapp/kube-object@1.9.0':
     dependencies:
       '@freelensapp/utilities': 1.9.0
       auto-bind: 4.0.0
       lodash: 4.18.1
-      moment: 2.30.1
+      moment: 2.31.0
       typed-regex: 0.0.8
 
   '@freelensapp/kubectl-versions@1.9.0': {}
@@ -3763,7 +3763,7 @@ snapshots:
       crypto-js: 4.2.0
       lodash: 4.18.1
       mobx: 6.15.4
-      moment: 2.30.1
+      moment: 2.31.0
       p-limit: 3.1.0
       path-to-regexp: 6.3.0
       react: 17.0.2
@@ -4541,7 +4541,7 @@ snapshots:
   chart.js@2.9.4:
     dependencies:
       chartjs-color: 2.4.1
-      moment: 2.30.1
+      moment: 2.31.0
 
   chartjs-color-string@0.6.0:
     dependencies:
@@ -5480,9 +5480,9 @@ snapshots:
 
   moment-timezone@0.6.2:
     dependencies:
-      moment: 2.30.1
+      moment: 2.31.0
 
-  moment@2.30.1: {}
+  moment@2.31.0: {}
 
   monaco-editor@0.54.0:
     dependencies:
