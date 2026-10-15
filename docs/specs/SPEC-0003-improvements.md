@@ -1,6 +1,6 @@
 # SPEC-0003: Improvements beyond parity
 
-- **Status:** Draft
+- **Status:** Approved (C1-C6, 2026-10-15; the variant of C3 is chosen in step I0)
 - **Milestone:** `M2` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
 - **Tracking issue:** the improvements feature issue (I)
@@ -27,7 +27,7 @@ SPEC-0001. Nothing here writes to a cluster.
 - **Proposal:** check every view in the light theme against the baseline and
   move the fixed colours to the host's theme variables; no new palette.
 - **Tests:** functional screenshots of every tab in both themes.
-- **Decision:** pending.
+- **Decision:** approved by Roberto Bandini, 2026-10-15.
 
 ### C2. NodePools without nodes
 
@@ -37,7 +37,7 @@ SPEC-0001. Nothing here writes to a cluster.
   nodes.
 - **Tests:** unit test of the pool selection; the `empty` NodePool of the
   static lab is shown.
-- **Decision:** pending.
+- **Decision:** approved by Roberto Bandini, 2026-10-15.
 
 ### C3. Debug table of the pool events
 
@@ -45,7 +45,7 @@ SPEC-0001. Nothing here writes to a cluster.
   released UI.
 - **Proposal:** remove it, or keep it behind a preference.
 - **Tests:** functional check that it is gone, or follows the preference.
-- **Decision:** pending.
+- **Decision:** approved by Roberto Bandini, 2026-10-15; removal or preference is chosen in step I0.
 
 ### C4. Karpenter details on the host's Node details
 
@@ -55,7 +55,7 @@ SPEC-0001. Nothing here writes to a cluster.
   `Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, ...)` and wrapped by the
   error boundary; `customResources` stays unset.
 - **Tests:** unit test of the item; functional check on a KWOK node.
-- **Decision:** pending.
+- **Decision:** approved by Roberto Bandini, 2026-10-15.
 
 ### C5. NodeOverlays
 
@@ -65,7 +65,7 @@ SPEC-0001. Nothing here writes to a cluster.
 - **Proposal:** list the NodeOverlays that apply to each NodePool in its
   Overview card.
 - **Tests:** model tests; a NodeOverlay fixture in the static lab.
-- **Decision:** pending.
+- **Decision:** approved by Roberto Bandini, 2026-10-15.
 
 ### C6. Controller version in any namespace
 
@@ -77,7 +77,7 @@ SPEC-0001. Nothing here writes to a cluster.
   `app.kubernetes.io/name=karpenter` in any namespace.
 - **Tests:** unit test of the lookup; a fixture with the Deployment in
   `kube-system`.
-- **Decision:** pending.
+- **Decision:** approved by Roberto Bandini, 2026-10-15.
 
 ## Notes and deviations
 

@@ -1,6 +1,6 @@
 # SPEC-0001: Port to the Freelens v2 extension API
 
-- **Status:** Draft
+- **Status:** Approved
 - **Milestone:** `M1` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
 - **Freelens pin:** freelensapp/freelens@d5e986b4359866284e37968798dba5910e831ad4, `@freelensapp/extensions@2.0.0-0-nightly-2026-10-12`
