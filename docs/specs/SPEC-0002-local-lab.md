@@ -146,9 +146,19 @@ Implemented on 2026-10-15 (`e2e/`):
   `CapacityBuffer` feature gates without defining them in `values.yaml`; the
   controller panics on the empty value, so the lab sets both to `false`.
 - The kind node image is kind v0.33.0's default (Kubernetes v1.37.0).
-- Deferred: `examples/` (with the integration tests of the migration's step
-  6) and the KWOK simulated node metrics (`metrics-usage.yaml`, with feature K
-  step K3).
+- `examples/` of the template is not added: the static lab gives the same,
+  CRDs and objects to try the extension with, and the integration tests run
+  against it (step 6), so there is one set of fixtures. `lab-up.sh` takes
+  `KIND_NODE_IMAGE` to pin the Kubernetes version, as the integration
+  workflow does.
+- The integration tests read `~/.kube/config` of the machine they run on. In
+  CI that is the lab's alone (the workflow copies it there); locally they run
+  inside a bubblewrap sandbox whose `~/.kube` holds only the lab's kubeconfig
+  (`scripts/run-isolated.sh` of the working folder), since the developer's
+  `~/.kube` can hold production contexts and Freelens reads it from the
+  password database's home, whatever `HOME` says.
+- Deferred: the KWOK simulated node metrics (`metrics-usage.yaml`, with
+  feature K step K3).
 
 Results on 2026-10-15:
 

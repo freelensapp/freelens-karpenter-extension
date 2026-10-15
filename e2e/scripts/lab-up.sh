@@ -14,8 +14,9 @@ create_cluster() {
   else
     cluster_exists && die "kind cluster $CLUSTER_NAME exists without the lab kubeconfig; run lab-down.sh $PROFILE"
     log "creating kind cluster $CLUSTER_NAME"
+    # KIND_NODE_IMAGE pins the Kubernetes version (CI); otherwise kind's default node image.
     kind create cluster --name "$CLUSTER_NAME" --kubeconfig "$KUBECONFIG" \
-      --config "$E2E_DIR/kind-config.yaml" --wait 180s
+      --config "$E2E_DIR/kind-config.yaml" --wait 180s ${KIND_NODE_IMAGE:+--image "$KIND_NODE_IMAGE"}
   fi
   lab_guard
 }
