@@ -666,7 +666,7 @@ const NodePoolList: React.FC<{
         );
         const claims = claimsByPool[poolName] ?? [];
         return (
-          <div key={nodePool.metadata?.uid ?? nodePool.metadata?.name} className={style.nodePoolRow}>
+          <div key={nodePool.metadata?.uid ?? nodePool.metadata?.name}>
             <KarpenterCard nodePool={nodePool} nodes={nodes} claims={claims} nodeStore={nodeStore} />
           </div>
         );

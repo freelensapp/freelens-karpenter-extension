@@ -4,12 +4,8 @@
  */
 
 import { Renderer } from "@freelensapp/extensions";
-//import { karpenterObjects } from "./k8s/karpenter/objects";
-// transpiled .tsx code must have `React` symbol in the scope
-// @ts-ignore
-import React from "react";
+import { withPageErrorBoundary } from "./components/error-boundary";
 // must be `?raw` as we need SVG element
-//import svgIcon from "./icons/example.svg?raw";
 import svgIconLogo from "./icons/karpenter.svg?raw";
 import { KarpenterDashboard } from "./page";
 
@@ -17,19 +13,21 @@ const {
   Component: { Icon },
 } = Renderer;
 
-export function FluxExtensionExampleIcon(props: Renderer.Component.IconProps) {
+export function KarpenterIcon(props: Renderer.Component.IconProps) {
   return <Icon {...props} svg={svgIconLogo} />;
 }
 
-export default class FluxExtensionExampleRenderer extends Renderer.LensExtension {
-  clusterPages = [
+// The page renders inside an error boundary, so that an error it throws stays in the page instead of replacing the
+// main area of the cluster with the host's error.
+export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
+  clusterPages: Renderer.LensExtension["clusterPages"] = [
     {
       id: "dashboard",
       components: {
         Page: () => <KarpenterDashboard extension={this} />,
       },
     },
-  ];
+  ].map((registration) => withPageErrorBoundary(this, registration));
 
   clusterPageMenus = [
     {
@@ -37,7 +35,7 @@ export default class FluxExtensionExampleRenderer extends Renderer.LensExtension
       title: "Karpenter",
       target: { pageId: "dashboard" },
       components: {
-        Icon: FluxExtensionExampleIcon,
+        Icon: KarpenterIcon,
       },
     },
   ];
