@@ -1,0 +1,60 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+status:
+  instanceProfile: lab_1234567890
+  amis:
+    - id: ami-0a1b2c3d4e5f60001
+      name: amazon-eks-node-al2023-x86_64-standard-1.33-v20261001
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+  subnets:
+    - id: subnet-0a1b2c3d4e5f60001
+      zone: eu-west-1a
+      zoneID: euw1-az1
+    - id: subnet-0a1b2c3d4e5f60002
+      zone: eu-west-1b
+      zoneID: euw1-az2
+  securityGroups:
+    - id: sg-0a1b2c3d4e5f60001
+      name: lab-node
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: gpu
+status:
+  conditions:
+    - type: Ready
+      status: "False"
+      reason: AMIsNotFound
+      message: AMISelector did not match any AMIs
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.azure.com/v1beta1
+kind: AKSNodeClass
+metadata:
+  name: default
+status:
+  kubernetesVersion: 1.33.2
+  images:
+    - id: /CommunityGalleries/AKSAzureLinux-f7c7cda5-1c9a-4bdc-a222-9614c968580b/images/V3gen2/versions/202610.01.0
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"

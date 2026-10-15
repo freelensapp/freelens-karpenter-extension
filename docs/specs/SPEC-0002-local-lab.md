@@ -89,11 +89,14 @@ A variant of the static profile serves only `AKSNodeClass` `v1alpha2` next to
 ### Safety
 
 - Every script works on its own kubeconfig file, `.e2e/<profile>/kubeconfig`,
-  written by `kind create cluster --kubeconfig`, and passes it explicitly to
-  every `kubectl`, `helm` and `ko` call; `KUBECONFIG` is unset in the
-  scripts, and the user's kubeconfig is neither read nor written.
-- `lib.sh` refuses to run when the kubeconfig's context is not
-  `kind-karpenter-lab-<profile>` or its server is not on `127.0.0.1`.
+  written by `kind create cluster --kubeconfig`. The scripts set `KUBECONFIG`
+  to that file alone, which also confines the upstream
+  `hack/install-kwok.sh` of Karpenter, and name the context on every
+  `kubectl` and `helm` call; the user's kubeconfig is neither read nor
+  written.
+- `lib.sh` refuses to run when `KUBECONFIG` is not the lab's file, when the
+  file has another context than `kind-karpenter-lab-<profile>` or more than
+  one, or when its server is not on `127.0.0.1`.
 - Karpenter's own `make apply-with-kind` is not used: it applies to the
   current context of `~/.kube/config`.
 - Freelens is started for checks with a user store that syncs only the lab's
@@ -125,4 +128,36 @@ A variant of the static profile serves only `AKSNodeClass` `v1alpha2` next to
 
 ## Notes and deviations
 
-None yet.
+Implemented on 2026-10-15 (`e2e/`):
+
+- `lab-up.sh static|live`, `lab-down.sh`, `lab-scale.sh` and
+  `lab-aks-v1alpha2.sh on|off` (the AKSNodeClass version variant of the
+  static profile, by patching `served` in the CRD).
+- The static node, NodeClaim, NodePool status and pod fixtures are generated
+  by `e2e/fixtures/static/gen-fixtures.py`, after the shapes Karpenter v1.15.0
+  writes on the live lab: an ownerReference from each node to its NodeClaim
+  and from each NodeClaim to its NodePool (set by `lab-up.sh` once the uids
+  exist), no `karpenter.sh/nodeclaim` label, the NodeClaim conditions
+  `Launched`, `Registered`, `Initialized`, `Ready`.
+- Events get their times when they are applied (`${LAB_T_M<n>}`, n minutes
+  ago) and the API server drops them after one hour: run `lab-up.sh static`
+  again before a session that needs them.
+- The KWOK chart of Karpenter v1.15.0 renders the `StaticCapacity` and
+  `CapacityBuffer` feature gates without defining them in `values.yaml`; the
+  controller panics on the empty value, so the lab sets both to `false`.
+- The kind node image is kind v0.33.0's default (Kubernetes v1.37.0).
+- Deferred: `examples/` (with the integration tests of the migration's step
+  6) and the KWOK simulated node metrics (`metrics-usage.yaml`, with feature K
+  step K3).
+
+Results on 2026-10-15:
+
+- `lab-up.sh static` from scratch in 75 s, and again on the existing cluster
+  without change; `lab-down.sh static` removed only its cluster.
+- `lab-up.sh live`: Karpenter Ready; `lab-scale.sh 12 3` launched one
+  NodeClaim and KWOK node per NodePool with 15 pods Running;
+  `lab-scale.sh 2 0` disrupted the `batch` node (`DisruptionTerminating`,
+  `Drained`, `Finalized`).
+- The safety check refused a kubeconfig with a remote server, one with a
+  production context name, and the user's own kubeconfig.
+- The user's `~/.kube/config` was not modified.

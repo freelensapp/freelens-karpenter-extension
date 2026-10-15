@@ -1,0 +1,462 @@
+# Timestamps are filled in by lab-up.sh (LAB_T_M<n> = n minutes ago); events expire after 1h.
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.np-general-ready
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodePool
+  name: general
+reason: Ready
+message: "Status condition transitioned, Type: Ready, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M50}"
+lastTimestamp: "${LAB_T_M50}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.np-gpu-notready
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodePool
+  name: gpu
+reason: NodeClassReady
+message: "Status condition transitioned, Type: NodeClassReady, Status: False, Reason: NodeClassNotReady"
+type: Warning
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M45}"
+lastTimestamp: "${LAB_T_M45}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-7xk2p-launched
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-7xk2p
+reason: Launched
+message: "Status condition transitioned, Type: Launched, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M40}"
+lastTimestamp: "${LAB_T_M40}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-7xk2p-registered
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-7xk2p
+reason: Registered
+message: "Status condition transitioned, Type: Registered, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M39}"
+lastTimestamp: "${LAB_T_M39}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-7xk2p-initialized
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-7xk2p
+reason: Initialized
+message: "Status condition transitioned, Type: Initialized, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M39}"
+lastTimestamp: "${LAB_T_M39}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-9qwmt-launched
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-9qwmt
+reason: Launched
+message: "Status condition transitioned, Type: Launched, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M30}"
+lastTimestamp: "${LAB_T_M30}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-9qwmt-registered
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-9qwmt
+reason: Registered
+message: "Status condition transitioned, Type: Registered, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M29}"
+lastTimestamp: "${LAB_T_M29}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-9qwmt-initialized
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-9qwmt
+reason: Initialized
+message: "Status condition transitioned, Type: Initialized, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M29}"
+lastTimestamp: "${LAB_T_M29}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.gpu-h5j3d-launched
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: gpu-h5j3d
+reason: Launched
+message: "Status condition transitioned, Type: Launched, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M20}"
+lastTimestamp: "${LAB_T_M20}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.gpu-h5j3d-registered
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: gpu-h5j3d
+reason: Registered
+message: "Status condition transitioned, Type: Registered, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M19}"
+lastTimestamp: "${LAB_T_M19}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.gpu-h5j3d-initialized
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: gpu-h5j3d
+reason: Initialized
+message: "Status condition transitioned, Type: Initialized, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M19}"
+lastTimestamp: "${LAB_T_M19}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.azure-d3e4f-launched
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: azure-d3e4f
+reason: Launched
+message: "Status condition transitioned, Type: Launched, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M10}"
+lastTimestamp: "${LAB_T_M10}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.azure-d3e4f-registered
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: azure-d3e4f
+reason: Registered
+message: "Status condition transitioned, Type: Registered, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M9}"
+lastTimestamp: "${LAB_T_M9}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.azure-d3e4f-initialized
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: azure-d3e4f
+reason: Initialized
+message: "Status condition transitioned, Type: Initialized, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M9}"
+lastTimestamp: "${LAB_T_M9}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-b4n8r-disrupting
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-b4n8r
+reason: DisruptionTerminating
+message: "Disrupting NodeClaim: Underutilized/Delete"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M5}"
+lastTimestamp: "${LAB_T_M5}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.node-13-disrupting
+  namespace: default
+involvedObject:
+  apiVersion: v1
+  kind: Node
+  name: ip-10-0-1-13.eu-west-1.compute.internal
+reason: DisruptionTerminating
+message: "Disrupting Node: Underutilized/Delete"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M5}"
+lastTimestamp: "${LAB_T_M5}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-old-drained
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-z9z9z
+reason: Drained
+message: "Drained node"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M15}"
+lastTimestamp: "${LAB_T_M15}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-old-finalized
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-z9z9z
+reason: Finalized
+message: "Finalized karpenter.sh/termination"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M14}"
+lastTimestamp: "${LAB_T_M14}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.node-12-unconsolidatable
+  namespace: default
+involvedObject:
+  apiVersion: v1
+  kind: Node
+  name: ip-10-0-2-12.eu-west-1.compute.internal
+reason: Unconsolidatable
+message: "SpotToSpotConsolidation is disabled, can't replace a spot node with a spot node"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M3}"
+lastTimestamp: "${LAB_T_M3}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.node-21-blocked
+  namespace: default
+involvedObject:
+  apiVersion: v1
+  kind: Node
+  name: ip-10-0-2-21.eu-west-1.compute.internal
+reason: DisruptionBlocked
+message: "Node is nominated for a pending pod"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M2}"
+lastTimestamp: "${LAB_T_M2}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.general-pend1-launching
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: general-pend1
+reason: NotLaunched
+message: "Waiting for an instance"
+type: Warning
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M2}"
+lastTimestamp: "${LAB_T_M2}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.pod-web5-nominated
+  namespace: team-a
+involvedObject:
+  apiVersion: v1
+  kind: Pod
+  name: web-5
+  namespace: team-a
+reason: Nominated
+message: "Pod should schedule on: nodeclaim/general-pend1"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+firstTimestamp: "${LAB_T_M2}"
+lastTimestamp: "${LAB_T_M2}"
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: lab.pod-web5-failedscheduling
+  namespace: team-a
+involvedObject:
+  apiVersion: v1
+  kind: Pod
+  name: web-5
+  namespace: team-a
+reason: FailedScheduling
+message: "0/9 nodes are available: 1 node(s) had untolerated taint"
+type: Warning
+count: 1
+source:
+  component: default-scheduler
+reportingComponent: default-scheduler
+reportingInstance: default-scheduler
+firstTimestamp: "${LAB_T_M2}"
+lastTimestamp: "${LAB_T_M2}"
