@@ -1,0 +1,42 @@
+# Workflow summary:
+# - Purpose: run Trunk checks to validate code quality and repository standards.
+# - Depends on: none.
+# - Trigger:
+#   - Automatic event: on push to main and on every pull request, by GitHub Actions, to enforce code quality before/after changes.
+#   - Manual: via workflow_dispatch, by maintainers, to run checks on demand.
+# - Steps:
+#   - Checkout the repository.
+#   - Run Trunk checks in full mode.
+# - Docs:
+#   - https://docs.trunk.io/
+#   - https://github.com/trunk-io/trunk-action
+
+name: Trunk Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  trunk:
+    name: Trunk Check
+
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Trunk Check
+        uses: trunk-io/trunk-action@v2.0.0
+        with:
+          check-mode: all
