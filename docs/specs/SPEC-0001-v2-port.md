@@ -90,14 +90,15 @@ e2e/                         the local lab (SPEC-0002)
   `crdStore`, `deploymentStore` and the models' `getStore()`, read inside
   `observer` components so that CRDs registered after the first render are
   followed. The extension builds and registers no store of a built-in kind.
-- Node usage: from the metrics API through the host (`nodeMetricsApi` or
-  `KubeJsonApi.forCluster`, settled in K0), kept in a map of the extension;
-  the host's `Node` objects are not modified. No metrics-server, no usage, no
-  error.
+- Node usage: `Renderer.K8sApi.nodesStore.loadKubeMetrics()` and
+  `nodesStore.getNodeKubeMetrics(node)` (cores and bytes, `NaN` without
+  metrics), as the surface check of step 0 settled; the host's `Node` objects
+  are not modified. No metrics-server, no usage, no error (the host logs a
+  warning of its own).
 - Events (parity): the namespaces `default`, `karpenter` and
-  `karpenter-system` are read, as in 1.0.1, without changing what the host's
-  own Events page loads; K0 settles whether through `eventStore` or a
-  `KubeObjectStore` of the extension over the host's event API.
+  `karpenter-system` are read, as in 1.0.1, through a `KubeObjectStore`
+  subclass of the extension over `Renderer.K8sApi.eventApi`, so that what the
+  host's own Events page has loaded does not change (step 0).
 - Installed: Karpenter counts as installed when the cluster serves
   `nodepools.karpenter.sh`.
 - Controller version (parity): the image tag of a Deployment whose name
