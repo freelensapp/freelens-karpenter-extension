@@ -33,8 +33,19 @@ models, the host's stores, an error boundary around the page, unit tests,
 integration tests and the build stack of the template.
 
 Excluded: any change of behaviour that v2 does not require. Those are
-candidates of [SPEC-0003](SPEC-0003-improvements.md). The only exception is
-the set of AKSNodeClass versions, see "Data layer".
+candidates of [SPEC-0003](SPEC-0003-improvements.md). The exceptions are the
+set of AKSNodeClass versions (see "Data layer") and the bugs of 1.0.1 found in
+the baseline of SPEC-0002, which the port fixes in the code it touches, each
+with a unit test (decision of 2026-10-15):
+
+- B2: a NodePool belongs to the node class its `nodeClassRef` names by group,
+  kind and name, not by name alone (Node classes);
+- B3: "Expire after" reads `spec.template.spec.expireAfter` of
+  `karpenter.sh/v1` (Node classes);
+- B4: the kubelet settings read `spec.kubelet` of `karpenter.k8s.aws/v1`
+  (Node classes);
+- B7: memory is shown in binary units, as in the other tabs (Node classes);
+- B8: a NodePool without a memory limit shows no limit, not `0Mi` (Overview).
 
 ## Design
 

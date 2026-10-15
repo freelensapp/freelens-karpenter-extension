@@ -38,6 +38,9 @@ SPEC-0001. Nothing here writes to a cluster.
 - **Tests:** unit test of the pool selection; the `empty` NodePool of the
   static lab is shown.
 - **Decision:** approved by Roberto Bandini, 2026-10-15.
+- **Note (baseline, 2026-10-15):** the Overview of 1.0.1 already has a "+1
+  empty" control for NodePools without nodes. Step I0 checks what it shows;
+  C2 is redefined to the gap that remains, or dropped if none does.
 
 ### C3. Debug table of the pool events
 
