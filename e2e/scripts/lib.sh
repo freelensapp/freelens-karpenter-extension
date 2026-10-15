@@ -25,7 +25,10 @@ KWOK_RELEASE_URL="https://github.com/kubernetes-sigs/kwok/releases/download/$KWO
 METRICS_SERVER_URL="https://github.com/kubernetes-sigs/metrics-server/releases/download/$METRICS_SERVER_VERSION/components.yaml"
 
 log() { printf '[lab %s] %s\n' "$(date +%H:%M:%S)" "$*" >&2; }
-die() { log "ERROR: $*"; exit 1; }
+die() {
+  log "ERROR: $*"
+  exit 1
+}
 
 # lab_init <profile>: sets PROFILE, CLUSTER_NAME, STATE_DIR, KUBECONFIG (the lab's file only).
 lab_init() {
@@ -40,19 +43,19 @@ lab_init() {
   command -v kind >/dev/null || die "kind not found"
   local v
   v="$(kind version | awk '{print $2}')"
-  [[ "$v" == "$KIND_VERSION" ]] || log "warning: kind $v, the lab is pinned to $KIND_VERSION"
+  [[ $v == "$KIND_VERSION" ]] || log "warning: kind $v, the lab is pinned to $KIND_VERSION"
 }
 
 # lab_guard: refuse to continue unless KUBECONFIG is the lab's and points at the local kind cluster.
 lab_guard() {
-  [[ "$KUBECONFIG" == "$STATE_DIR/kubeconfig" ]] || die "KUBECONFIG is not the lab's"
-  [[ -f "$KUBECONFIG" ]] || die "no lab kubeconfig at $KUBECONFIG"
+  [[ $KUBECONFIG == "$STATE_DIR/kubeconfig" ]] || die "KUBECONFIG is not the lab's"
+  [[ -f $KUBECONFIG ]] || die "no lab kubeconfig at $KUBECONFIG"
   local ctx server
   ctx="$(kubectl config current-context)"
-  [[ "$ctx" == "kind-$CLUSTER_NAME" ]] || die "context is '$ctx', expected 'kind-$CLUSTER_NAME'"
+  [[ $ctx == "kind-$CLUSTER_NAME" ]] || die "context is '$ctx', expected 'kind-$CLUSTER_NAME'"
   [[ "$(kubectl config get-contexts -o name | wc -l)" -eq 1 ]] || die "the lab kubeconfig has more than one context"
   server="$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')"
-  [[ "$server" =~ ^https://(127\.0\.0\.1|localhost|\[::1\]): ]] || die "server '$server' is not local"
+  [[ $server =~ ^https://(127\.0\.0\.1|localhost|\[::1\]): ]] || die "server '$server' is not local"
 }
 
 k() { lab_guard && kubectl --context "kind-$CLUSTER_NAME" "$@"; }
@@ -63,14 +66,15 @@ cluster_exists() { kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; }
 # subresource. ${LAB_T_M<n>} in a file becomes the time n minutes ago (UTC), for events and conditions.
 apply_numbered() {
   local dir="$1" f n vars=""
-  for n in $(cat "$dir"/[0-9][0-9]-*.yaml | grep -oE 'LAB_T_M[0-9]+' | sort -u | sed 's/LAB_T_M//'); do
+  while read -r n; do
+    [[ -n $n ]] || continue
     export "LAB_T_M$n=$(date -u -d "-$n minutes" +%Y-%m-%dT%H:%M:%SZ)"
     vars+=" \$LAB_T_M$n"
-  done
+  done < <(grep -ohE 'LAB_T_M[0-9]+' "$dir"/[0-9][0-9]-*.yaml | sort -u | sed 's/LAB_T_M//')
   for f in "$dir"/[0-9][0-9]-*.yaml; do
-    [[ -e "$f" ]] || continue
+    [[ -e $f ]] || continue
     log "apply $(basename "$f")"
-    if [[ "$f" == *-status.yaml ]]; then
+    if [[ $f == *-status.yaml ]]; then
       envsubst "$vars" <"$f" | k apply --server-side --force-conflicts --field-manager=karpenter-lab --subresource=status -f - >/dev/null
     else
       envsubst "$vars" <"$f" | k apply --server-side --force-conflicts --field-manager=karpenter-lab -f - >/dev/null

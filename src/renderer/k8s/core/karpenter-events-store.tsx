@@ -4,6 +4,7 @@ const KubeObjectStore = Renderer.K8sApi.KubeObjectStore;
 
 type KubeEvent = Renderer.K8sApi.KubeEvent;
 const KubeEvent = Renderer.K8sApi.KubeEvent;
+
 export { KubeEvent };
 
 export class KubeEventApi extends Renderer.K8sApi.KubeApi<KubeEvent, any> {}

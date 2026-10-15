@@ -12,10 +12,10 @@ spec:
       requirements:
         - key: karpenter.sh/capacity-type
           operator: In
-          values: ["spot", "on-demand"]
+          values: [spot, on-demand]
         - key: karpenter.k8s.aws/instance-category
           operator: In
-          values: ["c", "m"]
+          values: [c, m]
       expireAfter: 720h
   limits:
     cpu: "64"
@@ -39,10 +39,10 @@ spec:
       requirements:
         - key: karpenter.k8s.aws/instance-family
           operator: In
-          values: ["g5"]
+          values: [g5]
         - key: karpenter.sh/capacity-type
           operator: In
-          values: ["on-demand"]
+          values: [on-demand]
       taints:
         - key: nvidia.com/gpu
           effect: NoSchedule
@@ -67,10 +67,10 @@ spec:
       requirements:
         - key: karpenter.azure.com/sku-family
           operator: In
-          values: ["D"]
+          values: [D]
         - key: karpenter.sh/capacity-type
           operator: In
-          values: ["spot", "on-demand"]
+          values: [spot, on-demand]
       expireAfter: 336h
   limits:
     cpu: "48"
@@ -92,7 +92,7 @@ spec:
       requirements:
         - key: karpenter.sh/capacity-type
           operator: In
-          values: ["on-demand"]
+          values: [on-demand]
       expireAfter: 720h
   limits:
     cpu: "16"

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # lab-down.sh static|live: delete the lab cluster of the profile and its state. Nothing else.
+# shellcheck source=e2e/scripts/lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 lab_init "${1:-}"
 

@@ -34,9 +34,10 @@ export interface KubeJsonApiData<
   [otherKeys: string]: unknown;
 }
 
-export type KubeJsonApiDataFor<K> = K extends Renderer.K8sApi.KubeObject<infer Metadata, infer Status, infer Spec>
-  ? KubeJsonApiData<Metadata, Status, Spec>
-  : never;
+export type KubeJsonApiDataFor<K> =
+  K extends Renderer.K8sApi.KubeObject<infer Metadata, infer Status, infer Spec>
+    ? KubeJsonApiData<Metadata, Status, Spec>
+    : never;
 
 export interface KubeObjectConstructorData {
   readonly kind?: string;

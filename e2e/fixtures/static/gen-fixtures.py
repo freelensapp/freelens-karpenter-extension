@@ -11,6 +11,7 @@ Run from this directory: ./gen-fixtures.py. It rewrites 21-, 30-, 31-, 40-, 41- 
 import hashlib
 import json
 import pathlib
+import re
 
 HERE = pathlib.Path(__file__).parent
 TS = "2026-10-01T08:00:00Z"
@@ -62,13 +63,27 @@ def yaml(value, indent=0):
     return f"{pad}{scalar(value)}"
 
 
+# A plain YAML scalar: no indicator first, no ": " or " #" inside, no space or ":" at the end.
+PLAIN = re.compile(r"""^(?![-?:,\[\]{}#&*!|>'"%@`\s])(?!.*(: | #))(?!.*[\s:]$).+$""")
+# What YAML reads as another type than a string: booleans and null, numbers, dates and times.
+NOT_STRINGS = re.compile(
+    r"^(true|false|yes|no|on|off|null|y|n|~"
+    r"|[-+]?(\d[\d_]*)?\.?\d+([eE][-+]?\d+)?|0x[0-9a-fA-F]+|0o?[0-7]+"
+    r"|\d{4}-\d{2}-\d{2}([Tt ].*)?)$",
+    re.IGNORECASE,
+)
+
+
 def scalar(v):
+    """A YAML scalar, quoted only where YAML would otherwise read it as another type (yamllint quoted-strings)."""
     if v == {} or v == []:
         return "{}" if v == {} else "[]"
     if isinstance(v, bool):
         return "true" if v else "false"
     if isinstance(v, (int, float)):
         return str(v)
+    if PLAIN.match(v) and not NOT_STRINGS.match(v):
+        return v
     return json.dumps(v)
 
 

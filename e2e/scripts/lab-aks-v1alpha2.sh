@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # lab-aks-v1alpha2.sh on|off: static lab only. Serve AKSNodeClass v1alpha2 next to v1beta1 (on), or only
 # v1beta1 as the Azure provider v1.14.5 does (off). The objects are stored as v1beta1 either way.
+# shellcheck source=e2e/scripts/lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 lab_init static
 lab_guard

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # lab-up.sh static|live: create the lab cluster of the profile, install what it runs, apply its
 # fixtures and wait until they are in their expected state. Idempotent. See SPEC-0002.
+# shellcheck source=e2e/scripts/lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 lab_init "${1:-}"
 
@@ -8,7 +9,7 @@ LAB_IMAGE="karpenter-lab/karpenter-kwok:$KARPENTER_VERSION"
 KARPENTER_SRC="$STATE_ROOT/src/karpenter"
 
 create_cluster() {
-  if cluster_exists && [[ -f "$KUBECONFIG" ]]; then
+  if cluster_exists && [[ -f $KUBECONFIG ]]; then
     log "kind cluster $CLUSTER_NAME exists"
   else
     cluster_exists && die "kind cluster $CLUSTER_NAME exists without the lab kubeconfig; run lab-down.sh $PROFILE"
@@ -91,7 +92,7 @@ link_owners() {
     claim_uid="$(k get nodeclaim "$claim" -o jsonpath='{.metadata.uid}')"
     pool_uid="$(k get nodepool "$pool" -o jsonpath='{.metadata.uid}')"
     k patch nodeclaim "$claim" --type=merge -p "{\"metadata\":{\"ownerReferences\":[{\"apiVersion\":\"karpenter.sh/v1\",\"kind\":\"NodePool\",\"name\":\"$pool\",\"uid\":\"$pool_uid\",\"blockOwnerDeletion\":true}]}}" >/dev/null
-    [[ -n "$node" && "$node" != "<none>" ]] || continue
+    [[ -n $node && $node != "<none>" ]] || continue
     k patch node "$node" --type=merge -p "{\"metadata\":{\"ownerReferences\":[{\"apiVersion\":\"karpenter.sh/v1\",\"kind\":\"NodeClaim\",\"name\":\"$claim\",\"uid\":\"$claim_uid\",\"blockOwnerDeletion\":true}]}}" >/dev/null
   done < <(k get nodeclaims -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.karpenter\.sh/nodepool} {.status.nodeName}{"\n"}{end}')
 }
