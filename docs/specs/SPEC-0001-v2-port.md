@@ -1,6 +1,6 @@
 # SPEC-0001: Port to the Freelens v2 extension API
 
-- **Status:** Approved
+- **Status:** Implemented (2026-10-16; Verified after the validation and the manual checks)
 - **Milestone:** `M1` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
 - **Freelens pin:** freelensapp/freelens@5e1870e97467edab81b856a4983483d0729db896, `@freelensapp/extensions@2.0.0-0-nightly-2026-10-15` (moved from d5e986b43 and the 2026-10-12 nightly on 2026-10-15, with the template)
@@ -84,15 +84,19 @@ src/
   renderer/index.tsx         KarpenterExtensionRenderer: clusterPages, clusterPageMenus, kubeObjectDetailItems
   renderer/api/<kind>/       one model per kind and version, with its tests
   renderer/api/types.ts      types shared by the models
-  renderer/pages/            the dashboard page
+  renderer/data/             stores, loading, controller version, node classes
+  renderer/pages/            the dashboard page and the Overview tab
   renderer/details/          the Karpenter section of the host's Node details (C4)
-  renderer/components/       the tabs, cards, charts, shared components, error boundary
+  renderer/components/       the other tabs, cards, charts, shared components, error boundary
+  renderer/hooks/            data hooks of the NodePool card
   renderer/utils/            pure helpers, with their tests
+  renderer/config/theme.ts   colours, icons, labels
   renderer/icons/            karpenter.svg
 test/freelens-extensions.ts  stub of @freelensapp/extensions for the tests
-examples/                    Karpenter CRDs and test objects (SPEC-0002)
-e2e/                         the local lab (SPEC-0002)
+e2e/                         the local lab, with its CRDs and fixtures (SPEC-0002)
 ```
+
+The layout and its rules are described in `AGENTS.md`.
 
 `src/common/` is created only if main and renderer come to share code.
 
@@ -210,8 +214,13 @@ deletion timestamp is claiming.
 
 ### Safety
 
-Read-only: list and watch of the kinds above, a get of the metrics API.
-Nothing is written to the cluster.
+Read-only: list and watch of the Karpenter kinds the cluster serves
+(NodePools, NodeClaims, NodeOverlays, EC2NodeClasses, AKSNodeClasses), nodes,
+pods and the events of `default`, `karpenter` and `karpenter-system`; a list
+of CRDs and of namespaces; a list of Deployments for the controller version, in all
+namespaces by label, else in `karpenter` and `karpenter-system` (C6 of
+SPEC-0003). The metrics API is no longer read (see "Data layer"). Nothing is
+written to the cluster.
 
 ## Tests (non-regression list)
 

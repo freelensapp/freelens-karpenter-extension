@@ -37,7 +37,9 @@ Pushing the `vX.Y.Z` tag automatically triggers the `Release` workflow, which:
 2. Builds and packs the extension.
 3. Publishes to npm with dist-tag `latest` (or `next` for pre-release versions
    containing a hyphen).
-4. Creates a GitHub Release with the generated `.tgz` attached.
+4. Creates a GitHub Release with the `.tgz`, its SPDX SBOM and a `.sha256`
+   checksum of each attached; Freelens checks a tarball installed from a URL
+   against the `.tgz.sha256` next to it.
 
 ## Step 4 — Manual: prepare next development version
 
@@ -69,8 +71,21 @@ After publishing the release, run **Automated npm version** manually with input
 Before starting the release, verify that the following workflows are green on
 `main`:
 
-- `Check` — type, lint, and Knip checks.
-- `Integration tests` — end-to-end validation against Freelens.
-- `Test update` — build compatibility with the latest `@freelensapp/extensions`.
+- `Type check` — every TypeScript program, tests and tooling included.
+- `Check` — build, lint, and Knip checks.
+- `Unit tests` and `Trunk Check`.
+- `Integration tests` — the extension installed in Freelens and every tab
+  checked against the static lab.
 - `OSV-Scanner` and `Automated npm audit` — no outstanding critical
   vulnerabilities.
+
+The workflows are those of `github-workflow-fix/` until a maintainer moves
+them into `.github/workflows/` (see "Changing Workflows" in `AGENTS.md`).
+
+## Versions and Freelens
+
+The major version of the extension follows the major version of Freelens it
+runs in: 2.x for Freelens 2 (the extension API v2, `engines.freelens`
+`^2.0.0`), 1.x for Freelens 1, which is no longer released. The first release
+for Freelens 2 is 2.0.0: from the prerelease `2.0.0-0` on `main`, run
+**Automated npm version** with `patch`, which turns `2.0.0-0` into `2.0.0`.

@@ -160,6 +160,4 @@ export const LABEL = {
 export const TIMING = {
   /** Max events shown per pool timeline */
   maxTimelineEvents: 60,
-  /** Skeleton animation pulse duration */
-  skeletonPulse: "1.4s",
 } as const;

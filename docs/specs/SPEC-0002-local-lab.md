@@ -1,6 +1,6 @@
 # SPEC-0002: Local lab and test levels
 
-- **Status:** Approved
+- **Status:** Implemented (2026-10-16)
 - **Milestone:** `M1` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
 - **Tracking issue:** the migration issue (steps 5 and 6) and the functional checks of every feature issue
@@ -57,7 +57,7 @@ e2e/
   kind-config.yaml         one control plane, one worker
   fixtures/static/NN-*.yaml numbered, applied in order
   fixtures/live/NN-*.yaml
-examples/                  the CRDs (by URL at the pinned tags) and a minimal set of objects, kubectl apply -k
+  scripts/lab-aks-v1alpha2.sh static: also serve AKSNodeClass v1alpha2
 .e2e/                      git-ignored: kubeconfig per profile, logs, the Karpenter source checkout
 ```
 
