@@ -3,7 +3,7 @@
 - **Status:** Approved
 - **Milestone:** `M1` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
-- **Freelens pin:** freelensapp/freelens@d5e986b4359866284e37968798dba5910e831ad4, `@freelensapp/extensions@2.0.0-0-nightly-2026-10-12`
+- **Freelens pin:** freelensapp/freelens@5e1870e97467edab81b856a4983483d0729db896, `@freelensapp/extensions@2.0.0-0-nightly-2026-10-15` (moved from d5e986b43 and the 2026-10-12 nightly on 2026-10-15, with the template)
 - **Tracking issues:** the migration issue (a copy of freelensapp/freelens-example-extension#326) and the feature issues K (data layer), O (Overview and dashboard shell), T (Topology), N (Node classes), S (Scaling decisions)
 - **Author / date:** Roberto Bandini, with a coding agent, 2026-10-15
 
