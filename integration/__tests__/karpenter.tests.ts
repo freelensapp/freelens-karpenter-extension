@@ -58,7 +58,18 @@ describeIf(clusterReady())("Karpenter dashboard", () => {
 
   it("shows the node classes", async () => {
     // A card names its node class next to a link arrow.
-    await openTab(frame, "Node Classes", ["Node Classes", /^default\b/, /^gpu\b/]);
+    // The AKSNodeClass is served as v1beta1 (B1); the EC2NodeClass default has the NodePools general and
+    // empty only (B2) and kubelet settings (B4); gpu never expires its nodes (B3); memory is in Gi (B7).
+    await openTab(frame, "Node Classes", [
+      "Node Classes",
+      /^default\b/,
+      /^gpu\b/,
+      "AKSNodeClass",
+      "2 NodePools",
+      "Kubelet Config",
+      "Never",
+      "56.9Gi",
+    ]);
   });
 
   it("shows the scaling decisions", async () => {

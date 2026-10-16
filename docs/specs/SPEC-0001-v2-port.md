@@ -42,13 +42,15 @@ with a unit test (decision of 2026-10-15):
   kind and name, not by name alone (Node classes);
 - B3: "Expire after" reads `spec.template.spec.expireAfter` of
   `karpenter.sh/v1` (Node classes);
-- B4: the kubelet settings read `spec.kubelet` of `karpenter.k8s.aws/v1`
-  (Node classes);
+- B4: the kubelet settings read `spec.kubelet`, the name of both
+  `karpenter.k8s.aws/v1` and `karpenter.azure.com` (Node classes);
 - B7: memory is shown in binary units, as in the other tabs (Node classes);
 - B8: a NodePool without a memory limit shows no limit, not `0Mi` (Overview);
 - B9, found in T2: a node labelled `eks.amazonaws.com/capacityType=ON_DEMAND`,
   as EKS labels the nodes of its managed node groups, counts as on-demand, not
-  as unknown (Topology).
+  as unknown (Topology);
+- B10, found in N0: the role of an EC2NodeClass is labelled "Role", not
+  "Instance Profile", which names `spec.instanceProfile` only (Node classes).
 
 ## Design
 
@@ -135,8 +137,10 @@ by CPU, memory, pods or equally, with the squarified layout of `topology-utils.t
 ### Node classes (feature N)
 
 Parity: one card per EC2NodeClass and AKSNodeClass with Ready status,
-settings and the NodePools that reference it; provider detected from the
-`nodeClassRef`; a click opens the node class details in the host.
+settings and the NodePools that reference it by the group, kind and name of
+their `nodeClassRef` (B2); provider from the kind of the node class; a click
+opens the node class details in the host, a click on a NodePool row the
+NodePool's.
 
 ### Scaling decisions (feature S)
 
@@ -226,3 +230,12 @@ Results: not yet run.
   time to compare the age of the nodes with, as `getNodeStatus` does, so that
   the tests do not depend on the clock. The `ResizeObserver` of the treemap was
   already disconnected on unmount.
+- Feature N (2026-10-16): what the cards show is in
+  `components/NodeClassesTab/nodeclass-card.ts`, pure functions of the
+  objects; the card is an `observer` and reads the NodePool and node stores
+  while it renders, where 1.0.1 kept them in a `useMemo` keyed on the number of
+  items, which missed a change that kept the number. The memory of the other
+  tabs and of the Node Classes tab is formatted by `formatMemory` of
+  `utils/kube-helpers.ts`. An AKSNodeClass has no `subnetSelectorTerms` (its
+  subnet is `spec.vnetSubnetID`), so 1.0.1 never showed "Subnets" for it; the
+  card no longer reads it.

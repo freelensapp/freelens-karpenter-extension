@@ -49,7 +49,6 @@ export function useKarpenterCardData(nodes: Node[]): KarpenterCardData {
         return acc;
       }, {}),
     // The nodes are recomputed on every render; the key changes only when the pool's instance types do.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the instance types, not the array
     [instanceTypeKey],
   );
 

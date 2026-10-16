@@ -95,7 +95,12 @@ export function getNodeCpu(node: Node): string {
 export function getNodeMemory(node: Node): string {
   const allocatable = node.status?.allocatable;
   const capacity = node.status?.capacity;
-  const raw: string = String(allocatable?.memory || capacity?.memory || "");
+  return formatMemory(allocatable?.memory || capacity?.memory);
+}
+
+/** A memory quantity in Gi, or Mi below 1Gi; `—` without one. */
+export function formatMemory(quantity: string | undefined): string {
+  const raw = String(quantity || "");
   if (!raw) return "—";
 
   if (raw.endsWith("Ki")) {

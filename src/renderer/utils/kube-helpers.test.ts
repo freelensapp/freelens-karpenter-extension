@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildPodCountMap,
   detailUrl,
+  formatMemory,
   getConditionStatus,
   getInstanceType,
   getNodeClaimName,
@@ -165,5 +166,23 @@ describe("detailUrl", () => {
     expect(detailUrl("/nodes", "/api/v1/nodes/a")).toBe(
       "/nodes?kube-details=%2Fapi%2Fv1%2Fnodes%2Fa&kube-selected=%2Fapi%2Fv1%2Fnodes%2Fa",
     );
+  });
+});
+
+describe("formatMemory", () => {
+  it("shows a quantity in Gi, or in Mi below 1Gi (B7)", () => {
+    expect(formatMemory("59687568Ki")).toBe("56.9Gi");
+    expect(formatMemory("524288Ki")).toBe("512Mi");
+    expect(formatMemory("2048Mi")).toBe("2.0Gi");
+    expect(formatMemory("512Mi")).toBe("512Mi");
+    expect(formatMemory("8Gi")).toBe("8.0Gi");
+    expect(formatMemory("1Ti")).toBe("1024Gi");
+    expect(formatMemory("8589934592")).toBe("8.0Gi");
+  });
+
+  it("shows a dash without a quantity, and an unknown form as it is", () => {
+    expect(formatMemory(undefined)).toBe("—");
+    expect(formatMemory("")).toBe("—");
+    expect(formatMemory("8G")).toBe("8G");
   });
 });
