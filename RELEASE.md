@@ -80,7 +80,7 @@ Before starting the release, verify that the following workflows are green on
   vulnerabilities.
 
 The workflows are those of `github-workflow-fix/` until a maintainer moves
-them into `.github/workflows/` (see "Changing Workflows" in `AGENTS.md`).
+them into `.github/workflows/` (see "Modifying GitHub Actions Workflows" in `AGENTS.md`).
 
 ## Versions and Freelens
 

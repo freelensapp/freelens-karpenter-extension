@@ -1,6 +1,6 @@
 # SPEC-0002: Local lab and test levels
 
-- **Status:** Implemented (2026-10-16)
+- **Status:** Verified (2026-10-16: used by every check of the port)
 - **Milestone:** `M1` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
 - **Tracking issue:** the migration issue (steps 5 and 6) and the functional checks of every feature issue

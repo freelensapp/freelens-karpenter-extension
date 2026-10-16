@@ -1,6 +1,6 @@
 # SPEC-0001: Port to the Freelens v2 extension API
 
-- **Status:** Implemented (2026-10-16; Verified after the validation and the manual checks)
+- **Status:** Verified (2026-10-16: Phase 5 validation and the manual checks)
 - **Milestone:** `M1` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
 - **Freelens pin:** freelensapp/freelens@5e1870e97467edab81b856a4983483d0729db896, `@freelensapp/extensions@2.0.0-0-nightly-2026-10-15` (moved from d5e986b43 and the 2026-10-12 nightly on 2026-10-15, with the template)
@@ -272,7 +272,11 @@ written to the cluster.
 3. The dashboard on macOS and Windows, both themes. Expected: same layout as
    on Linux.
 
-Results: not yet run.
+Results (2026-10-16, Roberto Bandini, on the build validated in Phase 5):
+1. EKS, read-only: as expected.
+2. AKS with node autoprovisioning: as expected.
+3. macOS and Windows, both themes: as expected.
+The labs of SPEC-0002 were also reviewed by hand in both themes.
 
 ## Notes and deviations
 

@@ -10,7 +10,5 @@ agent" of the migration issue asks; then remove this directory.
 | `integration-tests.yaml` | replace: the template's, against Freelens `main`, with the static lab of SPEC-0002 (`e2e/scripts/lab-up.sh static`) in place of a bare kind cluster |
 | `type-check.yaml`, `unit-tests.yaml`, `mise-lock-check.yaml` | add: the type check out of `check.yaml`, the unit tests, the check of `mise.lock` |
 | `test-update.yaml` | **remove**: it updates `@freelensapp/extensions` to the `latest` dist-tag (1.x) and builds, which breaks with the exact v2 pin; Renovate now updates the pin together with the Freelens stack |
+| `claude.yaml`, `claude-task.yaml` | add: the template's Claude Code workflows, as the other extensions have them (decision of 2026-10-16); they need the GitHub App "Claude" on the repository and the org-level `CLAUDE_CODE_OAUTH_TOKEN` secret |
 | `osv-scanner.yaml` | keep as it is |
-
-The Claude workflows of the template (`claude.yaml`, `claude-task.yaml`) are not
-proposed: whether the repository adopts them is open in the migration issue.

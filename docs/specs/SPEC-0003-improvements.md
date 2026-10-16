@@ -1,6 +1,6 @@
 # SPEC-0003: Improvements beyond parity
 
-- **Status:** Implemented (C1-C6, 2026-10-16; approved 2026-10-15, C2 redefined and C3 removal chosen in step I0)
+- **Status:** Verified (C1-C6, 2026-10-16; approved 2026-10-15, C2 redefined and C3 removal chosen in step I0)
 - **Milestone:** `M2` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
 - **Tracking issue:** the improvements feature issue (I)
