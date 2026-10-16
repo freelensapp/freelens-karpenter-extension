@@ -246,7 +246,12 @@ export const NodesList = ({
         return (
           <tr
             key={`claim-${claim.metadata?.uid ?? claimName ?? idx}`}
-            onClick={() => openNodeClaimDetail(claimName)}
+            onClick={(event) => {
+              // As every link to details here: an open drawer would take the click for one outside itself and close
+              // the details just opened (B14).
+              event.stopPropagation();
+              openNodeClaimDetail(claimName);
+            }}
             title="Click to open NodeClaim details"
           >
             <td>

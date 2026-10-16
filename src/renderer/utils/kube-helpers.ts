@@ -215,13 +215,13 @@ export function openNodeDetail(node: Node): void {
   navigateToDetail("/nodes", `/api/v1/nodes/${name}`);
 }
 
-export function openNodePoolDetail(nodePool: NodePool): void {
-  openNodePoolDetailByName(nodePool.metadata?.name ?? "");
-}
+export const nodePoolSelfLink = (name: string) => `/apis/karpenter.sh/v1/nodepools/${name}`;
+export const nodeClaimSelfLink = (name: string) => `/apis/karpenter.sh/v1/nodeclaims/${name}`;
 
-export function openNodePoolDetailByName(name: string): void {
+export function openNodePoolDetail(nodePool: NodePool): void {
+  const name = nodePool.metadata?.name ?? "";
   if (!name) return;
-  navigateToDetail("/crd/karpenter.sh/nodepools", `/apis/karpenter.sh/v1/nodepools/${name}`);
+  navigateToDetail("/crd/karpenter.sh/nodepools", nodePoolSelfLink(name));
 }
 
 export function openNodeOverlayDetail(name: string): void {
@@ -231,5 +231,5 @@ export function openNodeOverlayDetail(name: string): void {
 
 export function openNodeClaimDetail(name: string): void {
   if (!name) return;
-  navigateToDetail("/crd/karpenter.sh/nodeclaims", `/apis/karpenter.sh/v1/nodeclaims/${name}`);
+  navigateToDetail("/crd/karpenter.sh/nodeclaims", nodeClaimSelfLink(name));
 }

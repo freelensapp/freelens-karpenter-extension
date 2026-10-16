@@ -69,6 +69,7 @@ export const Renderer = {
   },
   Navigation: {
     navigate: vi.fn(),
+    showDetails: vi.fn(),
   },
 };
 

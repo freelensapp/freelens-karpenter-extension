@@ -15,7 +15,7 @@ const node = (labels: Record<string, string>, annotations: Record<string, string
 afterEach(cleanup);
 
 describe("NodeKarpenterDetails", () => {
-  it("shows the Karpenter section of a Karpenter node, with links to its NodePool and NodeClaim", () => {
+  it("shows the Karpenter section of a Karpenter node, with links that open its NodePool and NodeClaim in the drawer", () => {
     render(
       <NodeKarpenterDetails
         object={node(
@@ -35,14 +35,14 @@ describe("NodeKarpenterDetails", () => {
     expect(screen.getByText("Registered")).toBeTruthy();
     expect(screen.getByText("Do not disrupt")).toBeTruthy();
 
-    fireEvent.click(screen.getByText("general"));
-    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
-      "/crd/karpenter.sh/nodepools?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral",
-    );
-    fireEvent.click(screen.getByText("general-abc12"));
-    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
-      expect.stringContaining("%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodeclaims%2Fgeneral-abc12"),
-    );
+    // In place of the node's details, over the same page, as the host's own links in a drawer.
+    // The click's default is prevented, or the host's drawer would take it for a click outside itself (fireEvent
+    // returns false when it is).
+    expect(fireEvent.click(screen.getByText("general"))).toBe(false);
+    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/apis/karpenter.sh/v1/nodepools/general");
+    expect(fireEvent.click(screen.getByText("general-abc12"))).toBe(false);
+    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/apis/karpenter.sh/v1/nodeclaims/general-abc12");
+    expect(Renderer.Navigation.navigate).not.toHaveBeenCalled();
   });
 
   it("shows nothing for another node", () => {

@@ -473,6 +473,17 @@ mechanism; this is the list to check a change against.
 - **`loadAll` resolves when the load failed.** It reports the failure through
   `onLoadFailure` and leaves the store empty. Pass `onLoadFailure` and decide
   what a failure means, as `loadAndSubscribe` does.
+- **A click that opens details stops there.** The host's details drawer closes
+  on a click whose target is not inside a `.Drawer`, from a listener on the
+  document. A click that opens details re-renders the page at once when the
+  object is already in its store, so its target is no longer in the page when
+  the event reaches that listener, which closes the details just opened (or,
+  for a link inside a drawer, the drawer that replaced it). Every handler that
+  opens details calls `event.stopPropagation()`, or `event.preventDefault()`,
+  which the listener honours, as the host's own links do; a link inside a
+  details drawer uses `Renderer.Navigation.showDetails(selfLink)` and stays on
+  the page. The unit tests check that such a click does not reach the
+  document (B14).
 - **CSS variables do not reach SVG attributes or a canvas.** `fill` and
   `stroke` take them only through `style` ("Colours and themes").
 

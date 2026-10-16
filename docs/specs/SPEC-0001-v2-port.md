@@ -65,6 +65,12 @@ with a unit test (decision of 2026-10-15):
   disruption taint is Terminating by `karpenter.sh/disrupted`, the taint of
   Karpenter v1, as well as by `karpenter.sh/disruption` of earlier versions;
   1.0.1 knew only the old one (node status, shared).
+- B14, found in Phase 5: a click on a NodeClaim still waiting for its node,
+  in the table of a NodePool card, opens its details. In 1.0.1 it reached the
+  NodeClaim list and closed the drawer at once: the click went on to the
+  host's drawer, which took it for a click outside itself, since the row was
+  no longer in the page. Every other link of the extension stops the click
+  (Overview).
 
 ## Design
 

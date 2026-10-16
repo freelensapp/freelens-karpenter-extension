@@ -130,7 +130,11 @@ integration test on the static lab and screenshots on both labs.
   NodeClaim (links), instance type, capacity type, zone, status, the
   registered and initialized labels, and whether Karpenter is disrupting the
   node or may not; nothing for other nodes. Found while writing it: B13 of
-  SPEC-0001.
+  SPEC-0001. Its NodePool and NodeClaim links open the object's details in
+  place of the node's, over the same page (`Renderer.Navigation.showDetails`),
+  as the host's own links in a drawer do, and prevent the click's default, as
+  theirs do; otherwise the drawer takes the click for one outside itself and
+  closes the new details (found in Phase 5).
 - C5: the model `api/nodeoverlay/nodeoverlay-v1alpha1.ts` (types generated
   like the others, the requirement type its own, with `Gte` and `Lte`), its
   store loaded with the others, the list on the NodePool card. Karpenter

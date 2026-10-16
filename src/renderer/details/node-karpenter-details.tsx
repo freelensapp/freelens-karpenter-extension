@@ -1,10 +1,21 @@
 import { Renderer } from "@freelensapp/extensions";
-import { openNodeClaimDetail, openNodePoolDetailByName } from "../utils/kube-helpers";
+import { nodeClaimSelfLink, nodePoolSelfLink } from "../utils/kube-helpers";
 import { karpenterNodeInfo } from "./node-karpenter";
+
+import type React from "react";
 
 const {
   Component: { DrawerItem, DrawerTitle },
 } = Renderer;
+
+// A link inside a details drawer opens the other object's details in its place, over the same page, as the host's
+// own links do. It prevents the click's default, as theirs do: the drawer closes on a click whose target is not
+// inside it, and the link is no longer inside it once the new details have replaced the old ones, which happens
+// before the drawer sees the click when the object is already in its store.
+const showDetails = (selfLink: string) => (event: React.MouseEvent) => {
+  event.preventDefault();
+  Renderer.Navigation.showDetails(selfLink);
+};
 
 const CAPACITY_TYPE_LABEL = { spot: "Spot", "on-demand": "On-Demand", unknown: "—" } as const;
 
@@ -22,10 +33,10 @@ export function NodeKarpenterDetails({
     <>
       <DrawerTitle>Karpenter</DrawerTitle>
       <DrawerItem name="NodePool" hidden={!info.nodePool}>
-        <a onClick={() => openNodePoolDetailByName(info.nodePool)}>{info.nodePool}</a>
+        <a onClick={showDetails(nodePoolSelfLink(info.nodePool))}>{info.nodePool}</a>
       </DrawerItem>
       <DrawerItem name="NodeClaim" hidden={!info.nodeClaim}>
-        <a onClick={() => openNodeClaimDetail(info.nodeClaim)}>{info.nodeClaim}</a>
+        <a onClick={showDetails(nodeClaimSelfLink(info.nodeClaim))}>{info.nodeClaim}</a>
       </DrawerItem>
       <DrawerItem name="Instance type">{info.instanceType}</DrawerItem>
       <DrawerItem name="Capacity type">{CAPACITY_TYPE_LABEL[info.capacityType]}</DrawerItem>
