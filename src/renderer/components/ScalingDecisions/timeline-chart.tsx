@@ -14,14 +14,9 @@
 import React, { useMemo, useRef, useState } from "react";
 import { COLOR } from "../../config/theme";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+import type { TimelinePoint } from "../../utils/karpenter-events";
 
-export interface TimelinePoint {
-  /** Bucket start (ms epoch) */
-  t: number;
-  /** Per-series counts: { "scale-up": 3, "error": 1, ... } */
-  counts: Record<string, number>;
-}
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface TimelineSeries {
   key: string;
@@ -121,28 +116,6 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
     return { maxStack: max, maxSingle: maxS, stacked: stk };
   }, [points, series]);
 
-  if (points.length === 0) {
-    return (
-      <div
-        ref={containerRef}
-        style={{
-          width: "100%",
-          height,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: COLOR.textTertiary,
-          fontSize: 12,
-          border: `1px dashed ${COLOR.border}`,
-          borderRadius: 6,
-          background: "rgba(255,255,255,0.01)",
-        }}
-      >
-        No events in the selected range
-      </div>
-    );
-  }
-
   const n = points.length;
   const colW = innerW / n;
   const barGap = compact ? 0.5 : Math.min(2, colW * 0.15);
@@ -169,6 +142,7 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
 
   const handleMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
+    if (rect.width <= 0) return;
     const sx = ((e.clientX - rect.left) / rect.width) * width;
     setHoverIdx(idxFromX(sx));
   };
@@ -209,6 +183,29 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
 
   // ── X-axis labels (show ~5 across) ─────────────────────────────────────────
   const xLabelStep = Math.max(1, Math.ceil(n / 5));
+
+  // After every hook, so that the hooks are the same whether there are points or not.
+  if (points.length === 0) {
+    return (
+      <div
+        ref={containerRef}
+        style={{
+          width: "100%",
+          height,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: COLOR.textTertiary,
+          fontSize: 12,
+          border: `1px dashed ${COLOR.border}`,
+          borderRadius: 6,
+          background: "rgba(255,255,255,0.01)",
+        }}
+      >
+        No events in the selected range
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} style={{ width: "100%", position: "relative" }}>

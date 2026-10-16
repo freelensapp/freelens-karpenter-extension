@@ -10,6 +10,7 @@
 
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
+import { useItems } from "../../data/use-items";
 import { buildPodCountMap, type CondStatus, getNodeStatus } from "../../utils/kube-helpers";
 import { ResponsiveTreemap } from "./TreemapView";
 import style from "./topology.module.scss";
@@ -201,15 +202,18 @@ export const Topology: React.FC<TopologyProps> = observer(
 
     const podCountMap = buildPodCountMap();
 
-    const groups = useMemo(() => groupNodes(allNodes, nodePools, groupBy), [allNodes, nodePools, groupBy]);
+    const nodes = useItems(allNodes);
+    const pools = useItems(nodePools);
 
-    const kpi = useMemo(() => computeKpi(allNodes, nodePools), [allNodes, nodePools]);
+    const groups = useMemo(() => groupNodes(nodes, pools, groupBy), [nodes, pools, groupBy]);
+
+    const kpi = useMemo(() => computeKpi(nodes, pools), [nodes, pools]);
 
     const onLegendToggle = (id: string) => {
       setHighlightedGroupId((prev) => (prev === id ? undefined : id));
     };
 
-    const empty = allNodes.length === 0;
+    const empty = nodes.length === 0;
 
     return (
       <div className={style.root}>

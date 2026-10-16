@@ -51,6 +51,16 @@ with a unit test (decision of 2026-10-15):
   as unknown (Topology);
 - B10, found in N0: the role of an EC2NodeClass is labelled "Role", not
   "Instance Profile", which names `spec.instanceProfile` only (Node classes).
+- B11, found in S0: the node count of a NodePool over time drops a node at
+  `Finalized`, the event Karpenter v1 writes when a NodeClaim is gone, as well
+  as at `Terminated` of earlier versions; 1.0.1 knew only `Terminated`, so a
+  removed node stayed in the history until the live count at the end
+  (Scaling decisions);
+- B12, found in S1: Topology and Scaling decisions follow the stores while
+  they are open. 1.0.1 kept their data in `useMemo`s keyed on the stores'
+  `items`, an array the host updates in place, so the nodes and events
+  stayed as they were when the tab was opened (seen on 1.0.1 in the live
+  lab: 1 Karpenter node in the cluster, 3 on the open Topology tab).
 
 ## Design
 
@@ -144,12 +154,44 @@ NodePool's.
 
 ### Scaling decisions (feature S)
 
-Parity: an event is Karpenter's when its source or reporting component
-contains `karpenter`, its involved kind is a Karpenter kind (`NodePool`,
-`NodeClaim`, `Machine`, `EC2NodeClass`, `AKSNodeClass`, `NodeClass`), its
-involved namespace is `karpenter` or `karpenter-system`, or its reason is in
-the reason list of `ScalingDecisions.tsx` (which includes `FailedScheduling`
-and `Nominated`). The timeline buckets them over time; the list shows them.
+Which events (parity): an event is Karpenter's when its source or reporting
+component contains `karpenter`, its involved kind is a Karpenter kind
+(`NodePool`, `NodeClaim`, `Machine`, `EC2NodeClass`, `AKSNodeClass`,
+`NodeClass`), its involved namespace is `karpenter` or `karpenter-system`, or
+its reason is one Karpenter writes, `FailedScheduling` of the scheduler
+included, as in 1.0.1. Reasons that other components write too (the
+kubelet's `Evicted`, a bare `Ready`) count only by the source. Only the
+events of the namespaces of the data layer are read, so the `Nominated` and
+`FailedScheduling` events of a pod in another namespace are not shown, as in
+1.0.1 (decision of 2026-10-16; a known limit).
+
+Groups (decision of 2026-10-16), by the reasons of Karpenter v1.15.0 and
+those of earlier versions, in `utils/karpenter-events.ts`:
+
+- Scale up: `Launched`, `Registered`, `Initialized`, `Ready` on a NodeClaim,
+  Machine or node (on a NodePool these are the status of the pool: Other);
+  `Provisioned`, `ScaledUp`.
+- Scale down: `DisruptionLaunching`, `DisruptionWaitingReadiness`,
+  `DisruptionTerminating`, `Drained`, `Finalized`, `Disrupted`, `Evicted`;
+  `Disrupting`, `Consolidated`, `Terminating`, `Terminated`, `ScaledDown`.
+- Drift: `Drifted`.
+- Errors: `InsufficientCapacityError`, `FailedScheduling`,
+  `NoCompatibleInstanceTypes`, `NodeClassNotReady`, `FailedDraining`,
+  `FailedTermination`, `FailedConsistencyCheck`, `UnregisteredTaintMissing`,
+  `RebootFailed`; `NotLaunched`, `NotRegistered`, `NotInitialized`,
+  `InsufficientCapacity`; and any Warning no reason classifies.
+- Other: the rest, such as `Nominated`, `Unconsolidatable`,
+  `DisruptionBlocked` and `NodeRepairBlocked` (drawn as a block),
+  `Consolidation*`, `DoNotDisrupt*` and the conditions of a NodePool.
+
+The same groups colour the events of a NodePool card in the Overview.
+
+Timeline (parity): about 45 buckets over the range (1h, 6h, 24h, all), at
+least 5 minutes for fewer than 10 events, empty buckets kept. The node count
+of a NodePool over time starts from the live nodes and walks back through
+the NodeClaim events: a NodeClaim adds a node at its first `Launched` and
+removes it at its first `Finalized` or `Terminated` (B11); node events are
+left out, since a node has events under its own name and its NodeClaim's.
 
 ### Node status (shared, parity)
 
@@ -173,7 +215,10 @@ Nothing is written to the cluster.
   - `utils/`: node status (each branch above), condition status, resource
     parsing (`parseCpuCores`, `parseMemGi`), instance type, pod count map,
     version parsing from an image and from CRD metadata;
-  - events: `filterPoolEvents`, `isKarpenterEvent`, timeline bucketing;
+  - events: `filterPoolEvents`, `isKarpenterEvent`, the group of each reason,
+    the NodePool of an event, bucket size and bucketing, the node count over
+    time, age;
+  - `useItems`: a memo follows a store updated in place (B12);
   - topology: grouping by each key, `squarify` (proportional areas, every
     item placed once, no recursion on degenerate input), KPI counts;
   - node classes: provider detection, the NodePools of a node class;
@@ -239,3 +284,14 @@ Results: not yet run.
   `utils/kube-helpers.ts`. An AKSNodeClass has no `subnetSelectorTerms` (its
   subnet is `spec.vnetSubnetID`), so 1.0.1 never showed "Subnets" for it; the
   card no longer reads it.
+- Feature S (2026-10-16): what the tab computes is in
+  `utils/karpenter-events.ts`, pure functions of the events (which are
+  Karpenter's, their group and look, their NodePool, the buckets, the node
+  count over time), shared with the events of the NodePool cards, which took
+  their look from a reason table of `config/theme.ts` that is gone. The tab no
+  longer injects its stylesheet a second time with a `<style>` element. B12
+  is fixed by `data/use-items.ts`, a copy of a store's items that is a new
+  array when an object is added, removed or updated, used by the tab and by
+  Topology. Checked in the live lab with the tab open while the workloads
+  scale up and down: the counts, the charts and the tables follow, and a
+  removed node leaves the history at its `Finalized` event.

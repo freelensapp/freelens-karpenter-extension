@@ -127,45 +127,6 @@ export const STATUS_BORDER_COLOR: Record<CondStatus, string> = {
   Unknown: "#555",
 };
 
-// ── Event reasons ─────────────────────────────────────────────────────────────
-
-export interface EventReasonVisual {
-  color: string;
-  icon: string;
-  /** Semantic group for grouping / filtering */
-  group: "scale-up" | "scale-down" | "drift" | "error" | "other";
-}
-
-export const EVENT_REASON_CONFIG: Record<string, EventReasonVisual> = {
-  // scale-up
-  Launched: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  Provisioned: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  Registered: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  Initialized: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  ScaledUp: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  // scale-down / disruption
-  Disrupted: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  Disrupting: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  Consolidated: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  Terminating: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  Terminated: { color: COLOR.textSecondary, icon: "▼", group: "scale-down" },
-  ScaledDown: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  // drift
-  Drifted: { color: COLOR.warning, icon: "~", group: "drift" },
-  // errors
-  NotLaunched: { color: COLOR.danger, icon: "✕", group: "error" },
-  NotRegistered: { color: COLOR.danger, icon: "✕", group: "error" },
-  NotInitialized: { color: COLOR.danger, icon: "✕", group: "error" },
-  InsufficientCapacity: { color: COLOR.danger, icon: "✕", group: "error" },
-  DisruptionBlocked: { color: COLOR.warning, icon: "⊘", group: "other" },
-};
-
-export const EVENT_REASON_FALLBACK: EventReasonVisual = {
-  color: COLOR.textSecondary,
-  icon: "•",
-  group: "other",
-};
-
 // ── Icons (text/emoji — easy to swap to SVG keys later) ──────────────────────
 
 export const ICON = {

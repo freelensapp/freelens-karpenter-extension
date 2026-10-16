@@ -73,6 +73,17 @@ describeIf(clusterReady())("Karpenter dashboard", () => {
   });
 
   it("shows the scaling decisions", async () => {
-    await openTab(frame, "Scaling Decisions", ["Scaling decisions"]);
+    // The 21 events of the default namespace are Karpenter's; those of team-a are not loaded (the namespaces of
+    // SPEC-0001). Finalized is the end of a node (B11), DisruptionBlocked and Unconsolidatable are other events.
+    await openTab(frame, "Scaling Decisions", [
+      "Scaling decisions",
+      "21 / 21 karpenter events",
+      "NodePool: general",
+      /^Node \/ NodeClaim Decisions\s*\d+$/,
+      "Finalized",
+      "DisruptionTerminating",
+      "DisruptionBlocked",
+      "Unconsolidatable",
+    ]);
   });
 });

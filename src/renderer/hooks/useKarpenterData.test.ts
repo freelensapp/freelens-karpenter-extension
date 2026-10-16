@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { eventTs, filterPoolEvents, fmtAgo } from "./useKarpenterData";
+import { filterPoolEvents, fmtAgo } from "./useKarpenterData";
 
-import type { KarpenterEvent } from "./useKarpenterData";
+import type { KarpenterEvent } from "../utils/karpenter-events";
 
 const event = (uid: string, kind: string, name: string, lastTimestamp?: string) =>
   ({
@@ -26,13 +26,6 @@ describe("filterPoolEvents", () => {
   it("keeps the events of the pool, its NodeClaims and Machines by name or prefix, and its nodes, once each", () => {
     const kept = filterPoolEvents(events, "general", new Set(["ip-10-0-1-11"]), new Set(["claim-of-the-set"]));
     expect(kept.map((e) => e.metadata.uid)).toEqual(["1", "3", "4", "5", "6"]);
-  });
-});
-
-describe("eventTs", () => {
-  it("takes lastTimestamp, then eventTime, then the creation time", () => {
-    expect(eventTs(event("1", "Node", "a", "2026-10-16T08:00:00Z"))).toBe(Date.parse("2026-10-16T08:00:00Z"));
-    expect(eventTs(event("1", "Node", "a"))).toBe(Date.parse("2026-10-16T07:00:00Z"));
   });
 });
 

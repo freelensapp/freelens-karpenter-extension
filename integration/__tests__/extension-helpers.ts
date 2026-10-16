@@ -243,7 +243,7 @@ function kubectlSucceeds(...args: string[]): boolean {
 
 /**
  * Whether the session can run: the kind cluster is running and reachable, and
- * has the fixtures of the static lab. Nothing is created or deleted. Outside CI
+ * has the fixtures of the static lab, its events included. Nothing is created or deleted. Outside CI
  * a session skips with a warning otherwise; in CI the run fails, so that a
  * mistake in the workflow does not turn into a silent skip.
  */
@@ -256,6 +256,9 @@ export function clusterReady(): boolean {
     reason = `the kind cluster ${kindClusterName} is not reachable`;
   } else if (!kubectlSucceeds("get", "nodepool", "general")) {
     reason = `the kind cluster ${kindClusterName} has no fixtures of the static lab (e2e/scripts/lab-up.sh static)`;
+  } else if (!kubectlSucceeds("get", "event", "--namespace", "default", "lab.general-old-finalized")) {
+    // The API server drops the events an hour after they are written.
+    reason = `the events of the static lab have expired (e2e/scripts/lab-up.sh static writes them again)`;
   }
 
   if (!reason) {

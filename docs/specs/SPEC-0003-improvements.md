@@ -1,6 +1,6 @@
 # SPEC-0003: Improvements beyond parity
 
-- **Status:** Approved (C1-C6, 2026-10-15; the variant of C3 is chosen in step I0)
+- **Status:** Approved (C1-C6, 2026-10-15; C2 redefined and C3 removal chosen in step I0, 2026-10-16)
 - **Milestone:** `M2` (see [ROADMAP.md](../development/ROADMAP.md))
 - **Karpenter versions reviewed:** `kubernetes-sigs/karpenter` `v1.15.0`, `aws/karpenter-provider-aws` `v1.15.0`, `Azure/karpenter-provider-azure` `v1.14.5`
 - **Tracking issue:** the improvements feature issue (I)
@@ -41,6 +41,16 @@ SPEC-0001. Nothing here writes to a cluster.
 - **Note (baseline, 2026-10-15):** the Overview of 1.0.1 already has a "+1
   empty" control for NodePools without nodes. Step I0 checks what it shows;
   C2 is redefined to the gap that remains, or dropped if none does.
+- **Step I0 (2026-10-16):** the "+N empty" control shows each NodePool
+  without nodes with its limits and an empty state, and hides them again, in
+  1.0.1 and in the port (`smoke/I0-empty` of the working folder). What
+  remains is the "NODEPOOLS" figure of the Overview chart, which counts the
+  NodePools with nodes only, so a cluster with a pool scaled to zero reads as
+  having one pool fewer.
+- **Redefined (decision of 2026-10-16):** the "NODEPOOLS" figure counts every
+  NodePool; the NodePools without nodes stay behind "+N empty", and the chart
+  still has one slice per NodePool with nodes. Tests: unit test of the count;
+  the static lab, with its `empty` NodePool, shows 4 (1.0.1 shows 3).
 
 ### C3. Debug table of the pool events
 
@@ -49,6 +59,12 @@ SPEC-0001. Nothing here writes to a cluster.
 - **Proposal:** remove it, or keep it behind a preference.
 - **Tests:** functional check that it is gone, or follows the preference.
 - **Decision:** approved by Roberto Bandini, 2026-10-15; removal or preference is chosen in step I0.
+- **Step I0 (2026-10-16):** the table lists the namespace, kind, name and
+  reason of events the card has already matched, which the card shows
+  anyway, and only when it has matched none, so it is empty whenever it
+  appears. It helped while the event matching was written. Removed
+  (decision of 2026-10-16), with its "Show debug" button; the empty state
+  keeps "No events found" and the refresh.
 
 ### C4. Karpenter details on the host's Node details
 

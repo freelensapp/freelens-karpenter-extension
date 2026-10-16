@@ -4,23 +4,10 @@ import React, { useMemo, useState } from "react";
 import svgIconNode from "../../../../assets/node1.svg?raw"; // must be `?raw` as we need SVG element
 import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
-import {
-  COLOR,
-  EVENT_REASON_CONFIG,
-  EVENT_REASON_FALLBACK,
-  ICON,
-  LABEL,
-  STATUS_BORDER_COLOR,
-  TIMING,
-} from "../../config/theme";
+import { COLOR, ICON, LABEL, STATUS_BORDER_COLOR, TIMING } from "../../config/theme";
 import { detectProvider, openNodeClassDetail } from "../../data/nodeclass";
-import {
-  eventTs,
-  fmtAgo,
-  type KarpenterEvent,
-  useKarpenterCardData,
-  usePoolEvents,
-} from "../../hooks/useKarpenterData";
+import { fmtAgo, useKarpenterCardData, usePoolEvents } from "../../hooks/useKarpenterData";
+import { eventTs, eventVisual, type KarpenterEvent } from "../../utils/karpenter-events";
 import {
   getInstanceType,
   getNodeClaimName,
@@ -127,7 +114,7 @@ const PoolEventTimeline = observer(function PoolEventTimeline({
 
 function EventRow({ event: e }: { event: KarpenterEvent }) {
   const reason = e.reason ?? "";
-  const cfg = EVENT_REASON_CONFIG[reason] ?? EVENT_REASON_FALLBACK;
+  const cfg = eventVisual(e);
   const ts = eventTs(e);
 
   return (

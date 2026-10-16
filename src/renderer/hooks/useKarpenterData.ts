@@ -8,10 +8,10 @@
 import { Renderer } from "@freelensapp/extensions";
 import { useCallback, useMemo } from "react";
 import { getKarpenterEventStore, karpenterEventNamespaces } from "../data/stores";
+import { eventTs, type KarpenterEvent } from "../utils/karpenter-events";
 import { buildPodCountMap, getInstanceType } from "../utils/kube-helpers";
 
 type Node = Renderer.K8sApi.Node;
-export type KarpenterEvent = Renderer.K8sApi.KubeEvent;
 
 /** Loads the Karpenter events again; the store is subscribed, so this is only needed after a failure. */
 function reloadEvents() {
@@ -87,10 +87,6 @@ export function usePoolEvents(poolName: string, nodeNameSet: Set<string>, claimN
 }
 
 // ── Pure helpers (used by hook + card) ────────────────────────────────────────
-
-export function eventTs(e: KarpenterEvent): number {
-  return new Date(e.lastTimestamp || e.eventTime || e.metadata?.creationTimestamp || 0).getTime();
-}
 
 /** `now` is the time to measure from, in milliseconds. */
 export function fmtAgo(ts: number, now = Date.now()): string {
