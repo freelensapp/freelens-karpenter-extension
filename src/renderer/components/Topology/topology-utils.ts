@@ -10,6 +10,7 @@
  * No React imports — pure TypeScript.
  */
 
+import { NodePool } from "../../api/nodepool/nodepool-v1";
 import {
   type CondStatus,
   getInstanceType,
@@ -19,7 +20,6 @@ import {
   parseMemGi,
 } from "../../utils/kube-helpers";
 
-import type { NodePool } from "../../api/nodepool/nodepool-v1";
 import type { Node } from "../../utils/kube-helpers";
 
 // ── Palettes ─────────────────────────────────────────────────────────────────
@@ -69,23 +69,24 @@ export interface NodeGroup {
 // ── Node classification helpers ──────────────────────────────────────────────
 
 export function getNodePoolName(node: Node): string | undefined {
-  return (node as any).metadata?.labels?.["karpenter.sh/nodepool"];
+  return node.metadata.labels?.["karpenter.sh/nodepool"];
 }
 
 export function getNodeZone(node: Node): string {
-  const labels: Record<string, string> = (node as any).metadata?.labels ?? {};
+  const labels = node.metadata.labels ?? {};
   return labels["topology.kubernetes.io/zone"] || labels["failure-domain.beta.kubernetes.io/zone"] || "unknown";
 }
 
 export function getNodeCapacityType(node: Node): "spot" | "on-demand" | "unknown" {
-  const labels: Record<string, string> = (node as any).metadata?.labels ?? {};
+  const labels = node.metadata.labels ?? {};
   const v =
     labels["karpenter.sh/capacity-type"] ||
     labels["karpenter.k8s.aws/capacity-type"] ||
     labels["eks.amazonaws.com/capacityType"]?.toLowerCase() ||
     "";
   if (v === "spot") return "spot";
-  if (v === "on-demand" || v === "ondemand") return "on-demand";
+  // EKS managed node groups label ON_DEMAND (B9).
+  if (v === "on-demand" || v === "on_demand" || v === "ondemand") return "on-demand";
   return "unknown";
 }
 
@@ -94,7 +95,7 @@ export function getNodeClassRef(node: Node, nodePoolsByName: Map<string, NodePoo
   const poolName = getNodePoolName(node);
   if (!poolName) return "unknown";
   const np = nodePoolsByName.get(poolName);
-  const ref = (np as any)?.spec?.template?.spec?.nodeClassRef;
+  const ref = np ? NodePool.getTemplateSpec(np)?.nodeClassRef : undefined;
   if (!ref) return "unknown";
   return `${ref.kind ?? "NodeClass"}/${ref.name ?? "unknown"}`;
 }
@@ -160,9 +161,9 @@ export function groupNodes(allNodes: Node[], nodePools: NodePool[], groupBy: Gro
 export function nodeSize(node: Node, sizeBy: SizeBy): number {
   switch (sizeBy) {
     case "cpu":
-      return parseCpuCores((node as any).status?.allocatable?.cpu ?? (node as any).status?.capacity?.cpu ?? 0) || 1;
+      return parseCpuCores(node.status?.allocatable?.cpu ?? node.status?.capacity?.cpu ?? 0) || 1;
     case "memory":
-      return parseMemGi((node as any).status?.allocatable?.memory ?? (node as any).status?.capacity?.memory ?? 0) || 1;
+      return parseMemGi(node.status?.allocatable?.memory ?? node.status?.capacity?.memory ?? 0) || 1;
     case "pods":
       return getNodeMaxPods(node) || 1;
     case "equal":
@@ -188,7 +189,8 @@ export interface TopologyKpi {
   karpenterCoverage: number;
 }
 
-export function computeKpi(allNodes: Node[], nodePools: NodePool[]): TopologyKpi {
+/** `now` is the time to compare the age of the nodes with, in milliseconds (see `getNodeStatus`). */
+export function computeKpi(allNodes: Node[], nodePools: NodePool[], now = Date.now()): TopologyKpi {
   let karpenter = 0,
     ready = 0,
     provisioning = 0,
@@ -200,13 +202,13 @@ export function computeKpi(allNodes: Node[], nodePools: NodePool[]): TopologyKpi
     onDemand = 0;
   for (const n of allNodes) {
     if (getNodePoolName(n)) karpenter++;
-    const s = getNodeStatus(n);
+    const s = getNodeStatus(n, now);
     if (s === "Ready") ready++;
     else if (s === "Provisioning") provisioning++;
     else if (s === "Terminating") terminating++;
     else if (s === "NotReady") notReady++;
-    cpu += parseCpuCores((n as any).status?.allocatable?.cpu ?? (n as any).status?.capacity?.cpu ?? 0);
-    mem += parseMemGi((n as any).status?.allocatable?.memory ?? (n as any).status?.capacity?.memory ?? 0);
+    cpu += parseCpuCores(n.status?.allocatable?.cpu ?? n.status?.capacity?.cpu ?? 0);
+    mem += parseMemGi(n.status?.allocatable?.memory ?? n.status?.capacity?.memory ?? 0);
     const ct = getNodeCapacityType(n);
     if (ct === "spot") spot++;
     else if (ct === "on-demand") onDemand++;

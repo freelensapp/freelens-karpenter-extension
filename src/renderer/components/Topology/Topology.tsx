@@ -13,7 +13,6 @@ import React, { useMemo, useState } from "react";
 import { buildPodCountMap, type CondStatus, getNodeStatus } from "../../utils/kube-helpers";
 import { ResponsiveTreemap } from "./TreemapView";
 import style from "./topology.module.scss";
-import styleInline from "./topology.module.scss?inline";
 import { computeKpi, type GroupBy, groupNodes, type NodeGroup, type SizeBy, STATUS_COLOR } from "./topology-utils";
 
 import type { NodePool } from "../../api/nodepool/nodepool-v1";
@@ -214,7 +213,6 @@ export const Topology: React.FC<TopologyProps> = observer(
 
     return (
       <div className={style.root}>
-        <style>{styleInline}</style>
         {/* ── KPI strip ──────────────────────────────────────────────── */}
         <div className={style.kpiStrip}>
           <Kpi label="Node Pools" value={kpi.poolCount} />

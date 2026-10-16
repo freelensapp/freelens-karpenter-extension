@@ -45,7 +45,10 @@ with a unit test (decision of 2026-10-15):
 - B4: the kubelet settings read `spec.kubelet` of `karpenter.k8s.aws/v1`
   (Node classes);
 - B7: memory is shown in binary units, as in the other tabs (Node classes);
-- B8: a NodePool without a memory limit shows no limit, not `0Mi` (Overview).
+- B8: a NodePool without a memory limit shows no limit, not `0Mi` (Overview);
+- B9, found in T2: a node labelled `eks.amazonaws.com/capacityType=ON_DEMAND`,
+  as EKS labels the nodes of its managed node groups, counts as on-demand, not
+  as unknown (Topology).
 
 ## Design
 
@@ -126,8 +129,8 @@ e2e/                         the local lab (SPEC-0002)
 ### Topology (feature T)
 
 Parity: KPI strip, status and capacity-type bar, interactive legend, treemap
-of nodes grouped by NodePool, instance type, zone or capacity type and sized
-by the chosen measure, with the squarified layout of `topology-utils.ts`.
+of nodes grouped by NodePool, zone, instance type or node class and sized
+by CPU, memory, pods or equally, with the squarified layout of `topology-utils.ts`.
 
 ### Node classes (feature N)
 
@@ -207,3 +210,19 @@ Results: not yet run.
   version of each kind, the host's stores, the events store), `load.ts` (load
   and subscribe, with an abort signal), `controller-version.ts` and
   `nodeclass.ts`. The `k8s/` folder of 1.0.1 is gone.
+- Feature O (2026-10-16): the page is `src/renderer/pages/dashboard.tsx`, an
+  `observer` function component; its state (loading, not installed, loaded)
+  comes from `data/use-dashboard-data.ts`, which loads the data again when
+  the served stores change, so a CRD created or deleted while the page is open
+  is followed. The Overview is `pages/overview.tsx`, its filter
+  `pages/overview-filter.ts`. B3 was also in the NodePool card, which read the
+  `expireAfter` of v1beta1; the card reads `spec.template.spec.expireAfter`.
+  The API server can answer 429 to the first list of a kind whose CRD was just
+  created, and the host's `loadAll` then resolves with the store empty;
+  `loadAndSubscribe` tries a failed load again, with a growing wait, before it
+  subscribes.
+- Feature T (2026-10-16): no change of behaviour beyond B9; `topology-utils.ts`
+  reads the host's `Node` and the NodePool model, and `computeKpi` takes the
+  time to compare the age of the nodes with, as `getNodeStatus` does, so that
+  the tests do not depend on the clock. The `ResizeObserver` of the treemap was
+  already disconnected on unmount.
