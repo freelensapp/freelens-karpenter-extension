@@ -167,7 +167,6 @@ build/                           # Vite plugins: host modules, standard decorato
 integration/__tests__/           # Integration tests, run inside a Freelens checkout, and their shared module
 e2e/                             # The local lab: kind clusters, fixtures, scripts (SPEC-0002)
 docs/specs/, docs/development/   # Specs, process and roadmap
-github-workflow-fix/             # Proposed workflows, for a maintainer to move (see "Modifying GitHub Actions Workflows")
 ```
 
 Build output goes to `dist/`: `main.js`, `renderer.js` and `renderer.css`, with
@@ -821,9 +820,7 @@ problem does not show.
 
 ### Workflows
 
-The workflows of the template, as `github-workflow-fix/` proposes them until a
-maintainer moves them into `.github/workflows/` (see "Modifying GitHub Actions Workflows";
-`github-workflow-fix/README.md` lists each change):
+The workflows of the template:
 
 | Workflow                 | Runs                                                                          |
 | ------------------------ | ----------------------------------------------------------------------------- |
@@ -1218,8 +1215,7 @@ A maintainer moves the file into `.github/workflows/` in a separate commit and
 removes `github-workflow-fix/`. Pull before continuing on the branch, as it may
 have gained such a commit. Until then, the development pass of
 `pnpm knip:check` still reads the workflows under `.github/workflows/`, so a
-dependency that only the old workflow uses is reported there (here
-`electron-rebuild`, of the v1 `integration-tests.yaml`).
+dependency that only the old workflow uses is reported there.
 
 ### Branch Naming Conventions
 

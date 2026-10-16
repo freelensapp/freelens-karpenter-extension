@@ -79,9 +79,6 @@ Before starting the release, verify that the following workflows are green on
 - `OSV-Scanner` and `Automated npm audit` — no outstanding critical
   vulnerabilities.
 
-The workflows are those of `github-workflow-fix/` until a maintainer moves
-them into `.github/workflows/` (see "Modifying GitHub Actions Workflows" in `AGENTS.md`).
-
 ## Versions and Freelens
 
 The major version of the extension follows the major version of Freelens it
