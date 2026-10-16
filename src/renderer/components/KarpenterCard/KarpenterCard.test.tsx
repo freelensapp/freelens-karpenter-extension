@@ -52,7 +52,7 @@ describe("KarpenterCard", () => {
     expect(screen.queryByText(/debug/i)).toBeNull();
   });
 
-  it("keeps a click on a link to details from the document, where the host's drawer listens (B14)", () => {
+  it("keeps a click on a link to details from the document, on its way to the window where the host's drawer listens (B14)", () => {
     const claim = new NodeClaim({
       apiVersion: "karpenter.sh/v1",
       kind: "NodeClaim",
