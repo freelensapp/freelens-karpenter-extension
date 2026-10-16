@@ -12,7 +12,6 @@ import type { CondStatus } from "../utils/kube-helpers";
 export const COLOR = {
   /** Karpenter brand / info blue */
   info: "#00a7e1",
-  infoSoft: "#6ab0d4",
   infoMuted: "rgba(100, 160, 210, 0.12)",
   infoBorder: "rgba(100, 160, 210, 0.25)",
 
@@ -52,14 +51,16 @@ export const COLOR = {
   /** Memory bar */
   memory: "#a8228f",
 
-  /** Neutral grays — prefer CSS vars at runtime, these are fallbacks */
-  border: "#2d2d2d",
-  borderFaint: "#1e1e1e",
-  textPrimary: "#e8e8e8",
-  textSecondary: "#888",
-  textTertiary: "#666",
-  bg: "#13161b",
-  bgHeader: "#1a1d22",
+  /** A gray for data (chart series, event dots) that shows on the background of either theme */
+  neutral: "#9e9e9e",
+
+  /** The neutral colours of the host's theme (C1), for CSS: not for SVG attributes or a canvas */
+  border: "var(--borderColor)",
+  borderFaint: "var(--borderFaintColor)",
+  textPrimary: "var(--textColorAccent)",
+  textSecondary: "var(--textColorSecondary)",
+  textTertiary: "var(--textColorTertiary)",
+  bg: "var(--contentColor)",
 } as const;
 
 // ── Status config ─────────────────────────────────────────────────────────────
@@ -157,12 +158,8 @@ export const LABEL = {
 // ── Timing ────────────────────────────────────────────────────────────────────
 
 export const TIMING = {
-  /** Event fetch TTL in milliseconds — avoid hammering the API */
-  eventFetchTtl: 30_000,
   /** Max events shown per pool timeline */
   maxTimelineEvents: 60,
-  /** Max events shown in the debug table */
-  maxDebugEvents: 25,
   /** Skeleton animation pulse duration */
   skeletonPulse: "1.4s",
 } as const;

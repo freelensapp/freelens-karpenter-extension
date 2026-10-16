@@ -70,17 +70,20 @@ Numbered, each step waits for what it creates:
   `AKSNodeClass` `v1beta1`, with status
 - `20` `NodePool` `general` (EC2, spot and on-demand, limits), `gpu` (EC2,
   taints), `azure` (AKS), `empty` (no nodes), with status
+- `25` `NodeOverlay`s `spot-discount` (spot capacity, so `general` and
+  `azure`) and `gpu-fpga` (the NodePool `gpu`), without status
 - `30` KWOK nodes with the labels Karpenter sets (`karpenter.sh/nodepool`,
   `karpenter.sh/nodeclaim`, `node.kubernetes.io/instance-type`,
   `topology.kubernetes.io/zone`, `karpenter.sh/capacity-type`), one being
-  disrupted (taint `karpenter.sh/disruption`), one not ready
+  disrupted (taint `karpenter.sh/disrupted`), one not ready
 - `40` `NodeClaim`s bound to those nodes, one claiming (no node yet), with
   status
 - `50` pods bound to the KWOK nodes
 - `60` Karpenter events (Launched, Registered, Initialized, Disrupting,
   Consolidated, FailedScheduling) in `default`, at known times
 - `70` a `karpenter` Deployment in `karpenter`, image tag `1.15.0`, zero
-  replicas, for the version badge
+  replicas, for the version badge (the live lab has the controller in
+  `kube-system`, for C6)
 
 Status is written with `kubectl apply --server-side --subresource=status`.
 A variant of the static profile serves only `AKSNodeClass` `v1alpha2` next to

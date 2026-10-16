@@ -110,7 +110,7 @@
 .nodeClassName {
   font-size: 15px;
   font-weight: 600;
-  color: #6ab0d4;
+  color: color-mix(in srgb, #6ab0d4 75%, var(--textColorAccent));
   font-family: monospace;
   cursor: pointer;
   transition: color 0.1s;
@@ -128,7 +128,7 @@
 
 .poolCountBadge {
   background: rgba(106, 176, 212, 0.12);
-  color: #6ab0d4;
+  color: color-mix(in srgb, #6ab0d4 75%, var(--textColorAccent));
   border: 1px solid rgba(106, 176, 212, 0.2);
   border-radius: 10px;
   padding: 2px 8px;

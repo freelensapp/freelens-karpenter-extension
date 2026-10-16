@@ -6,10 +6,10 @@ import { PieChart } from "../components/PieChart/pie-chart";
 import style from "./dashboard.module.scss";
 import {
   claimingByPoolName,
-  nodePoolMatchesFilter,
   nodesOfPool,
   parseSearchTokens,
   STATUS_QUICK_FILTERS,
+  selectVisibleNodePools,
 } from "./overview-filter";
 
 import type { NodePool } from "../api/nodepool/nodepool-v1";
@@ -46,6 +46,7 @@ export const OverviewTab = observer(({ nodePools, nodes, nodeClaims, search, set
             title={"Overview"}
             objects={nodePoolsWithNodes}
             nodes={nodes}
+            nodePools={nodePools}
             limits={{ cpu: "1000m", memory: "2000m" }}
             activePool={search}
             onPoolClick={setSearch}
@@ -71,17 +72,14 @@ const NodePoolList = observer(({ nodePools: allNodePools, nodes, nodeClaims, sea
     setQuickStatuses((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
 
   const claimsByPool = claimingByPoolName(nodeClaims);
-  const isEmpty = (poolName: string) =>
-    nodesOfPool(nodes, poolName).length === 0 && (claimsByPool[poolName]?.length ?? 0) === 0;
-
-  const allFiltered = allNodePools.filter((np) => {
-    const poolName = np.getName();
-    return nodePoolMatchesFilter(np, nodesOfPool(nodes, poolName), tokens, quickStatuses, claimsByPool[poolName] ?? []);
-  });
-
-  // Keep pools that have either nodes OR claiming NodeClaims, unless the empty ones are shown too
-  const visibleNodePools = showEmpty ? allFiltered : allFiltered.filter((np) => !isEmpty(np.getName()));
-  const emptyCount = allNodePools.filter((np) => isEmpty(np.getName())).length;
+  const { visible: visibleNodePools, emptyCount } = selectVisibleNodePools(
+    allNodePools,
+    nodes,
+    nodeClaims,
+    tokens,
+    quickStatuses,
+    showEmpty,
+  );
 
   const hasActiveFilter = search.trim() !== "" || quickStatuses.length > 0;
 

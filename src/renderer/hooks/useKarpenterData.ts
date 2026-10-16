@@ -7,6 +7,7 @@
 
 import { Renderer } from "@freelensapp/extensions";
 import { useCallback, useMemo } from "react";
+import { TIMING } from "../config/theme";
 import { getKarpenterEventStore, karpenterEventNamespaces } from "../data/stores";
 import { eventTs, type KarpenterEvent } from "../utils/karpenter-events";
 import { buildPodCountMap, getInstanceType } from "../utils/kube-helpers";
@@ -61,8 +62,6 @@ export function useKarpenterCardData(nodes: Node[]): KarpenterCardData {
 
 export interface PoolEventsData {
   allMatchedEvents: KarpenterEvent[];
-  fetchedCount: number;
-  storeCount: number;
   isLoading: boolean;
   refresh: () => void;
 }
@@ -74,13 +73,11 @@ export function usePoolEvents(poolName: string, nodeNameSet: Set<string>, claimN
   const store = getKarpenterEventStore();
   const allMatchedEvents = filterPoolEvents(store.items, poolName, nodeNameSet, claimNameSet)
     .sort((a, b) => eventTs(b) - eventTs(a))
-    .slice(0, 60);
+    .slice(0, TIMING.maxTimelineEvents);
   const refresh = useCallback(reloadEvents, []);
 
   return {
     allMatchedEvents,
-    fetchedCount: store.items.length,
-    storeCount: store.items.length,
     isLoading: !store.isLoaded && allMatchedEvents.length === 0,
     refresh,
   };

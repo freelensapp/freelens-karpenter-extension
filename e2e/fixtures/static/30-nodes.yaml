@@ -80,8 +80,7 @@ metadata:
 spec:
   providerID: aws:///eu-west-1a/i-0d1052b8d0e475b2c
   taints:
-    - key: karpenter.sh/disruption
-      value: disrupting
+    - key: karpenter.sh/disrupted
       effect: NoSchedule
 ---
 apiVersion: v1

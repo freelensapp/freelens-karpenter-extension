@@ -24,11 +24,11 @@ export interface EventVisual {
 
 const scaleUp: EventVisual = { color: COLOR.success, icon: "▲", group: "scale-up" };
 const scaleDown: EventVisual = { color: COLOR.terminating, icon: "▼", group: "scale-down" };
-const scaleDownDone: EventVisual = { color: COLOR.textSecondary, icon: "▼", group: "scale-down" };
+const scaleDownDone: EventVisual = { color: COLOR.neutral, icon: "▼", group: "scale-down" };
 const drift: EventVisual = { color: COLOR.warning, icon: "~", group: "drift" };
 const error: EventVisual = { color: COLOR.danger, icon: "✕", group: "error" };
 const blocked: EventVisual = { color: COLOR.warning, icon: "⊘", group: "other" };
-const other: EventVisual = { color: COLOR.textSecondary, icon: "•", group: "other" };
+const other: EventVisual = { color: COLOR.neutral, icon: "•", group: "other" };
 
 /** The reasons of a node coming up: scale up on a NodeClaim or a node, a status of the pool on a NodePool. */
 const NODE_LIFECYCLE_UP = new Set(["Launched", "Registered", "Initialized", "Ready"]);

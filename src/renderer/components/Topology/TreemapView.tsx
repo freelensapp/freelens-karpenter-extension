@@ -38,6 +38,10 @@ import {
 
 import type { Node } from "../../utils/kube-helpers";
 
+// The neutral colours of the theme (C1), as `style` values: SVG presentation attributes take no CSS variables.
+const CHIP_LAYER = (percent: number) => `color-mix(in srgb, var(--textColorAccent) ${percent}%, var(--contentColor))`;
+const TINT = (percent: number) => `color-mix(in srgb, var(--textColorAccent) ${percent}%, transparent)`;
+
 // ── Layout constants ─────────────────────────────────────────────────────────
 
 const GROUP_HEADER_H = 26;
@@ -149,12 +153,12 @@ export const TreemapView: React.FC<TreemapViewProps> = observer(
         >
           <defs>
             <linearGradient id="chipGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#244069" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#16263d" stopOpacity="1" />
+              <stop offset="0%" style={{ stopColor: CHIP_LAYER(13), stopOpacity: 0.95 }} />
+              <stop offset="100%" style={{ stopColor: CHIP_LAYER(5) }} />
             </linearGradient>
             <linearGradient id="chipGradientHover" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2d4f81" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="#1d3552" stopOpacity="1" />
+              <stop offset="0%" style={{ stopColor: CHIP_LAYER(20), stopOpacity: 0.95 }} />
+              <stop offset="100%" style={{ stopColor: CHIP_LAYER(9) }} />
             </linearGradient>
           </defs>
 
@@ -225,7 +229,7 @@ const GroupPanel: React.FC<{ group: NodeGroup; rect: Rect }> = ({ group, rect })
         x2={rect.x + rect.w - 6}
         y1={rect.y + GROUP_HEADER_H - 1}
         y2={rect.y + GROUP_HEADER_H - 1}
-        stroke="rgba(255,255,255,0.06)"
+        style={{ stroke: TINT(6) }}
         strokeWidth={1}
       />
     </g>
@@ -305,7 +309,7 @@ const Chip: React.FC<ChipProps> = ({ node, group: _group, rect, podCount, dimmed
           rx={CHIP_RADIUS - 2}
           ry={CHIP_RADIUS - 2}
           fill="none"
-          stroke="rgba(255,255,255,0.05)"
+          style={{ stroke: TINT(5) }}
           strokeWidth={1}
         />
       )}
@@ -424,7 +428,9 @@ const NodeTooltip: React.FC<{
 
   return (
     <div className={style.tooltip} style={{ left: info.x + offsetX, top: info.y - 10 }}>
-      <div style={{ fontFamily: "monospace", fontSize: 11, color: "#e6edf6", marginBottom: 6 }}>{name}</div>
+      <div style={{ fontFamily: "monospace", fontSize: 11, color: "var(--textColorAccent)", marginBottom: 6 }}>
+        {name}
+      </div>
       <div style={{ marginBottom: 6, display: "flex", gap: 8, alignItems: "center" }}>
         <span
           style={{
@@ -436,10 +442,10 @@ const NodeTooltip: React.FC<{
             boxShadow: "0 0 0 2px rgba(0,0,0,0.45)",
           }}
         />
-        <span style={{ color: "#e6edf6", fontWeight: 600 }}>{status}</span>
+        <span style={{ color: "var(--textColorAccent)", fontWeight: 600 }}>{status}</span>
         <span
           style={{
-            color: "#8aa0bc",
+            color: "var(--textColorSecondary)",
             marginLeft: "auto",
             textTransform: "uppercase",
             fontSize: 10,
@@ -462,13 +468,13 @@ const NodeTooltip: React.FC<{
             ] as [string, string][]
           ).map(([k, v]) => (
             <tr key={k}>
-              <td style={{ color: "#8aa0bc", paddingRight: 10 }}>{k}</td>
-              <td style={{ color: "#e6edf6", fontFamily: "monospace" }}>{v}</td>
+              <td style={{ color: "var(--textColorSecondary)", paddingRight: 10 }}>{k}</td>
+              <td style={{ color: "var(--textColorAccent)", fontFamily: "monospace" }}>{v}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div style={{ marginTop: 8, color: "#8aa0bc", fontSize: 10 }}>Click for details</div>
+      <div style={{ marginTop: 8, color: "var(--textColorSecondary)", fontSize: 10 }}>Click for details</div>
     </div>
   );
 };

@@ -62,6 +62,7 @@ declare const classNames: {
   readonly nodeCardStat: "nodeCardStat";
   readonly historyChart: "historyChart";
   readonly historyEmpty: "historyEmpty";
+  readonly historyRefresh: "historyRefresh";
   readonly eventTable: "eventTable";
   readonly eventRow: "eventRow";
   readonly eventAge: "eventAge";
@@ -74,5 +75,6 @@ declare const classNames: {
   readonly parent: "parent";
   readonly info: "info";
   readonly chart: "chart";
+  readonly overlayItem: "overlayItem";
 };
 export = classNames;

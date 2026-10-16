@@ -3,6 +3,7 @@ import { AKSNodeClass as AKSNodeClassV1alpha2 } from "../api/aksnodeclass/aksnod
 import { AKSNodeClass as AKSNodeClassV1beta1 } from "../api/aksnodeclass/aksnodeclass-v1beta1";
 import { EC2NodeClass } from "../api/ec2nodeclass/ec2nodeclass-v1";
 import { NodeClaim } from "../api/nodeclaim/nodeclaim-v1";
+import { NodeOverlay } from "../api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "../api/nodepool/nodepool-v1";
 
 // Where the dashboard's data comes from. A model's store exists only while the cluster serves its API: the host
@@ -29,6 +30,7 @@ export type AKSNodeClass = AKSNodeClassV1beta1 | AKSNodeClassV1alpha2;
 
 export const getNodePoolStore = () => getServedStore(() => NodePool.getStore<NodePool>());
 export const getNodeClaimStore = () => getServedStore(() => NodeClaim.getStore<NodeClaim>());
+export const getNodeOverlayStore = () => getServedStore(() => NodeOverlay.getStore<NodeOverlay>());
 export const getEC2NodeClassStore = () => getServedStore(() => EC2NodeClass.getStore<EC2NodeClass>());
 export const getAKSNodeClassStore = () =>
   getServedStore<

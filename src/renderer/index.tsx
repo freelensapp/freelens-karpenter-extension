@@ -4,7 +4,8 @@
  */
 
 import { Renderer } from "@freelensapp/extensions";
-import { withPageErrorBoundary } from "./components/error-boundary";
+import { withDetailsErrorBoundary, withPageErrorBoundary } from "./components/error-boundary";
+import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 // must be `?raw` as we need SVG element
 import svgIconLogo from "./icons/karpenter.svg?raw";
 import { KarpenterDashboard } from "./pages/dashboard";
@@ -28,6 +29,11 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       },
     },
   ].map((registration) => withPageErrorBoundary(this, registration));
+
+  // The Karpenter section of the host's Node details, after the host's own (C4).
+  kubeObjectDetailItems: Renderer.LensExtension["kubeObjectDetailItems"] = [
+    Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, { Details: NodeKarpenterDetails }),
+  ].map((registration) => withDetailsErrorBoundary(this, registration));
 
   clusterPageMenus = [
     {

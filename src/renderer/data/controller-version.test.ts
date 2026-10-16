@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
+  controllerLabelSelector,
+  fetchControllerVersion,
   findVersionInDeployments,
   parseVersionFromCrd,
   parseVersionFromDeployment,
@@ -65,5 +67,35 @@ describe("parseVersionFromCrd", () => {
     expect(parseVersionFromCrd(crd({ "app.kubernetes.io/version": "1.14.1" }))).toBe("1.14.1");
     expect(parseVersionFromCrd(crd({}, { "app.kubernetes.io/version": "1.13.0" }))).toBe("1.13.0");
     expect(parseVersionFromCrd(crd({}))).toBeNull();
+  });
+});
+
+describe("fetchControllerVersion", () => {
+  const helm = deployment("karpenter", ["public.ecr.aws/karpenter/controller:1.15.0"]);
+  const renamed = deployment("autoscaler", ["example.com/karpenter-kwok:v1.14.2"]);
+
+  it("finds the Deployment by its label in any namespace, whatever its name (C6)", async () => {
+    const list = vi.fn(async (namespace?: string, labelSelector?: string) =>
+      namespace === undefined && labelSelector === controllerLabelSelector ? [renamed] : [],
+    );
+    await expect(fetchControllerVersion(list)).resolves.toBe("1.14.2");
+    expect(list).toHaveBeenCalledTimes(1);
+  });
+
+  it("looks in karpenter and karpenter-system by name when the label finds none or cannot be listed", async () => {
+    const byNamespace = { karpenter: [], "karpenter-system": [helm] } as Record<string, Renderer.K8sApi.Deployment[]>;
+    const none = vi.fn(async (namespace?: string) => (namespace ? (byNamespace[namespace] ?? []) : []));
+    await expect(fetchControllerVersion(none)).resolves.toBe("1.15.0");
+    expect(none.mock.calls.map(([namespace]) => namespace)).toEqual([undefined, "karpenter", "karpenter-system"]);
+
+    const forbidden = vi.fn(async (namespace?: string) => {
+      if (!namespace || namespace === "karpenter") throw new Error("403");
+      return byNamespace[namespace] ?? [];
+    });
+    await expect(fetchControllerVersion(forbidden)).resolves.toBe("1.15.0");
+  });
+
+  it("is null when no Deployment has a version", async () => {
+    await expect(fetchControllerVersion(async () => null)).resolves.toBeNull();
   });
 });

@@ -100,4 +100,50 @@ SPEC-0001. Nothing here writes to a cluster.
 
 ## Notes and deviations
 
-None yet.
+All six were done in feature I (2026-10-16) and checked with unit tests, the
+integration test on the static lab and screenshots on both labs.
+
+- C1: the neutral colours (backgrounds, borders, text greys) are the host's
+  theme variables: `--contentColor`, `--borderColor`, `--borderFaintColor`
+  and the `--textColor*` ones, with layers made by `color-mix()` of the text
+  colour over the content colour, lighter in the dark theme and darker in the
+  light one. Topology loses its navy canvas, the Scaling Decisions panels
+  their near-black, the Overview figures their fixed light grey. The status,
+  capacity and group colours stay as they were: they read on both
+  backgrounds, as the host's own `colorError`, `colorWarning` do. A grey for
+  data, `COLOR.neutral`, stays fixed where a CSS variable cannot go (SVG
+  attributes, the canvas of the chart); the SVG elements take theme colours
+  through `style`. Checked with every tab of both labs in both themes; the
+  sandbox of the working folder takes the theme by its name (`Light`,
+  `Dark`), which is how the host keys its themes.
+- C2: `components/PieChart/overview-stats.ts` counts every NodePool for the
+  NodePool figures; the chart keeps one slice per NodePool with nodes. A
+  `poolstatus:` filter, which the "Not Ready pools" figure sets, also shows
+  the NodePools without nodes it matches, so that the figure and the list
+  agree (`selectVisibleNodePools` of `pages/overview-filter.ts`).
+- C3: removed with its button and the debug counts of the empty state;
+  `TIMING.maxDebugEvents` and the unused `eventFetchTtl` are gone. The pool
+  timeline takes its limit of 60 events from `TIMING.maxTimelineEvents`.
+- C4: `details/node-karpenter.ts` (pure) and `node-karpenter-details.tsx`,
+  registered with `detailsFor(Renderer.K8sApi.Node, …)` inside the details
+  error boundary, after the host's own Node details. It shows the NodePool and
+  NodeClaim (links), instance type, capacity type, zone, status, the
+  registered and initialized labels, and whether Karpenter is disrupting the
+  node or may not; nothing for other nodes. Found while writing it: B13 of
+  SPEC-0001.
+- C5: the model `api/nodeoverlay/nodeoverlay-v1alpha1.ts` (types generated
+  like the others, the requirement type its own, with `Gte` and `Lte`), its
+  store loaded with the others, the list on the NodePool card. Karpenter
+  applies a NodeOverlay to the instance types whose labels, with the
+  NodePool's name and template labels, meet its requirements; the instance
+  types are the cloud provider's, so the card lists the NodeOverlays that
+  *can* apply: a requirement on a label the NodePool fixes (by its name, a
+  template label, or an `In`, `NotIn`, `Exists` or `DoesNotExist`
+  requirement) must be met, any other can. Highest weight first, then by
+  name, as Karpenter merges them.
+- C6: the Deployments labelled `app.kubernetes.io/name=karpenter` are listed
+  in all namespaces first, whatever their name; when that finds none or is
+  not allowed, the Deployments whose name contains `karpenter` in
+  `karpenter` and `karpenter-system`, as before. The live lab, where the
+  chart installs the controller in `kube-system`, now shows the version
+  (1.0.1 showed "installed").

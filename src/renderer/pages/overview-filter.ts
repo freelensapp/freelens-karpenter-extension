@@ -114,3 +114,38 @@ export function nodePoolMatchesFilter(
 
   return true;
 }
+
+/**
+ * The NodePools the list shows, and the number of NodePools without nodes or pending NodeClaims. Those are left
+ * out unless they are asked for, or the filter is on the status of the NodePools, which the NodePool figures of
+ * the Overview count with or without nodes (C2).
+ */
+export function selectVisibleNodePools(
+  nodePools: NodePool[],
+  nodes: Node[],
+  nodeClaims: NodeClaim[],
+  tokens: SearchTokens,
+  quickStatuses: CondStatus[],
+  showEmpty: boolean,
+  now = Date.now(),
+): { visible: NodePool[]; emptyCount: number } {
+  const claimsByPool = claimingByPoolName(nodeClaims);
+  const isEmpty = (poolName: string) =>
+    nodesOfPool(nodes, poolName).length === 0 && (claimsByPool[poolName]?.length ?? 0) === 0;
+  const matching = nodePools.filter((np) => {
+    const poolName = np.getName();
+    return nodePoolMatchesFilter(
+      np,
+      nodesOfPool(nodes, poolName),
+      tokens,
+      quickStatuses,
+      claimsByPool[poolName] ?? [],
+      now,
+    );
+  });
+  const withEmpty = showEmpty || tokens.poolStatusTokens.length > 0;
+  return {
+    visible: withEmpty ? matching : matching.filter((np) => !isEmpty(np.getName())),
+    emptyCount: nodePools.filter((np) => isEmpty(np.getName())).length,
+  };
+}

@@ -69,14 +69,13 @@ describe("getNodeStatus", () => {
     expect(getNodeStatus(node({ ready: "True", labels: karpenter }))).toBe("Ready");
   });
 
-  it("is Terminating for a Karpenter node with the disruption taint", () => {
-    const n = node({
-      ready: "False",
-      labels: karpenter,
-      taints: [{ key: "karpenter.sh/disruption", effect: "NoSchedule" }],
-    });
-    expect(getNodeStatus(n, created + 60 * 60_000)).toBe("Terminating");
-  });
+  it.each(["karpenter.sh/disrupted", "karpenter.sh/disruption"])(
+    "is Terminating for a Karpenter node with the disruption taint %s (B13)",
+    (key) => {
+      const n = node({ ready: "False", labels: karpenter, taints: [{ key, effect: "NoSchedule" }] });
+      expect(getNodeStatus(n, created + 60 * 60_000)).toBe("Terminating");
+    },
+  );
 
   it("is Provisioning for a Karpenter node without Ready, with a bootstrap taint, or younger than 5 minutes", () => {
     expect(getNodeStatus(node({ labels: karpenter }), created + 60 * 60_000)).toBe("Provisioning");

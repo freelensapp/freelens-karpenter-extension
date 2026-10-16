@@ -5,6 +5,7 @@ import {
   getEC2NodeClassStore,
   getKarpenterEventStore,
   getNodeClaimStore,
+  getNodeOverlayStore,
   getNodePoolStore,
   getNodeStore,
   getPodStore,
@@ -99,6 +100,7 @@ export async function loadKarpenterData(signal: AbortSignal): Promise<KarpenterD
     getNodePoolStore(),
     getNodeStore(),
     getNodeClaimStore(),
+    getNodeOverlayStore(),
     getEC2NodeClassStore(),
     getAKSNodeClassStore(),
   ];

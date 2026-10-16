@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { NodeClaim } from "../api/nodeclaim/nodeclaim-v1";
 import { NodePool } from "../api/nodepool/nodepool-v1";
-import { claimingByPoolName, nodePoolMatchesFilter, nodesOfPool, parseSearchTokens } from "./overview-filter";
+import {
+  claimingByPoolName,
+  nodePoolMatchesFilter,
+  nodesOfPool,
+  parseSearchTokens,
+  selectVisibleNodePools,
+} from "./overview-filter";
 
 import type { Node } from "../utils/kube-helpers";
 
@@ -106,5 +112,27 @@ describe("nodePoolMatchesFilter", () => {
   it("matches type: against the instance types of the nodes", () => {
     expect(match(general, generalNodes, "type:c6i")).toBe(true);
     expect(match(general, generalNodes, "type:g5")).toBe(false);
+  });
+});
+
+describe("selectVisibleNodePools", () => {
+  const pools = [pool("general", "True"), pool("gpu", "True"), pool("empty", "True"), pool("broken", "False")];
+  const nodes = [node("a", "general", "True", "c6i.large")];
+  const claims = [claim("c1", "gpu")];
+  const names = (showEmpty: boolean, search = "") =>
+    selectVisibleNodePools(pools, nodes, claims, parseSearchTokens(search), [], showEmpty, later).visible.map((np) =>
+      np.getName(),
+    );
+
+  it("leaves out the NodePools without nodes or pending NodeClaims, unless they are asked for", () => {
+    expect(names(false)).toEqual(["general", "gpu"]);
+    expect(names(true)).toEqual(["general", "gpu", "empty", "broken"]);
+    expect(selectVisibleNodePools(pools, nodes, claims, parseSearchTokens(""), [], false, later).emptyCount).toBe(2);
+  });
+
+  it("shows the NodePools without nodes that a filter on the status of the NodePools matches (C2)", () => {
+    expect(names(false, "poolstatus:notready")).toEqual(["broken"]);
+    expect(names(false, "poolstatus:ready")).toEqual(["general", "gpu", "empty"]);
+    expect(names(false, "general")).toEqual(["general"]);
   });
 });

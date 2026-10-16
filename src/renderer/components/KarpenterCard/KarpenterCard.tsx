@@ -3,9 +3,11 @@ import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import svgIconNode from "../../../../assets/node1.svg?raw"; // must be `?raw` as we need SVG element
 import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
+import { NodeOverlay } from "../../api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
-import { COLOR, ICON, LABEL, STATUS_BORDER_COLOR, TIMING } from "../../config/theme";
+import { COLOR, ICON, LABEL, STATUS_BORDER_COLOR } from "../../config/theme";
 import { detectProvider, openNodeClassDetail } from "../../data/nodeclass";
+import { getNodeOverlayStore } from "../../data/stores";
 import { fmtAgo, useKarpenterCardData, usePoolEvents } from "../../hooks/useKarpenterData";
 import { eventTs, eventVisual, type KarpenterEvent } from "../../utils/karpenter-events";
 import {
@@ -18,6 +20,7 @@ import {
   getNodeStatus,
   openNodeClaimDetail,
   openNodeDetail,
+  openNodeOverlayDetail,
   openNodePoolDetail,
   parseCpuCores,
   parseMemGi,
@@ -46,16 +49,10 @@ const PoolEventTimeline = observer(function PoolEventTimeline({
   nodeNames: string[];
   claimNames: string[];
 }) {
-  const [showDebug, setShowDebug] = useState(false);
-
   const nodeNameSet = useMemo(() => new Set(nodeNames), [nodeNames.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
   const claimNameSet = useMemo(() => new Set(claimNames), [claimNames.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { allMatchedEvents, fetchedCount, storeCount, isLoading, refresh } = usePoolEvents(
-    poolName,
-    nodeNameSet,
-    claimNameSet,
-  );
+  const { allMatchedEvents, isLoading, refresh } = usePoolEvents(poolName, nodeNameSet, claimNameSet);
 
   if (isLoading) {
     return (
@@ -67,17 +64,12 @@ const PoolEventTimeline = observer(function PoolEventTimeline({
 
   if (allMatchedEvents.length === 0) {
     return (
-      <EventsEmptyState
-        poolName={poolName}
-        nodeNames={nodeNames}
-        claimNames={claimNames}
-        fetchedCount={fetchedCount}
-        storeCount={storeCount}
-        showDebug={showDebug}
-        onToggleDebug={() => setShowDebug((v) => !v)}
-        onRefresh={refresh}
-        fetchedEvents={allMatchedEvents}
-      />
+      <div className={style.historyEmpty}>
+        No events found for <strong>{poolName}</strong>.{" "}
+        <button type="button" onClick={refresh} className={style.historyRefresh}>
+          &#x21BB; Refresh
+        </button>
+      </div>
     );
   }
 
@@ -132,95 +124,6 @@ function EventRow({ event: e }: { event: KarpenterEvent }) {
       </td>
       <td className={style.eventMessage}>{e.message}</td>
     </tr>
-  );
-}
-
-// ── Events empty / debug state ────────────────────────────────────────────────
-
-function EventsEmptyState({
-  poolName,
-  nodeNames,
-  claimNames,
-  fetchedCount,
-  storeCount,
-  showDebug,
-  onToggleDebug,
-  onRefresh,
-  fetchedEvents,
-}: {
-  poolName: string;
-  nodeNames: string[];
-  claimNames: string[];
-  fetchedCount: number;
-  storeCount: number;
-  showDebug: boolean;
-  onToggleDebug: () => void;
-  onRefresh: () => void;
-  fetchedEvents: KarpenterEvent[];
-}) {
-  return (
-    <div className={style.historyEmpty}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <span>
-          No events found for <strong>{poolName}</strong>.{" "}
-          <span style={{ color: COLOR.textTertiary }}>
-            {fetchedCount} fetched, {storeCount} in store.
-          </span>
-        </span>
-        <button onClick={onRefresh} style={debugBtnStyle}>
-          &#x21BB; Refresh
-        </button>
-        <button onClick={onToggleDebug} style={debugBtnStyle}>
-          {showDebug ? "Hide debug" : "Show debug"}
-        </button>
-      </div>
-      {showDebug && (
-        <div style={{ marginTop: 8, fontSize: 10 }}>
-          <div style={{ marginBottom: 4, color: COLOR.textSecondary }}>
-            nodes=[{nodeNames.slice(0, 3).join(", ")}
-            {nodeNames.length > 3 ? "..." : ""}] | claims=[{claimNames.slice(0, 3).join(", ")}
-            {claimNames.length > 3 ? "..." : ""}]
-          </div>
-          <DebugEventTable events={fetchedEvents} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-const debugBtnStyle: React.CSSProperties = {
-  background: "none",
-  border: "none",
-  color: `var(--colorInfo, ${COLOR.infoSoft})`,
-  cursor: "pointer",
-  fontSize: 11,
-  textDecoration: "underline",
-  padding: 0,
-};
-
-function DebugEventTable({ events }: { events: KarpenterEvent[] }) {
-  return (
-    <table style={{ borderCollapse: "collapse", width: "100%", fontFamily: "monospace" }}>
-      <thead>
-        <tr style={{ color: COLOR.textTertiary }}>
-          {["ns", "kind", "name", "reason"].map((h) => (
-            <td key={h} style={{ padding: "2px 8px" }}>
-              {h}
-            </td>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {events.slice(0, TIMING.maxDebugEvents).map((r, i) => (
-          <tr key={i} style={{ borderTop: `1px solid var(--borderColor, ${COLOR.border})` }}>
-            <td style={{ padding: "2px 8px", color: COLOR.textTertiary }}>{r.metadata?.namespace ?? "—"}</td>
-            <td style={{ padding: "2px 8px", color: COLOR.textSecondary }}>{r.involvedObject?.kind ?? "?"}</td>
-            <td style={{ padding: "2px 8px", color: COLOR.infoSoft }}>{r.involvedObject?.name ?? "?"}</td>
-            <td style={{ padding: "2px 8px" }}>{r.reason ?? "?"}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
   );
 }
 
@@ -589,9 +492,42 @@ function CardInfoBar({
           </span>
         </div>
       )}
+
+      <NodeOverlayMeta nodePool={nodePool} />
     </div>
   );
 }
+
+/** The NodeOverlays that can apply to the NodePool's nodes, the one that takes precedence first (C5). */
+const NodeOverlayMeta = observer(function NodeOverlayMeta({ nodePool }: { nodePool: NodePool }) {
+  const overlays = NodeOverlay.forNodePool(getNodeOverlayStore()?.items ?? [], nodePool);
+  if (overlays.length === 0) return null;
+
+  return (
+    <div className={style.infoMeta}>
+      <span className={style.infoMetaItem}>
+        <span className={style.infoMetaLabel}>{overlays.length === 1 ? "Overlay:" : "Overlays:"}</span>
+        {overlays.map((overlay) => {
+          const changes = NodeOverlay.describe(overlay).join(", ");
+          return (
+            <span key={overlay.getName()} className={style.overlayItem}>
+              <a
+                onClick={(event) => {
+                  event.stopPropagation();
+                  openNodeOverlayDetail(overlay.getName());
+                }}
+                title={`Open NodeOverlay ${overlay.getName()} (weight ${NodeOverlay.getWeight(overlay)})`}
+              >
+                {overlay.getName()}
+              </a>
+              {changes && ` (${changes})`}
+            </span>
+          );
+        })}
+      </span>
+    </div>
+  );
+});
 
 function InfoPill({
   kind,

@@ -54,7 +54,7 @@ const GROUP_DEFS: { key: EventGroup; label: string; color: string }[] = [
   { key: "scale-down", label: "Scale down", color: COLOR.terminating },
   { key: "drift", label: "Drift", color: COLOR.warning },
   { key: "error", label: "Errors", color: COLOR.danger },
-  { key: "other", label: "Other", color: COLOR.textSecondary },
+  { key: "other", label: "Other", color: COLOR.neutral },
 ];
 
 const TIME_RANGES = [

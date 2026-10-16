@@ -47,7 +47,7 @@
 .cardNodeCount {
   font-size: 12px;
   font-weight: 500;
-  color: #6ab0d4;
+  color: color-mix(in srgb, #6ab0d4 75%, var(--textColorAccent));
   background: rgba(100, 160, 210, 0.12);
   border: 1px solid rgba(100, 160, 210, 0.25);
   border-radius: 10px;
@@ -152,7 +152,7 @@
 
 .infoTypeCount {
   font-weight: 600;
-  color: #6ab0d4;
+  color: color-mix(in srgb, #6ab0d4 75%, var(--textColorAccent));
 }
 
 // ── Empty node pool state ─────────────────────────────────────────────────────
@@ -537,7 +537,7 @@
 .treeLeafName {
   font-family: monospace;
   font-size: 11px;
-  color: #6ab0d4;
+  color: color-mix(in srgb, #6ab0d4 75%, var(--textColorAccent));
   font-weight: 500;
   white-space: nowrap; // keep on one line but never truncate
   overflow: visible;
@@ -589,6 +589,16 @@
   color: var(--textColorTertiary, #666);
   font-style: italic;
   border-top: 1px solid var(--borderColor, #2d2d2d);
+}
+
+.historyRefresh {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--colorInfo);
+  cursor: pointer;
+  font-size: 11px;
+  text-decoration: underline;
 }
 
 .eventTable {
@@ -700,4 +710,19 @@
   width: 180px;
   flex-shrink: 0;
   border-left: 1px solid var(--borderColor, #2d2d2d);
+}
+
+.overlayItem {
+  margin-left: 6px;
+
+  & + & {
+    &::before {
+      content: "· ";
+    }
+  }
+
+  a {
+    color: var(--colorInfo);
+    cursor: pointer;
+  }
 }

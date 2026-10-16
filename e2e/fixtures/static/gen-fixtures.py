@@ -161,7 +161,7 @@ for name, pool, kind, itype, ctype, zone, cpu, mem, pods, state, claim in NODES:
     if pool == "gpu":
         taints.append({"key": "nvidia.com/gpu", "effect": "NoSchedule"})
     if state == "disrupting":
-        taints.append({"key": "karpenter.sh/disruption", "value": "disrupting", "effect": "NoSchedule"})
+        taints.append({"key": "karpenter.sh/disrupted", "effect": "NoSchedule"})
     if state == "notready":
         taints.append({"key": "karpenter.sh/unregistered", "effect": "NoExecute"})
     spec = {"providerID": provider_id(kind, zone, claim)}

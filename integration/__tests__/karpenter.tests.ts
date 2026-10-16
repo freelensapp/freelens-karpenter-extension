@@ -13,7 +13,15 @@
 
 import { describeIf } from "@freelensapp/test-utils";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { clusterReady, installExtension, openDashboard, openKindCluster, openTab, startApp } from "./extension-helpers";
+import {
+  clusterReady,
+  installExtension,
+  openDashboard,
+  openKindCluster,
+  openNodeDetails,
+  openTab,
+  startApp,
+} from "./extension-helpers";
 
 import type { Frame } from "playwright";
 
@@ -35,20 +43,28 @@ describeIf(clusterReady())("Karpenter dashboard", () => {
 
   afterAll(
     async () => {
-      expect((await session?.close()) ?? []).toEqual([]);
+      // The host's Nodes page asks the metrics API, which the static lab does not serve (SPEC-0002).
+      const hostMetricsRequest = /status of 404\b.* @ \S+\/apis\/metrics\.k8s\.io\//;
+      const errors = (await session?.close()) ?? [];
+      expect(errors.filter((error) => !hostMetricsRequest.test(error))).toEqual([]);
     },
     10 * 60 * 1000,
   );
 
   it("shows the Overview of the NodePools", async () => {
-    // The NodePool azure sets no memory limit (B8), and general expires its nodes after 720h (B3).
+    // The NodePool azure sets no memory limit (B8), and general expires its nodes after 720h (B3). The NodePool
+    // figure counts the NodePool empty too, which has no node (C2): 4, 3 of them ready.
     await openTab(frame, "Overview", [
       "Karpenter 1.15.0",
+      "3 ready",
       "general",
       "azure",
       "gpu",
       /\/ —$/,
       /^Expire after:\s*720h$/,
+      // The NodeOverlays that can apply to a NodePool, on its card (C5).
+      "spot-discount",
+      "gpu-fpga",
     ]);
   });
 
@@ -84,6 +100,18 @@ describeIf(clusterReady())("Karpenter dashboard", () => {
       "DisruptionTerminating",
       "DisruptionBlocked",
       "Unconsolidatable",
+    ]);
+  });
+
+  it("adds a Karpenter section to the details of a Karpenter node", async () => {
+    // The node of the NodeClaim general-b4n8r, which Karpenter is disrupting (C4, B13).
+    await openNodeDetails(frame, "ip-10-0-1-13.eu-west-1.compute.internal", [
+      "Karpenter",
+      "general",
+      "general-b4n8r",
+      "Spot",
+      "Registered, Initialized",
+      "Being disrupted",
     ]);
   });
 });

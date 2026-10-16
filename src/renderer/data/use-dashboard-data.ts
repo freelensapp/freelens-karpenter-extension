@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { type KarpenterData, loadKarpenterData } from "./load";
-import { getAKSNodeClassStore, getEC2NodeClassStore, getNodeClaimStore, getNodePoolStore } from "./stores";
+import {
+  getAKSNodeClassStore,
+  getEC2NodeClassStore,
+  getNodeClaimStore,
+  getNodeOverlayStore,
+  getNodePoolStore,
+} from "./stores";
 
 export type DashboardData = { status: "loading" } | { status: "not-installed" } | { status: "ready"; version: string };
 
@@ -13,7 +19,13 @@ export type DashboardData = { status: "loading" } | { status: "not-installed" } 
  * stopped when it changes again or the page is left.
  */
 export function useKarpenterDashboardData(): DashboardData {
-  const storesKey = [getNodePoolStore(), getNodeClaimStore(), getEC2NodeClassStore(), getAKSNodeClassStore()]
+  const storesKey = [
+    getNodePoolStore(),
+    getNodeClaimStore(),
+    getNodeOverlayStore(),
+    getEC2NodeClassStore(),
+    getAKSNodeClassStore(),
+  ]
     .map((store) => store?.api.apiBase ?? "")
     .join(",");
   const [loaded, setLoaded] = useState<{ storesKey: string; version: string | null }>();

@@ -1,6 +1,7 @@
 import { Renderer } from "@freelensapp/extensions";
 import React, { useMemo } from "react";
-import { getNodePoolStatus, getNodeStatus } from "../../utils/kube-helpers";
+import { COLOR } from "../../config/theme";
+import { computeOverviewStats } from "./overview-stats";
 import style from "./pie-chart.module.scss";
 
 import type { NodePool } from "../../api/nodepool/nodepool-v1";
@@ -8,6 +9,9 @@ import type { Node } from "../../utils/kube-helpers";
 
 export interface PieChartProps {
   nodes: Node[];
+  /** Every NodePool, for the NodePool figures. */
+  nodePools: NodePool[];
+  /** The NodePools with nodes, one slice each. */
   objects: {
     nodePool: NodePool;
     nodes: Node[];
@@ -57,6 +61,7 @@ export function PieChart(props: PieChartProps): React.ReactElement {
   const {
     objects,
     nodes,
+    nodePools,
     onPoolClick,
     activePool,
     onFilterChange = undefined,
@@ -65,47 +70,15 @@ export function PieChart(props: PieChartProps): React.ReactElement {
     claimingByPool = {},
   } = props;
 
-  // ── aggregate stats ──────────────────────────────────────────────────────
-  const stats = useMemo(() => {
-    const karpenterNodes = nodes.filter((n) => !!n.metadata.labels?.["karpenter.sh/nodepool"]);
-    const nonKarpenterNodes = nodes.filter((n) => !n.metadata.labels?.["karpenter.sh/nodepool"]);
-
-    const readyCount = karpenterNodes.filter((n) => getNodeStatus(n) === "Ready").length;
-    const notReadyCount = karpenterNodes.filter((n) => getNodeStatus(n) === "NotReady").length;
-    const provisioningCount = karpenterNodes.filter((n) => getNodeStatus(n) === "Provisioning").length;
-    const terminatingCount = karpenterNodes.filter((n) => getNodeStatus(n) === "Terminating").length;
-
-    // per-nodepool counts
-    const poolCounts: Record<string, number> = {};
-    for (const np of objects) {
-      poolCounts[np.nodePool.metadata?.name ?? ""] = np.nodes.length;
-    }
-
-    // pool-level ready/notready
-    const poolsReady = objects.filter((np) => getNodePoolStatus(np.nodePool) === "Ready").length;
-    const poolsNotReady = objects.filter((np) => getNodePoolStatus(np.nodePool) !== "Ready").length;
-
-    return {
-      total: nodes.length,
-      karpenter: karpenterNodes.length,
-      nonKarpenter: nonKarpenterNodes.length,
-      ready: readyCount,
-      notReady: notReadyCount,
-      provisioning: provisioningCount,
-      terminating: terminatingCount,
-      poolCount: objects.length,
-      poolCounts,
-      poolsReady,
-      poolsNotReady,
-    };
-  }, [nodes, objects]);
+  // ── aggregate stats: every NodePool counts, the chart has a slice per NodePool with nodes ──
+  const stats = computeOverviewStats(nodes, nodePools);
 
   // ── pie chart data ────────────────────────────────────────────────────────
   const { chartData, backgroundColor } = useMemo(() => {
     const others = stats.nonKarpenter;
     const goldenAngle = 137.508;
 
-    const bgColors = [...objects.map((_, i) => `hsl(${(i * goldenAngle) % 360}, 70%, 50%)`), "#555"];
+    const bgColors = [...objects.map((_, i) => `hsl(${(i * goldenAngle) % 360}, 70%, 50%)`), COLOR.neutral];
 
     const lbls = [
       ...objects.map((np) => `${np.nodePool.metadata?.name ?? "?"}: ${np.nodes.length}`),
@@ -149,11 +122,18 @@ export function PieChart(props: PieChartProps): React.ReactElement {
         <div className={style.rightCol}>
           {/* stat boxes row */}
           <div className={style.statsRow}>
-            <StatBox value={stats.total} label="Total nodes" color="#ccc" />
+            <StatBox value={stats.total} label="Total nodes" color={COLOR.textPrimary} />
             <StatBox value={stats.karpenter} label="Karpenter" color="#00a7e1" />
-            {stats.nonKarpenter > 0 && <StatBox value={stats.nonKarpenter} label="Non-Karpenter" color="#888" />}
+            {stats.nonKarpenter > 0 && (
+              <StatBox value={stats.nonKarpenter} label="Non-Karpenter" color={COLOR.textSecondary} />
+            )}
             <div className={style.statDivider} />
-            <StatBox value={stats.poolCount} label="NodePools" color="#ccc" sub={`${stats.poolsReady} ready`} />
+            <StatBox
+              value={stats.poolCount}
+              label="NodePools"
+              color={COLOR.textPrimary}
+              sub={`${stats.poolsReady} ready`}
+            />
             {stats.poolsNotReady > 0 && (
               <button
                 className={`${style.statBox} ${style.statBoxBtn}${activeFilter === "poolstatus:notready" ? ` ${style.statBoxBtnActive}` : ""}`}

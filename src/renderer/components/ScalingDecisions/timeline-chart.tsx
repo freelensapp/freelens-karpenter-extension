@@ -199,7 +199,6 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
           fontSize: 12,
           border: `1px dashed ${COLOR.border}`,
           borderRadius: 6,
-          background: "rgba(255,255,255,0.01)",
         }}
       >
         No events in the selected range
@@ -230,8 +229,7 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
             y={14}
             fontSize={11}
             fontWeight={600}
-            fill="var(--textColorSecondary, #aaa)"
-            style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}
+            style={{ fill: COLOR.textSecondary, textTransform: "uppercase", letterSpacing: "0.05em" }}
           >
             {title}
           </text>
@@ -247,11 +245,11 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
                 x2={padL + innerW}
                 y1={y}
                 y2={y}
-                stroke={COLOR.border}
+                style={{ stroke: COLOR.border }}
                 strokeDasharray="2 3"
                 opacity={0.5}
               />
-              <text x={padL - 4} y={y + 3} fontSize={9} textAnchor="end" fill={COLOR.textTertiary}>
+              <text x={padL - 4} y={y + 3} fontSize={9} textAnchor="end" style={{ fill: COLOR.textTertiary }}>
                 {v}
               </text>
             </g>
@@ -317,7 +315,7 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
                     cy={pts[activeIdx]!.y}
                     r={3.5}
                     fill={s.color}
-                    stroke="#0c0e12"
+                    style={{ stroke: COLOR.bg }}
                     strokeWidth={1.2}
                   />
                 )}
@@ -332,7 +330,7 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
             x2={xCenter(activeIdx)}
             y1={padT}
             y2={padT + innerH}
-            stroke={mode === "area" ? "rgba(255,255,255,0.5)" : COLOR.info}
+            style={{ stroke: mode === "area" ? COLOR.textSecondary : COLOR.info }}
             strokeWidth={1}
             opacity={0.7}
             strokeDasharray={mode === "area" ? "" : "0"}
@@ -352,7 +350,7 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
                 y={height - 6}
                 fontSize={9}
                 textAnchor="middle"
-                fill={COLOR.textTertiary}
+                style={{ fill: COLOR.textTertiary }}
               >
                 {fmtBucket(p.t, bucketMs)}
               </text>
@@ -386,7 +384,7 @@ export const TimelineChart: React.FC<TimelineChartProps> = ({
                 left: `${left}%`,
                 top: padT + 6,
                 transform: placeRight ? "translateX(8px)" : "translateX(calc(-100% - 8px))",
-                background: "rgba(20, 23, 28, 0.96)",
+                background: COLOR.bg,
                 border: `1px solid ${COLOR.border}`,
                 borderRadius: 4,
                 padding: "6px 10px",

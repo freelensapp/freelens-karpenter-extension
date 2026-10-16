@@ -61,6 +61,10 @@ with a unit test (decision of 2026-10-15):
   `items`, an array the host updates in place, so the nodes and events
   stayed as they were when the tab was opened (seen on 1.0.1 in the live
   lab: 1 Karpenter node in the cluster, 3 on the open Topology tab).
+- B13, found in I (C4): a Karpenter node that is not ready and has the
+  disruption taint is Terminating by `karpenter.sh/disrupted`, the taint of
+  Karpenter v1, as well as by `karpenter.sh/disruption` of earlier versions;
+  1.0.1 knew only the old one (node status, shared).
 
 ## Design
 
@@ -77,10 +81,11 @@ is why `customResources` stays unset.
 ```text
 src/
   main/index.ts              KarpenterExtensionMain (no behaviour)
-  renderer/index.tsx         KarpenterExtensionRenderer: clusterPages, clusterPageMenus
+  renderer/index.tsx         KarpenterExtensionRenderer: clusterPages, clusterPageMenus, kubeObjectDetailItems
   renderer/api/<kind>/       one model per kind and version, with its tests
   renderer/api/types.ts      types shared by the models
   renderer/pages/            the dashboard page
+  renderer/details/          the Karpenter section of the host's Node details (C4)
   renderer/components/       the tabs, cards, charts, shared components, error boundary
   renderer/utils/            pure helpers, with their tests
   renderer/icons/            karpenter.svg
@@ -122,8 +127,8 @@ e2e/                         the local lab (SPEC-0002)
 - Controller version (parity): the image tag of a Deployment whose name
   contains `karpenter` in `karpenter` or `karpenter-system`; else the
   `karpenter.sh/version` or `app.kubernetes.io/version` annotation or label of
-  the NodePool CRD; else "installed". Finding it in `kube-system` is
-  candidate C6 of SPEC-0003.
+  the NodePool CRD; else "installed". Finding it by its label in any
+  namespace, `kube-system` included, is C6 of SPEC-0003, done in feature I.
 
 ### Overview and dashboard shell (feature O)
 
@@ -195,10 +200,11 @@ left out, since a node has events under its own name and its NodeClaim's.
 
 ### Node status (shared, parity)
 
-A node is Terminating with a deletion timestamp or the
-`karpenter.sh/disruption` taint, Ready with condition Ready true; a Karpenter
-node (label `karpenter.sh/nodeclaim` or `karpenter.sh/nodepool`) without
-Ready, with a bootstrap taint or younger than 5 minutes is Provisioning,
+A node is Terminating with a deletion timestamp, Ready with condition Ready
+true; a Karpenter node (label `karpenter.sh/nodeclaim` or
+`karpenter.sh/nodepool`) that is not ready is Terminating with the
+`karpenter.sh/disrupted` taint (`karpenter.sh/disruption` before v1, B13),
+Provisioning without Ready, with a bootstrap taint or younger than 5 minutes,
 otherwise NotReady. A NodeClaim without `status.nodeName` and without a
 deletion timestamp is claiming.
 
@@ -222,13 +228,17 @@ Nothing is written to the cluster.
   - topology: grouping by each key, `squarify` (proportional areas, every
     item placed once, no recursion on degenerate input), KPI counts;
   - node classes: provider detection, the NodePools of a node class;
+  - improvements (SPEC-0003): the Overview figures (C2), the empty event
+    state of a card (C3), the Node details item (C4), the NodeOverlays of a
+    NodePool (C5), the controller lookup (C6);
   - page: the three states, and the late-CRD case with a `getStore` spy that
     reads an observable;
   - error boundary: the template's test.
 - Integration (Freelens harness, template style): install the extension;
   open the static lab cluster; open the dashboard and each tab; check one
-  NodePool card, the treemap, one node class card and the decisions list; no
-  error in either process.
+  NodePool card, the treemap, one node class card and the decisions list; the
+  Karpenter section of a node's details; no error in either process but the
+  host's requests to the metrics API, which the static lab does not serve.
 - Functional (lab, Freelens dev over CDP): the functional checks of the
   migration issue and of each feature issue, with screenshots per tab,
   compared with the v1 baseline.

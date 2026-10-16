@@ -234,6 +234,28 @@ export async function openTab(frame: Frame, tab: string, texts: (string | RegExp
 }
 
 /**
+ * Opens the host's Nodes page and the details of a node, and waits for each
+ * text in the details drawer, then checks that the extension's error boundary
+ * rendered no error there.
+ */
+export async function openNodeDetails(frame: Frame, nodeName: string, texts: (string | RegExp)[]) {
+  await utils.clickSidebarItem(frame, "link-for-sidebar-item-nodes");
+  await frame.locator(".TableRow", { hasText: nodeName }).first().click(viewTimeout);
+
+  const drawer = frame.locator(".Drawer");
+
+  for (const text of texts) {
+    await drawer.getByText(text, { exact: true }).first().waitFor(viewTimeout);
+  }
+
+  const errorPages = await drawer.locator('[class*="_errorPage_"]').count();
+
+  if (errorPages > 0) {
+    throw new Error(`The details of ${nodeName} show ${errorPages} error page(s) of the extension`);
+  }
+}
+
+/**
  * Runs a read-only kubectl command against the kind cluster, never the current
  * context, and tells whether it succeeded.
  */

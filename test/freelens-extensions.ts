@@ -9,6 +9,7 @@
 // Only the surface the tests exercise is stubbed here, and only at runtime: the
 // tests are type-checked against the real declaration of the package. Extend it
 // as your tests need more of the host API.
+import { createElement, Fragment, type ReactNode } from "react";
 import { vi } from "vitest";
 
 class LensExtensionKubeObject {
@@ -39,11 +40,35 @@ class LensExtensionKubeObject {
   }
 }
 
+// The drawer components as plain elements: a title, and an item with its name unless it is hidden.
+function DrawerTitle({ children }: { children?: ReactNode }) {
+  return createElement("h3", null, children);
+}
+
+function DrawerItem({ name, hidden, children }: { name: ReactNode; hidden?: boolean; children?: ReactNode }) {
+  return hidden
+    ? null
+    : createElement(Fragment, null, createElement("span", null, name), createElement("span", null, children));
+}
+
+// An icon as an empty element.
+function Icon() {
+  return createElement("i");
+}
+
 export const Renderer = {
+  Component: {
+    DrawerItem,
+    DrawerTitle,
+    Icon,
+  },
   K8sApi: {
     LensExtensionKubeObject,
     KubeApi: class KubeApi {},
     KubeObjectStore: class KubeObjectStore {},
+  },
+  Navigation: {
+    navigate: vi.fn(),
   },
 };
 

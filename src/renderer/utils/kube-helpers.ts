@@ -42,6 +42,12 @@ export function getNodeClassStatus(nodeClass: { status?: { conditions?: Conditio
   return getConditionStatus(nodeClass.status?.conditions, "Ready");
 }
 
+/** The taint of a node Karpenter disrupts: `karpenter.sh/disrupted` of v1, `karpenter.sh/disruption` before (B13). */
+export const DISRUPTION_TAINTS = ["karpenter.sh/disrupted", "karpenter.sh/disruption"];
+
+/** The taints the kubelet sets while a node is starting. */
+const BOOTSTRAP_TAINTS = ["node.kubernetes.io/not-ready", "node.kubernetes.io/uninitialized"];
+
 /** `now` is the time to compare the node's age with, in milliseconds. */
 export function getNodeStatus(node: Node, now = Date.now()): CondStatus {
   const conditions = node.status?.conditions ?? [];
@@ -62,13 +68,11 @@ export function getNodeStatus(node: Node, now = Date.now()): CondStatus {
     const taints = node.spec?.taints ?? [];
 
     // Karpenter disruption taint → node is being drained/consolidated
-    const hasDisruptionTaint = taints.some((t) => t.key === "karpenter.sh/disruption");
+    const hasDisruptionTaint = taints.some((t) => DISRUPTION_TAINTS.includes(t.key));
     if (hasDisruptionTaint) return "Terminating";
 
     // Bootstrap taints are added by k8s while the node is initializing
-    const hasBootstrapTaint = taints.some(
-      (t) => t.key === "node.kubernetes.io/not-ready" || t.key === "node.kubernetes.io/uninitialized",
-    );
+    const hasBootstrapTaint = taints.some((t) => BOOTSTRAP_TAINTS.includes(t.key));
 
     // A brand-new node (< 5 min) that isn't Ready yet is still provisioning
     const createdAt = node.metadata.creationTimestamp ? new Date(node.metadata.creationTimestamp).getTime() : 0;
@@ -212,7 +216,17 @@ export function openNodeDetail(node: Node): void {
 }
 
 export function openNodePoolDetail(nodePool: NodePool): void {
-  navigateToDetail("/crd/karpenter.sh/nodepools", `/apis/karpenter.sh/v1/nodepools/${nodePool.metadata?.name ?? ""}`);
+  openNodePoolDetailByName(nodePool.metadata?.name ?? "");
+}
+
+export function openNodePoolDetailByName(name: string): void {
+  if (!name) return;
+  navigateToDetail("/crd/karpenter.sh/nodepools", `/apis/karpenter.sh/v1/nodepools/${name}`);
+}
+
+export function openNodeOverlayDetail(name: string): void {
+  if (!name) return;
+  navigateToDetail("/crd/karpenter.sh/nodeoverlays", `/apis/karpenter.sh/v1alpha1/nodeoverlays/${name}`);
 }
 
 export function openNodeClaimDetail(name: string): void {

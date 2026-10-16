@@ -14,6 +14,7 @@ const served = observable.box(false);
 vi.mock("./stores", () => ({
   getNodePoolStore: () => (served.get() ? { api: { apiBase: "/apis/karpenter.sh/v1/nodepools" } } : undefined),
   getNodeClaimStore: () => undefined,
+  getNodeOverlayStore: () => undefined,
   getEC2NodeClassStore: () => undefined,
   getAKSNodeClassStore: () => undefined,
 }));
