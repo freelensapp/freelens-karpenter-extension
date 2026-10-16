@@ -1,0 +1,36 @@
+// The animations of the loading placeholders; the components set the sizes inline.
+
+.pulse {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    rgba(128, 128, 128, 0.08) 25%,
+    rgba(128, 128, 128, 0.18) 50%,
+    rgba(128, 128, 128, 0.08) 75%
+  );
+  background-size: 200% 100%;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.spin {
+  display: inline-block;
+  border-radius: 50%;
+  border: 2px solid rgba(128, 128, 128, 0.2);
+  flex-shrink: 0;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

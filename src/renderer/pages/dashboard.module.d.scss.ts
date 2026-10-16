@@ -1,0 +1,26 @@
+declare const classNames: {
+  readonly dashboard: "dashboard";
+  readonly center: "center";
+  readonly chartTitle: "chartTitle";
+  readonly chartItem: "chartItem";
+  readonly pb3: "pb3";
+  readonly tabContent: "tabContent";
+  readonly fluxContent: "fluxContent";
+  readonly nodePoolList: "nodePoolList";
+  readonly nodePoolListHeader: "nodePoolListHeader";
+  readonly nodePoolSearch: "nodePoolSearch";
+  readonly nodePoolSearchWrap: "nodePoolSearchWrap";
+  readonly nodePoolSearchClear: "nodePoolSearchClear";
+  readonly quickFilters: "quickFilters";
+  readonly quickFilterChip: "quickFilterChip";
+  readonly quickFilterChipActive: "quickFilterChipActive";
+  readonly noResults: "noResults";
+  readonly nodePoolCount: "nodePoolCount";
+  readonly nodePoolEmptyBtn: "nodePoolEmptyBtn";
+  readonly nodePoolEmptyBtnActive: "nodePoolEmptyBtnActive";
+  readonly karpenterNotInstalled: "karpenterNotInstalled";
+  readonly karpenterNotInstalledIcon: "karpenterNotInstalledIcon";
+  readonly karpenterNotInstalledTitle: "karpenterNotInstalledTitle";
+  readonly karpenterNotInstalledMsg: "karpenterNotInstalledMsg";
+};
+export = classNames;

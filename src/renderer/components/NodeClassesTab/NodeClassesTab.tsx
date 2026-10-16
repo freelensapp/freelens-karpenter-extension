@@ -1,35 +1,28 @@
 import { observer } from "mobx-react";
-import React, { useMemo, useState } from "react";
-import { getNodeStore } from "../../k8s/core/node-store";
-import { getAKSNodeClassStore } from "../../k8s/karpenter/aksNodeclass-store";
-import { getEC2NodeClassStore } from "../../k8s/karpenter/ec2nodeclass-store";
-import { NODE_CLASS_KIND, type NodeClassProvider, openNodeClassDetail } from "../../k8s/karpenter/nodeclass-utils";
-import { getNodePoolStore } from "../../k8s/karpenter/store";
+import React, { useState } from "react";
+import { NODE_CLASS_KIND, openNodeClassDetail } from "../../data/nodeclass";
+import { getAKSNodeClassStore, getEC2NodeClassStore, getNodePoolStore, getNodeStore } from "../../data/stores";
 import { getNodeClassStatus, getNodePoolStatus, openNodePoolDetail } from "../../utils/kube-helpers";
 import { StatusBadge } from "../shared/StatusBadge";
+import {
+  countNodesByPool,
+  type NodeClass,
+  nodeClassMetaItems,
+  nodeClassProvider,
+  nodePoolRowValues,
+  nodePoolsOfNodeClass,
+} from "./nodeclass-card";
 import style from "./nodeclasses-tab.module.scss";
-import styleInline from "./nodeclasses-tab.module.scss?inline";
+
+import type { NodePool } from "../../api/nodepool/nodepool-v1";
 
 // ── NodePool row inside a NodeClass ──────────────────────────────────────────
 
-/**
- * NodePoolRow receives pre-filtered `nodeCount` from the parent
- * to avoid running nodeStore.items.filter() inside every row.
- */
-function NodePoolRow({ nodePool, nodeCount }: { nodePool: any; nodeCount: number }) {
-  const name: string = nodePool.metadata?.name ?? "—";
+/** The parent counts the nodes of every NodePool once, and passes each row its count. */
+function NodePoolRow({ nodePool, nodeCount }: { nodePool: NodePool; nodeCount: number }) {
+  const name = nodePool.metadata?.name ?? "—";
   const status = getNodePoolStatus(nodePool);
-
-  const totalCpu = (nodePool as any).status?.resources?.cpu ?? "—";
-  const totalMemory = (nodePool as any).status?.resources?.memory ?? "—";
-
-  // Disruption policy
-  const consolidation = (nodePool as any).spec?.disruption?.consolidationPolicy ?? "—";
-  const expireAfter = (nodePool as any).spec?.disruption?.expireAfter ?? "—";
-
-  // Limits
-  const limitCpu = (nodePool as any).spec?.limits?.cpu ?? "—";
-  const limitMemory = (nodePool as any).spec?.limits?.memory ?? "—";
+  const { cpuUsed, memoryUsed, limitCpu, limitMemory, consolidation, expireAfter } = nodePoolRowValues(nodePool);
 
   return (
     <tr
@@ -48,8 +41,8 @@ function NodePoolRow({ nodePool, nodeCount }: { nodePool: any; nodeCount: number
         <StatusBadge status={status} compact />
       </td>
       <td className={style.mono}>{nodeCount}</td>
-      <td className={style.mono}>{totalCpu}</td>
-      <td className={style.mono}>{totalMemory}</td>
+      <td className={style.mono}>{cpuUsed}</td>
+      <td className={style.mono}>{memoryUsed}</td>
       <td className={style.mono}>
         {limitCpu} / {limitMemory}
       </td>
@@ -62,62 +55,19 @@ function NodePoolRow({ nodePool, nodeCount }: { nodePool: any; nodeCount: number
 
 // ── NodeClass card ────────────────────────────────────────────────────────────
 
-function NodeClassCard({ nodeClass }: { nodeClass: any }) {
+// An observer: it reads the NodePool and node stores while it renders.
+const NodeClassCard = observer(({ nodeClass }: { nodeClass: NodeClass }) => {
   const [expanded, setExpanded] = useState(true);
-  const nodePoolStore = getNodePoolStore();
-  const nodeStore = getNodeStore();
-  const name: string = nodeClass.metadata?.name ?? "—";
+  const name = nodeClass.metadata?.name ?? "—";
   const status = getNodeClassStatus(nodeClass);
-
-  // Detect provider from apiVersion
-  const apiVersion: string = nodeClass.apiVersion ?? "";
-  const provider: NodeClassProvider = apiVersion.includes("azure") ? "azure" : "aws";
+  const provider = nodeClassProvider(nodeClass);
   const kindLabel = NODE_CLASS_KIND[provider];
-  const spec = (nodeClass as any).spec ?? {};
-
-  // Build a unified list of meta items — same structure for AWS and Azure
-  const metaItems: { label: string; value: string | number }[] = [];
-
-  if (provider === "aws") {
-    if (spec.amiFamily) metaItems.push({ label: "Image Family", value: spec.amiFamily });
-    if (spec.instanceProfile ?? spec.role)
-      metaItems.push({ label: "Instance Profile", value: spec.instanceProfile ?? spec.role });
-    const amiCount = (spec.amiSelectorTerms ?? []).length;
-    if (amiCount > 0) metaItems.push({ label: "AMI Selectors", value: amiCount });
-    const subnetCount = (spec.subnetSelectorTerms ?? []).length;
-    if (subnetCount > 0) metaItems.push({ label: "Subnets", value: subnetCount });
-    const sgCount = (spec.securityGroupSelectorTerms ?? []).length;
-    if (sgCount > 0) metaItems.push({ label: "Security Groups", value: sgCount });
-  } else {
-    if (spec.imageFamily) metaItems.push({ label: "Image Family", value: spec.imageFamily });
-    if (spec.osDiskSizeGB != null) metaItems.push({ label: "OS Disk", value: `${spec.osDiskSizeGB} GB` });
-    if (spec.kubeletConfig) metaItems.push({ label: "Kubelet Config", value: "✓" });
-    const subnetCount = (spec.subnetSelectorTerms ?? []).length;
-    if (subnetCount > 0) metaItems.push({ label: "Subnets", value: subnetCount });
-  }
-
-  // Associated NodePools — memoized to avoid filtering on every render
-  const associatedPools = useMemo(
-    () => nodePoolStore.items.filter((np: any) => np.spec?.template?.spec?.nodeClassRef?.name === name),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodePoolStore.items.length, name],
-  );
-
-  // Node counts per NodePool — computed once, passed down as props
-  const nodeCountMap = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const node of nodeStore.items as any[]) {
-      const pool: string = node.metadata?.labels?.["karpenter.sh/nodepool"] ?? "";
-      if (pool) map[pool] = (map[pool] ?? 0) + 1;
-    }
-    return map;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeStore.items.length]);
+  const metaItems = nodeClassMetaItems(nodeClass);
+  const associatedPools = nodePoolsOfNodeClass(nodeClass, getNodePoolStore()?.items ?? []);
+  const nodeCountMap = countNodesByPool(getNodeStore().items);
 
   return (
     <div className={style.nodeClassCard}>
-      <style>{styleInline}</style>
-
       {/* Header */}
       <div className={style.nodeClassHeader} onClick={() => setExpanded((e) => !e)}>
         <div className={style.nodeClassTitleRow}>
@@ -184,7 +134,7 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
                 </tr>
               </thead>
               <tbody>
-                {associatedPools.map((np: any) => (
+                {associatedPools.map((np) => (
                   <NodePoolRow
                     key={np.metadata?.uid ?? np.metadata?.name}
                     nodePool={np}
@@ -198,7 +148,7 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
       )}
     </div>
   );
-}
+});
 
 // ── Main tab component ────────────────────────────────────────────────────────
 
@@ -206,11 +156,11 @@ export const NodeClassesTab: React.FC = observer(() => {
   const ec2NodeClassStore = getEC2NodeClassStore();
   const aksNodeClassStore = getAKSNodeClassStore();
   // Merge items from both AWS and Azure stores
-  const nodeClasses = [...(ec2NodeClassStore?.items ?? []), ...(aksNodeClassStore?.items ?? [])];
+  const nodeClasses: NodeClass[] = [...(ec2NodeClassStore?.items ?? []), ...(aksNodeClassStore?.items ?? [])];
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
-    ? nodeClasses.filter((nc: any) => (nc.metadata?.name ?? "").toLowerCase().includes(search.trim().toLowerCase()))
+    ? nodeClasses.filter((nc) => (nc.metadata?.name ?? "").toLowerCase().includes(search.trim().toLowerCase()))
     : nodeClasses;
 
   const emptyMessage =
@@ -240,7 +190,7 @@ export const NodeClassesTab: React.FC = observer(() => {
         <div className={style.empty}>{emptyMessage}</div>
       ) : (
         <div className={style.cardList}>
-          {filtered.map((nc: any) => (
+          {filtered.map((nc) => (
             <NodeClassCard key={nc.metadata?.uid ?? nc.metadata?.name} nodeClass={nc} />
           ))}
         </div>

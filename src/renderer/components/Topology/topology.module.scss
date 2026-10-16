@@ -1,19 +1,35 @@
 // ── Topology container ──────────────────────────────────────────────────────
 //
 // Visual language inspired by the Karpenter "Just-in-time capacity" diagram:
-// dark navy canvas, rounded "chip" cells, Freelens teal-green (#00a7a0) for
-// active controls, blue micro-dots for pods.
+// a canvas with rounded "chip" cells, the host's primary colour for active
+// controls, blue micro-dots for pods. The neutral colours are the host's theme
+// variables, layered with a little of the text colour, so that both themes
+// work (C1); the capacity and status colours are the same in both.
 
-$bg-canvas: #0e1a2b;
-$bg-card: #16263d;
-$bg-chip: #1d3552;
-$bg-chip-hi: #244069;
-$border-soft: rgba(255, 255, 255, 0.08);
-$border-mid: rgba(255, 255, 255, 0.14);
-$accent: #00a7a0; // Freelens primary / menuActiveBackground
-$accent-soft: rgba(0, 167, 160, 0.3);
-$text-primary: #e6edf6;
-$text-secondary: #8aa0bc;
+// A layer over the content colour: lighter in the dark theme, darker in the light one.
+@function layer($percent) {
+  @return color-mix(
+    in srgb,
+    var(--textColorAccent) $percent,
+    var(--contentColor)
+  );
+}
+
+// A tint of the text colour over whatever is underneath.
+@function tint($percent) {
+  @return color-mix(in srgb, var(--textColorAccent) $percent, transparent);
+}
+
+$bg-canvas: var(--contentColor);
+$bg-card: layer(4%);
+$bg-chip: layer(8%);
+$bg-chip-hi: layer(13%);
+$border-soft: var(--borderFaintColor);
+$border-mid: var(--borderColor);
+$accent: var(--primary);
+$accent-soft: color-mix(in srgb, var(--primary) 30%, transparent);
+$text-primary: var(--textColorAccent);
+$text-secondary: var(--textColorSecondary);
 $cap-on-demand: #4dd0c1; // teal — on-demand
 $cap-spot: #c98ad6; // soft purple — spot
 
@@ -35,7 +51,7 @@ $cap-spot: #c98ad6; // soft purple — spot
   border-radius: 10px;
   overflow: hidden;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.03) inset,
+    0 1px 0 tint(3%) inset,
     0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
@@ -130,11 +146,11 @@ $cap-spot: #c98ad6; // soft purple — spot
   // tiny stripe pattern to differentiate spot at the swatch level too
   background-image: linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.25) 25%,
+    tint(25%) 25%,
     transparent 25%,
     transparent 50%,
-    rgba(255, 255, 255, 0.25) 50%,
-    rgba(255, 255, 255, 0.25) 75%,
+    tint(25%) 50%,
+    tint(25%) 75%,
     transparent 75%,
     transparent
   );
@@ -187,7 +203,7 @@ $cap-spot: #c98ad6; // soft purple — spot
   border: 1px solid $border-soft;
   border-radius: 8px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.25);
+  background: tint(5%);
 }
 .segmentedButton {
   padding: 5px 12px;
@@ -201,7 +217,7 @@ $cap-spot: #c98ad6; // soft purple — spot
     color 0.12s;
 }
 .segmentedButton:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: tint(4%);
   color: $text-primary;
 }
 .segmentedButtonActive {
@@ -209,11 +225,11 @@ $cap-spot: #c98ad6; // soft purple — spot
   color: #0a1620;
   font-weight: 600;
   box-shadow:
-    0 0 0 1px rgba(0, 167, 160, 0.5) inset,
-    0 1px 0 rgba(255, 255, 255, 0.18) inset;
+    0 0 0 1px color-mix(in srgb, var(--primary) 50%, transparent) inset,
+    0 1px 0 tint(18%) inset;
 }
 .segmentedButtonActive:hover {
-  background: lighten($accent, 4%);
+  background: color-mix(in srgb, var(--primary) 90%, white);
   color: #0a1620;
 }
 
@@ -237,7 +253,7 @@ $cap-spot: #c98ad6; // soft purple — spot
   background:
     radial-gradient(
       1200px 600px at 30% 0%,
-      rgba(0, 167, 160, 0.05),
+      color-mix(in srgb, var(--primary) 5%, transparent),
       transparent 60%
     ),
     radial-gradient(
@@ -305,7 +321,9 @@ $cap-spot: #c98ad6; // soft purple — spot
 .chipBody:hover {
   fill: $bg-chip-hi;
   stroke: $accent-soft;
-  filter: drop-shadow(0 0 6px rgba(0, 167, 160, 0.25));
+  filter: drop-shadow(
+    0 0 6px color-mix(in srgb, var(--primary) 25%, transparent)
+  );
 }
 .chipBodyDimmed {
   opacity: 0.28;
@@ -336,12 +354,12 @@ $cap-spot: #c98ad6; // soft purple — spot
   fill: rgba(74, 144, 226, 0.9);
 }
 .podDotEmpty {
-  fill: rgba(255, 255, 255, 0.1);
+  fill: tint(10%);
 }
 
 // Pod usage mini-bar (bottom edge of every chip)
 .podBarTrack {
-  fill: rgba(255, 255, 255, 0.08);
+  fill: tint(8%);
 }
 .podBarFill {
   fill: $accent;
@@ -398,10 +416,10 @@ $cap-spot: #c98ad6; // soft purple — spot
   border: 1px solid transparent;
 }
 .legendRow:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: tint(3%);
 }
 .legendRowActive {
-  background: rgba(0, 167, 160, 0.1);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
   border-color: $accent-soft;
 }
 
@@ -428,7 +446,7 @@ $cap-spot: #c98ad6; // soft purple — spot
   height: 3px;
   border-radius: 2px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
+  background: tint(5%);
   margin-top: 4px;
 }
 .legendStatusSegment {
@@ -440,7 +458,7 @@ $cap-spot: #c98ad6; // soft purple — spot
 .tooltip {
   position: absolute;
   pointer-events: none;
-  background: rgba(14, 26, 43, 0.97);
+  background: var(--contentColor);
   border: 1px solid $border-mid;
   border-radius: 8px;
   padding: 10px 14px;

@@ -1,0 +1,61 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: general
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.kwok.sh
+        kind: KWOKNodeClass
+        name: default
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: [amd64]
+        - key: kubernetes.io/os
+          operator: In
+          values: [linux]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: [spot, on-demand]
+      expireAfter: 720h
+  limits:
+    cpu: "200"
+    memory: 800Gi
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 30s
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: batch
+spec:
+  weight: 10
+  template:
+    metadata:
+      labels:
+        workload: batch
+    spec:
+      nodeClassRef:
+        group: karpenter.kwok.sh
+        kind: KWOKNodeClass
+        name: default
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: [amd64]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: [on-demand]
+      taints:
+        - key: dedicated
+          value: batch
+          effect: NoSchedule
+      expireAfter: 168h
+  limits:
+    cpu: "64"
+  disruption:
+    consolidationPolicy: WhenEmpty
+    consolidateAfter: 1m

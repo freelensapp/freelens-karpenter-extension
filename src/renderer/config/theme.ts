@@ -12,7 +12,6 @@ import type { CondStatus } from "../utils/kube-helpers";
 export const COLOR = {
   /** Karpenter brand / info blue */
   info: "#00a7e1",
-  infoSoft: "#6ab0d4",
   infoMuted: "rgba(100, 160, 210, 0.12)",
   infoBorder: "rgba(100, 160, 210, 0.25)",
 
@@ -52,14 +51,16 @@ export const COLOR = {
   /** Memory bar */
   memory: "#a8228f",
 
-  /** Neutral grays — prefer CSS vars at runtime, these are fallbacks */
-  border: "#2d2d2d",
-  borderFaint: "#1e1e1e",
-  textPrimary: "#e8e8e8",
-  textSecondary: "#888",
-  textTertiary: "#666",
-  bg: "#13161b",
-  bgHeader: "#1a1d22",
+  /** A gray for data (chart series, event dots) that shows on the background of either theme */
+  neutral: "#9e9e9e",
+
+  /** The neutral colours of the host's theme (C1), for CSS: not for SVG attributes or a canvas */
+  border: "var(--borderColor)",
+  borderFaint: "var(--borderFaintColor)",
+  textPrimary: "var(--textColorAccent)",
+  textSecondary: "var(--textColorSecondary)",
+  textTertiary: "var(--textColorTertiary)",
+  bg: "var(--contentColor)",
 } as const;
 
 // ── Status config ─────────────────────────────────────────────────────────────
@@ -127,45 +128,6 @@ export const STATUS_BORDER_COLOR: Record<CondStatus, string> = {
   Unknown: "#555",
 };
 
-// ── Event reasons ─────────────────────────────────────────────────────────────
-
-export interface EventReasonVisual {
-  color: string;
-  icon: string;
-  /** Semantic group for grouping / filtering */
-  group: "scale-up" | "scale-down" | "drift" | "error" | "other";
-}
-
-export const EVENT_REASON_CONFIG: Record<string, EventReasonVisual> = {
-  // scale-up
-  Launched: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  Provisioned: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  Registered: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  Initialized: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  ScaledUp: { color: COLOR.success, icon: "▲", group: "scale-up" },
-  // scale-down / disruption
-  Disrupted: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  Disrupting: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  Consolidated: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  Terminating: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  Terminated: { color: COLOR.textSecondary, icon: "▼", group: "scale-down" },
-  ScaledDown: { color: COLOR.terminating, icon: "▼", group: "scale-down" },
-  // drift
-  Drifted: { color: COLOR.warning, icon: "~", group: "drift" },
-  // errors
-  NotLaunched: { color: COLOR.danger, icon: "✕", group: "error" },
-  NotRegistered: { color: COLOR.danger, icon: "✕", group: "error" },
-  NotInitialized: { color: COLOR.danger, icon: "✕", group: "error" },
-  InsufficientCapacity: { color: COLOR.danger, icon: "✕", group: "error" },
-  DisruptionBlocked: { color: COLOR.warning, icon: "⊘", group: "other" },
-};
-
-export const EVENT_REASON_FALLBACK: EventReasonVisual = {
-  color: COLOR.textSecondary,
-  icon: "•",
-  group: "other",
-};
-
 // ── Icons (text/emoji — easy to swap to SVG keys later) ──────────────────────
 
 export const ICON = {
@@ -196,12 +158,6 @@ export const LABEL = {
 // ── Timing ────────────────────────────────────────────────────────────────────
 
 export const TIMING = {
-  /** Event fetch TTL in milliseconds — avoid hammering the API */
-  eventFetchTtl: 30_000,
   /** Max events shown per pool timeline */
   maxTimelineEvents: 60,
-  /** Max events shown in the debug table */
-  maxDebugEvents: 25,
-  /** Skeleton animation pulse duration */
-  skeletonPulse: "1.4s",
 } as const;

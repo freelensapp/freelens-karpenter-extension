@@ -1,0 +1,26 @@
+# The controller Deployment as the Karpenter Helm chart names it, scaled to zero: no controller runs in the
+# static lab, but the dashboard reads the version from its image.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karpenter
+  namespace: karpenter
+  labels:
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/instance: karpenter
+    app.kubernetes.io/version: 1.15.0
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: karpenter
+      app.kubernetes.io/instance: karpenter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: karpenter
+        app.kubernetes.io/instance: karpenter
+    spec:
+      containers:
+        - name: controller
+          image: public.ecr.aws/karpenter/controller:1.15.0

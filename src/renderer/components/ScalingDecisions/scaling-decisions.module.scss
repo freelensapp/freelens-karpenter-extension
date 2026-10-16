@@ -112,7 +112,8 @@
   word-break: break-all;
   font-family: monospace;
   font-size: 11px;
-  color: #6ab0d4;
+  // A light blue, darker in the light theme (C1).
+  color: color-mix(in srgb, #6ab0d4 75%, var(--textColorAccent));
 }
 
 .messageCell {
@@ -454,6 +455,8 @@
 }
 
 // ── Grafana-style metric panels ──────────────────────────────────────────────
+//
+// The host's theme colours (C1): the header and tabs are layers of the text colour over the content colour.
 
 .panelStack {
   display: flex;
@@ -463,11 +466,10 @@
 }
 
 .panel {
-  background: #0c0e12;
-  border: 1px solid #1f232b;
+  background: var(--contentColor);
+  border: 1px solid var(--borderColor);
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset;
 }
 
 .panelActive {
@@ -480,8 +482,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: #14181f;
-  border-bottom: 1px solid #1f232b;
+  background: color-mix(
+    in srgb,
+    var(--textColorAccent) 5%,
+    var(--contentColor)
+  );
+  border-bottom: 1px solid var(--borderFaintColor);
 }
 
 .panelTitleWrap {
@@ -493,13 +499,13 @@
 .panelTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #e8e8e8;
+  color: var(--textColorAccent);
   letter-spacing: -0.01em;
 }
 
 .panelSubtitle {
   font-size: 11px;
-  color: #888;
+  color: var(--textColorSecondary);
   font-family: monospace;
 }
 
@@ -527,8 +533,12 @@
   align-items: stretch;
   justify-content: space-between;
   padding: 0 14px;
-  background: #10131a;
-  border-bottom: 1px solid #1f232b;
+  background: color-mix(
+    in srgb,
+    var(--textColorAccent) 2%,
+    var(--contentColor)
+  );
+  border-bottom: 1px solid var(--borderFaintColor);
   min-height: 32px;
 }
 
@@ -547,7 +557,7 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #777;
+  color: var(--textColorTertiary);
   font-size: 12px;
   padding: 6px 10px;
   cursor: pointer;
@@ -559,12 +569,12 @@
     border-color 0.15s;
 
   &:hover {
-    color: #ccc;
+    color: var(--textColorPrimary);
   }
 }
 
 .metricTabActive {
-  color: #fff;
+  color: var(--textColorAccent);
   font-weight: 600;
 }
 
@@ -577,7 +587,7 @@
 
 .panelBody {
   padding: 8px 6px 4px;
-  background: #0c0e12;
+  background: var(--contentColor);
 }
 
 .panelLegend {
@@ -585,8 +595,8 @@
   flex-wrap: wrap;
   gap: 14px;
   padding: 8px 14px 12px;
-  border-top: 1px solid #1f232b;
-  background: #0c0e12;
+  border-top: 1px solid var(--borderFaintColor);
+  background: var(--contentColor);
 }
 
 .panelLegendItem {
@@ -594,7 +604,7 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #aaa;
+  color: var(--textColorSecondary);
 }
 
 .panelLegendLine {

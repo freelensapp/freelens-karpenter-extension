@@ -1,0 +1,27 @@
+# NodeOverlays (karpenter.sh/v1alpha1, C5 of SPEC-0003). No controller runs in the static lab, so they have no
+# status. spot-discount can apply to the NodePools that allow spot capacity (general, azure); gpu-fpga names the
+# NodePool gpu.
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
+  name: spot-discount
+spec:
+  weight: 10
+  requirements:
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: [spot]
+  priceAdjustment: -10%
+---
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
+  name: gpu-fpga
+spec:
+  weight: 50
+  requirements:
+    - key: karpenter.sh/nodepool
+      operator: In
+      values: [gpu]
+  capacity:
+    example.com/fpga: "1"

@@ -10,13 +10,14 @@
 
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
-import { type Node } from "../../k8s/core/node-store";
-import { type NodePool } from "../../k8s/karpenter/store";
+import { useItems } from "../../data/use-items";
 import { buildPodCountMap, type CondStatus, getNodeStatus } from "../../utils/kube-helpers";
 import { ResponsiveTreemap } from "./TreemapView";
 import style from "./topology.module.scss";
-import styleInline from "./topology.module.scss?inline";
 import { computeKpi, type GroupBy, groupNodes, type NodeGroup, type SizeBy, STATUS_COLOR } from "./topology-utils";
+
+import type { NodePool } from "../../api/nodepool/nodepool-v1";
+import type { Node } from "../../utils/kube-helpers";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -201,19 +202,21 @@ export const Topology: React.FC<TopologyProps> = observer(
 
     const podCountMap = buildPodCountMap();
 
-    const groups = useMemo(() => groupNodes(allNodes, nodePools, groupBy), [allNodes, nodePools, groupBy]);
+    const nodes = useItems(allNodes);
+    const pools = useItems(nodePools);
 
-    const kpi = useMemo(() => computeKpi(allNodes, nodePools), [allNodes, nodePools]);
+    const groups = useMemo(() => groupNodes(nodes, pools, groupBy), [nodes, pools, groupBy]);
+
+    const kpi = useMemo(() => computeKpi(nodes, pools), [nodes, pools]);
 
     const onLegendToggle = (id: string) => {
       setHighlightedGroupId((prev) => (prev === id ? undefined : id));
     };
 
-    const empty = allNodes.length === 0;
+    const empty = nodes.length === 0;
 
     return (
       <div className={style.root}>
-        <style>{styleInline}</style>
         {/* ── KPI strip ──────────────────────────────────────────────── */}
         <div className={style.kpiStrip}>
           <Kpi label="Node Pools" value={kpi.poolCount} />

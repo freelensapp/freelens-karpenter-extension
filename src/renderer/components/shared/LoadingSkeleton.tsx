@@ -2,7 +2,7 @@
  * LoadingSkeleton.tsx — animated placeholder while data is loading.
  */
 import React from "react";
-import { TIMING } from "../../config/theme";
+import style from "./loading-skeleton.module.scss";
 
 interface SkeletonLineProps {
   width?: string | number;
@@ -12,34 +12,14 @@ interface SkeletonLineProps {
 }
 
 /** Single animated skeleton line / block */
-export function SkeletonLine({ width = "100%", height = 14, borderRadius = 4, style }: SkeletonLineProps) {
-  return (
-    <span
-      style={{
-        display: "block",
-        width,
-        height,
-        borderRadius,
-        background:
-          "linear-gradient(90deg, rgba(128,128,128,0.08) 25%, rgba(128,128,128,0.18) 50%, rgba(128,128,128,0.08) 75%)",
-        backgroundSize: "200% 100%",
-        animation: `skeletonPulse ${TIMING.skeletonPulse} ease-in-out infinite`,
-        ...style,
-      }}
-    />
-  );
+export function SkeletonLine({ width = "100%", height = 14, borderRadius = 4, style: extraStyle }: SkeletonLineProps) {
+  return <span className={style.pulse} style={{ width, height, borderRadius, ...extraStyle }} />;
 }
 
 /** Full-card loading skeleton — replaces a KarpenterCard while data arrives */
 export function CardLoadingSkeleton() {
   return (
     <>
-      <style>{`
-        @keyframes skeletonPulse {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
       <div
         style={{
           border: "1px solid var(--borderColor, #2d2d2d)",
@@ -83,25 +63,7 @@ export function CardLoadingSkeleton() {
 
 /** Inline spinner for small loading states */
 export function Spinner({ size = 16, color = "var(--colorInfo,#6ab0d4)" }: { size?: number; color?: string }) {
-  return (
-    <>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
-      <span
-        style={{
-          display: "inline-block",
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          border: `2px solid rgba(128,128,128,0.2)`,
-          borderTopColor: color,
-          animation: "spin 0.7s linear infinite",
-          flexShrink: 0,
-        }}
-      />
-    </>
-  );
+  return <span className={style.spin} style={{ width: size, height: size, borderTopColor: color }} />;
 }
 
 interface PageLoadingProps {
@@ -127,12 +89,6 @@ export function PageLoading({ message = "Loading...", description, preview }: Pa
         textAlign: "center",
       }}
     >
-      <style>{`
-        @keyframes skeletonPulse {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
         <Spinner size={30} />
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

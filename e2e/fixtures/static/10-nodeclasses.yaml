@@ -1,0 +1,42 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  role: KarpenterNodeRole-lab
+  amiFamily: AL2023
+  amiSelectorTerms:
+    - alias: al2023@latest
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: lab
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: lab
+  kubelet:
+    maxPods: 58
+  tags:
+    team: platform
+---
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: gpu
+spec:
+  role: KarpenterNodeRole-lab
+  amiFamily: Bottlerocket
+  amiSelectorTerms:
+    - alias: bottlerocket@latest
+  subnetSelectorTerms:
+    - id: subnet-0a1b2c3d4e5f60001
+  securityGroupSelectorTerms:
+    - id: sg-0a1b2c3d4e5f60001
+---
+apiVersion: karpenter.azure.com/v1beta1
+kind: AKSNodeClass
+metadata:
+  name: default
+spec:
+  imageFamily: AzureLinux
+  osDiskSizeGB: 128
+  maxPods: 50

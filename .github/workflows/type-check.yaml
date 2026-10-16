@@ -1,0 +1,77 @@
+# Workflow summary:
+# - Purpose: type-check every TypeScript program of the extension (sources, tests, tooling, environment tests).
+# - Depends on: none.
+# - Trigger:
+#   - Automatic event: on push to main and on every pull request, by GitHub Actions, so that a type error shows as its own failed check.
+#   - Manual: via workflow_dispatch, by maintainers, to run the type check on demand.
+# - Steps:
+#   - Checkout code and setup Node.js plus pnpm cache.
+#   - Install dependencies with retry.
+#   - Run pnpm type:check.
+# - Docs:
+#   - https://www.typescriptlang.org/docs/handbook/compiler-options.html
+
+name: Type check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  type-check:
+    name: type check
+
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+
+    env:
+      DO_NOT_TRACK: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Setup pnpm
+        run: corepack enable
+
+      - name: Get pnpm cache directory
+        shell: bash
+        run: |
+          pnpm_cache_dir="$(pnpm store path)"
+          echo "pnpm_cache_dir=${pnpm_cache_dir}" | tee -a "${GITHUB_ENV}"
+
+      - name: Use pnpm cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.pnpm_cache_dir }}
+          key: ubuntu-24.04-arm-node-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ubuntu-24.04-arm-node-
+
+      - name: Install pnpm dependencies
+        id: install-pnpm
+        run: timeout 300 pnpm install --color=always --prefer-offline --frozen-lockfile
+        continue-on-error: true
+
+      - name: Install pnpm dependencies (retry)
+        if: steps.install-pnpm.outcome == 'failure'
+        run: timeout 300 pnpm install --color=always --prefer-offline --frozen-lockfile
+
+      # Sources per runtime environment, tests, tooling, then the environment
+      # tests; see "TypeScript" in AGENTS.md.
+      - name: Type check
+        run: pnpm --color=always type:check
