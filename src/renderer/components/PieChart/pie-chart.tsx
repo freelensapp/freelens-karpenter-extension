@@ -2,7 +2,6 @@ import { Renderer } from "@freelensapp/extensions";
 import React, { useMemo } from "react";
 import { getNodePoolStatus, getNodeStatus } from "../../utils/kube-helpers";
 import style from "./pie-chart.module.scss";
-import styleInline from "./pie-chart.module.scss?inline";
 
 import type { NodePool } from "../../api/nodepool/nodepool-v1";
 import type { Node } from "../../utils/kube-helpers";
@@ -68,8 +67,8 @@ export function PieChart(props: PieChartProps): React.ReactElement {
 
   // ── aggregate stats ──────────────────────────────────────────────────────
   const stats = useMemo(() => {
-    const karpenterNodes = nodes.filter((n) => !!(n as any).metadata?.labels?.["karpenter.sh/nodepool"]);
-    const nonKarpenterNodes = nodes.filter((n) => !(n as any).metadata?.labels?.["karpenter.sh/nodepool"]);
+    const karpenterNodes = nodes.filter((n) => !!n.metadata.labels?.["karpenter.sh/nodepool"]);
+    const nonKarpenterNodes = nodes.filter((n) => !n.metadata.labels?.["karpenter.sh/nodepool"]);
 
     const readyCount = karpenterNodes.filter((n) => getNodeStatus(n) === "Ready").length;
     const notReadyCount = karpenterNodes.filter((n) => getNodeStatus(n) === "NotReady").length;
@@ -123,7 +122,7 @@ export function PieChart(props: PieChartProps): React.ReactElement {
     const cd: Renderer.Component.PieChartData = {
       datasets: [{ data, backgroundColor: bgColors, tooltipLabels }],
       labels: lbls,
-    } as any;
+    };
 
     const maxPerColumn = 6;
     const cols = Math.ceil(lbls.length / maxPerColumn);
@@ -134,7 +133,6 @@ export function PieChart(props: PieChartProps): React.ReactElement {
 
   return (
     <>
-      <style>{styleInline}</style>
       <div className={style.overviewBanner}>
         {/* ── left column: donut only ── */}
         <div className={style.leftCol}>

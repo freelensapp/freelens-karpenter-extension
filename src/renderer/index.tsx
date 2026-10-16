@@ -7,7 +7,7 @@ import { Renderer } from "@freelensapp/extensions";
 import { withPageErrorBoundary } from "./components/error-boundary";
 // must be `?raw` as we need SVG element
 import svgIconLogo from "./icons/karpenter.svg?raw";
-import { KarpenterDashboard } from "./page";
+import { KarpenterDashboard } from "./pages/dashboard";
 
 const {
   Component: { Icon },

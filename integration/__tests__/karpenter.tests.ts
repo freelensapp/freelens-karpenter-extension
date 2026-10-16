@@ -41,7 +41,15 @@ describeIf(clusterReady())("Karpenter dashboard", () => {
   );
 
   it("shows the Overview of the NodePools", async () => {
-    await openTab(frame, "Overview", ["Karpenter 1.15.0", "general", "azure", "gpu"]);
+    // The NodePool azure sets no memory limit (B8), and general expires its nodes after 720h (B3).
+    await openTab(frame, "Overview", [
+      "Karpenter 1.15.0",
+      "general",
+      "azure",
+      "gpu",
+      /\/ —$/,
+      /^Expire after:\s*720h$/,
+    ]);
   });
 
   it("shows the Topology of the nodes", async () => {

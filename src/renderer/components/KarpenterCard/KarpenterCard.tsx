@@ -3,6 +3,7 @@ import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import svgIconNode from "../../../../assets/node1.svg?raw"; // must be `?raw` as we need SVG element
 import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
+import { NodePool } from "../../api/nodepool/nodepool-v1";
 import {
   COLOR,
   EVENT_REASON_CONFIG,
@@ -36,10 +37,10 @@ import {
 } from "../../utils/kube-helpers";
 import { CardLoadingSkeleton, Spinner } from "../shared/LoadingSkeleton";
 import { StatusBadge } from "../shared/StatusBadge";
+import { formatUsage, getNodeClaimInstanceType } from "./card-utils";
 import style from "./karpentercard.module.scss";
-import styleInline from "./karpentercard.module.scss?inline";
 
-import type { NodePool } from "../../api/nodepool/nodepool-v1";
+import type { ResourceList } from "../../api/types";
 
 const {
   Component: { Icon },
@@ -114,7 +115,7 @@ const PoolEventTimeline = observer(function PoolEventTimeline({
         </thead>
         <tbody>
           {allMatchedEvents.map((e, i) => (
-            <EventRow key={(e as any).metadata?.uid ?? i} event={e} />
+            <EventRow key={e.metadata?.uid ?? i} event={e} />
           ))}
         </tbody>
       </table>
@@ -279,19 +280,6 @@ function ToggleButton({
 }
 
 // ── Table view ────────────────────────────────────────────────────────────────
-
-/** Best-effort instance type extraction for a NodeClaim that hasn't bound yet.
- *  Tries (in order): label, status.allocatable, single-value spec requirement. */
-function getNodeClaimInstanceType(claim: NodeClaim): string {
-  const labels: Record<string, string> = (claim as any).metadata?.labels ?? {};
-  const labelType = labels["node.kubernetes.io/instance-type"];
-  if (labelType) return labelType;
-  const reqs: any[] = (claim as any).spec?.requirements ?? [];
-  const req = reqs.find((r) => r?.key === "node.kubernetes.io/instance-type");
-  if (req?.values?.length === 1) return req.values[0];
-  if (req?.values?.length > 1) return `${req.values.length} types`;
-  return "—";
-}
 
 export const NodesList = ({
   nodes,
@@ -514,18 +502,17 @@ function OverviewBar({
 }: {
   label: string;
   used: number;
-  total: number;
+  /** The limit of the NodePool, or `undefined` when it sets none. */
+  total: number | undefined;
   color: string;
   unitFmt: (v: number) => string;
 }) {
-  const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
+  const pct = total !== undefined && total > 0 ? Math.min(100, (used / total) * 100) : 0;
   return (
     <div className={style.overviewBar}>
       <div className={style.overviewBarHeader}>
         <span className={style.overviewBarLabel}>{label}</span>
-        <span className={style.overviewBarValue}>
-          {unitFmt(used)} / {unitFmt(total)}
-        </span>
+        <span className={style.overviewBarValue}>{formatUsage(used, total, unitFmt)}</span>
       </div>
       <div className={style.overviewBarTrack}>
         <div className={style.overviewBarFill} style={{ width: `${pct}%`, background: color }} />
@@ -534,20 +521,20 @@ function OverviewBar({
   );
 }
 
-function InlineOverview({ resources, limits }: { resources: any; limits: any }) {
+function InlineOverview({ resources, limits }: { resources?: ResourceList; limits?: ResourceList }) {
   return (
     <div className={style.inlineOverview}>
       <OverviewBar
         label="CPU"
         used={parseCpuCores(resources?.cpu ?? "0")}
-        total={parseCpuCores(limits?.cpu ?? "0")}
+        total={limits?.cpu === undefined ? undefined : parseCpuCores(limits.cpu)}
         color={COLOR.cpu}
         unitFmt={(v) => v.toFixed(1)}
       />
       <OverviewBar
         label="Memory"
         used={parseMemGi(resources?.memory ?? "0")}
-        total={parseMemGi(limits?.memory ?? "0")}
+        total={limits?.memory === undefined ? undefined : parseMemGi(limits.memory)}
         color={COLOR.memory}
         unitFmt={(v) => (v >= 1 ? `${v.toFixed(1)}Gi` : `${(v * 1024).toFixed(0)}Mi`)}
       />
@@ -564,13 +551,13 @@ function CardInfoBar({
   nodePool: NodePool;
   instanceTypeCounts: Record<string, number>;
 }) {
-  const nodeClassRef = (nodePool.spec as any)?.template?.spec?.nodeClassRef;
+  const nodeClassRef = NodePool.getTemplateSpec(nodePool)?.nodeClassRef;
   const nodeClassName = nodeClassRef?.name ?? "—";
   const nodeClassKind = nodeClassRef?.kind ?? "EC2NodeClass";
   const provider = detectProvider(nodeClassRef);
   const poolName = nodePool.metadata?.name ?? "";
   const poolStatus = getNodePoolStatus(nodePool);
-  const expireAfter = (nodePool.spec as any)?.disruption?.expireAfter ?? null;
+  const expireAfter = NodePool.getTemplateSpec(nodePool)?.expireAfter ?? null;
 
   return (
     <div className={style.cardInfoBar}>
@@ -652,7 +639,6 @@ export const KarpenterCard = observer(function KarpenterCard({
   nodePool: NodePool;
   nodes: Node[];
   claims?: NodeClaim[];
-  nodeStore?: any;
 }) {
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [showHistory, setShowHistory] = useState(false);
@@ -669,12 +655,11 @@ export const KarpenterCard = observer(function KarpenterCard({
 
   const poolName = nodePool.metadata?.name ?? "";
   const poolStatus = getNodePoolStatus(nodePool);
-  const { limits } = (nodePool as any).spec ?? {};
-  const { resources } = (nodePool as any).status ?? {};
+  const limits = nodePool.spec?.limits;
+  const resources = nodePool.status?.resources;
 
   return (
     <>
-      <style>{styleInline}</style>
       <div
         className={style.cardRoot}
         data-status={poolStatus}

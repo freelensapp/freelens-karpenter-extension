@@ -25,22 +25,52 @@ interface LoadableStore {
   subscribe(): () => void;
 }
 
+/** Waits for `ms`, or less when the signal is aborted meanwhile. */
+function wait(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    signal.addEventListener("abort", () => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
+}
+
+export interface RetryOptions {
+  /** How many times the load is tried. */
+  attempts?: number;
+  /** The wait before the second try, doubled before each further one. */
+  delayMs?: number;
+}
+
 /**
  * Loads a store and subscribes to it, unless the signal was aborted meanwhile. Returns the disposer of the
- * subscription, or `undefined` when there is none. A failure to load leaves the store empty.
+ * subscription, or `undefined` when there is none.
+ *
+ * The host's `loadAll` reports a failure through `onLoadFailure` and resolves. A failed load is tried again, with
+ * a growing wait: the API server answers 429 or 503 for a while after a CRD is created, which is when the page
+ * loads the stores of the Karpenter kinds that have just appeared. After the last try the store is subscribed to
+ * anyway, so that later changes still reach it.
  */
 export async function loadAndSubscribe(
   store: LoadableStore | undefined,
   signal: AbortSignal,
   namespaces?: string[],
+  { attempts = 5, delayMs = 2000 }: RetryOptions = {},
 ): Promise<(() => void) | undefined> {
   if (!store) return undefined;
-  try {
-    await store.loadAll({ namespaces, onLoadFailure: () => undefined, reqInit: { signal } });
-  } catch {
-    return undefined;
+  for (let attempt = 1; ; attempt++) {
+    let failed = false;
+    try {
+      await store.loadAll({ namespaces, onLoadFailure: () => (failed = true), reqInit: { signal } });
+    } catch {
+      failed = true;
+    }
+    if (signal.aborted) return undefined;
+    if (!failed || attempt >= attempts) return store.subscribe();
+    await wait(delayMs * 2 ** (attempt - 1), signal);
+    if (signal.aborted) return undefined;
   }
-  return signal.aborted ? undefined : store.subscribe();
 }
 
 export interface KarpenterData {
