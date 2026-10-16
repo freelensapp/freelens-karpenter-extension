@@ -855,7 +855,9 @@ and fails on any error logged by either process:
 
 - `extensions.tests.ts` installs the extension. It needs no cluster.
 - `karpenter.tests.ts` opens the static lab and, in one `it` each, every tab
-  of the dashboard and the details of a Karpenter node. Each checks texts that
+  of the dashboard, the details of a Karpenter node, and the details its links
+  open (from the dashboard and from the node's details), which must stay open
+  (B14). Each checks texts that
   only the fixtures of `e2e/fixtures/static/` produce (the NodePool `empty`,
   a NodeOverlay, a disrupted node, the `Finalized` event, ...), several of them
   for a bug of 1.0.1 or an improvement of SPEC-0003, named in a comment, and

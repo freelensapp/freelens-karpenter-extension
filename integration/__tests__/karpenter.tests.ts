@@ -14,6 +14,7 @@
 import { describeIf } from "@freelensapp/test-utils";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import {
+  clickAndExpectDetails,
   clusterReady,
   installExtension,
   openDashboard,
@@ -113,5 +114,32 @@ describeIf(clusterReady())("Karpenter dashboard", () => {
       "Registered, Initialized",
       "Being disrupted",
     ]);
+  });
+
+  it("opens the details of the objects it links to, and they stay open", async () => {
+    // From the dashboard, whose load put every Karpenter kind in its store: the row of the NodeClaim still waiting
+    // for its node (B14) and the NodePool of a card.
+    await openDashboard(frame);
+    await clickAndExpectDetails(
+      frame,
+      frame.getByTitle("Click to open NodeClaim details").filter({ hasText: "general-pend1" }).first(),
+      /^NodeClaim: general-pend1/,
+    );
+    await openDashboard(frame);
+    await clickAndExpectDetails(frame, frame.getByTitle("Open NodePool general").first(), /^NodePool: general/);
+
+    // From the Karpenter section of a node's details (C4): the NodePool and the NodeClaim, over the Nodes page.
+    await openNodeDetails(frame, "ip-10-0-1-13.eu-west-1.compute.internal", ["general-b4n8r"]);
+    await clickAndExpectDetails(
+      frame,
+      frame.locator(".Drawer").getByText("general", { exact: true }).first(),
+      /^NodePool: general/,
+    );
+    await openNodeDetails(frame, "ip-10-0-1-13.eu-west-1.compute.internal", ["general-b4n8r"]);
+    await clickAndExpectDetails(
+      frame,
+      frame.locator(".Drawer").getByText("general-b4n8r", { exact: true }).first(),
+      /^NodeClaim: general-b4n8r/,
+    );
   });
 });

@@ -252,7 +252,9 @@ written to the cluster.
 - Integration (Freelens harness, template style): install the extension;
   open the static lab cluster; open the dashboard and each tab; check one
   NodePool card, the treemap, one node class card and the decisions list; the
-  Karpenter section of a node's details; no error in either process but the
+  Karpenter section of a node's details; the details that the links of the
+  dashboard and of that section open, still open a second later (B14); no
+  error in either process but the
   host's requests to the metrics API, which the static lab does not serve.
 - Functional (lab, Freelens dev over CDP): the functional checks of the
   migration issue and of each feature issue, with screenshots per tab,

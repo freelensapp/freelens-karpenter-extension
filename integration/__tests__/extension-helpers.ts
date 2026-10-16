@@ -11,7 +11,7 @@
 import { spawnSync } from "node:child_process";
 import * as utils from "../helpers/utils";
 
-import type { ConsoleMessage, ElectronApplication, Frame, Page } from "playwright";
+import type { ConsoleMessage, ElectronApplication, Frame, Locator, Page } from "playwright";
 
 export const extensionName = "@freelensapp/karpenter-extension";
 
@@ -252,6 +252,22 @@ export async function openNodeDetails(frame: Frame, nodeName: string, texts: (st
 
   if (errorPages > 0) {
     throw new Error(`The details of ${nodeName} show ${errorPages} error page(s) of the extension`);
+  }
+}
+
+/**
+ * Clicks an element and waits for the host's details drawer to show the given
+ * title (`Kind: name`), still open a moment later: a click that the drawer takes
+ * for one outside itself closes the details it has just opened (B14).
+ */
+export async function clickAndExpectDetails(frame: Frame, target: Locator, title: RegExp) {
+  await target.click(viewTimeout);
+  const drawerTitle = frame.locator(".Drawer .drawer-title-text", { hasText: title }).first();
+  await drawerTitle.waitFor(viewTimeout);
+  await frame.waitForTimeout(1000);
+
+  if (!(await drawerTitle.isVisible())) {
+    throw new Error(`The details ${title} closed right after they opened`);
   }
 }
 
