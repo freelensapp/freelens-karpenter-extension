@@ -19,14 +19,6 @@ import type { Frame } from "playwright";
 
 import type { AppSession } from "./extension-helpers";
 
-// Errors the session expects until the step that fixes them; each entry names
-// it, and goes with it.
-const knownErrors = [
-  // B1: the AKSNodeClass model reads v1alpha2, which the Azure provider no
-  // longer serves; fixed by the AKSNodeClass versions of the data layer (K1).
-  /404.*\/apis\/karpenter\.azure\.com\/v1alpha2\/aksnodeclasses/,
-];
-
 describeIf(clusterReady())("Karpenter dashboard", () => {
   let session: AppSession | undefined;
   let frame: Frame;
@@ -43,9 +35,7 @@ describeIf(clusterReady())("Karpenter dashboard", () => {
 
   afterAll(
     async () => {
-      const errors = (await session?.close()) ?? [];
-
-      expect(errors.filter((error) => !knownErrors.some((known) => known.test(error)))).toEqual([]);
+      expect((await session?.close()) ?? []).toEqual([]);
     },
     10 * 60 * 1000,
   );

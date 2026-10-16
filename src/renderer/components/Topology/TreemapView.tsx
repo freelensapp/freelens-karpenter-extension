@@ -16,7 +16,6 @@
 
 import { observer } from "mobx-react";
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { type Node } from "../../k8s/core/node-store";
 import {
   getInstanceType,
   getNodeCpu,
@@ -36,6 +35,8 @@ import {
   STATUS_COLOR,
   squarify,
 } from "./topology-utils";
+
+import type { Node } from "../../utils/kube-helpers";
 
 // ── Layout constants ─────────────────────────────────────────────────────────
 

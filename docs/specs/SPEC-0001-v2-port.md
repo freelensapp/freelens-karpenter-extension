@@ -90,15 +90,18 @@ e2e/                         the local lab (SPEC-0002)
   `crdStore`, `deploymentStore` and the models' `getStore()`, read inside
   `observer` components so that CRDs registered after the first render are
   followed. The extension builds and registers no store of a built-in kind.
-- Node usage: `Renderer.K8sApi.nodesStore.loadKubeMetrics()` and
-  `nodesStore.getNodeKubeMetrics(node)` (cores and bytes, `NaN` without
-  metrics), as the surface check of step 0 settled; the host's `Node` objects
-  are not modified. No metrics-server, no usage, no error (the host logs a
-  warning of its own).
+- Node usage: 1.0.1 fetched the metrics API for every node and wrote the
+  result into `status.usage` of the host's `Node` objects, but no view ever
+  read it, so the port drops the request without a replacement. A view that
+  needs node usage takes it from `Renderer.K8sApi.nodesStore.loadKubeMetrics()`
+  and `getNodeKubeMetrics(node)` (step 0).
 - Events (parity): the namespaces `default`, `karpenter` and
-  `karpenter-system` are read, as in 1.0.1, through a `KubeObjectStore`
-  subclass of the extension over `Renderer.K8sApi.eventApi`, so that what the
-  host's own Events page has loaded does not change (step 0).
+  `karpenter-system` are read, as in 1.0.1, by a `KubeObjectStore` of the
+  extension over a `KubeApi` of its own (`autoRegister: false`), so that what
+  the host's own Events page has loaded does not change. Not over
+  `Renderer.K8sApi.eventApi`: that object wraps `objectConstructor` in a plain
+  function, and the store's `new` of it fails on every watch event (finding
+  of K, reported upstream).
 - Installed: Karpenter counts as installed when the cluster serves
   `nodepools.karpenter.sh`.
 - Controller version (parity): the image tag of a Deployment whose name
@@ -194,4 +197,13 @@ Results: not yet run.
 
 ## Notes and deviations
 
-None yet.
+- Feature K (2026-10-16): the models are in `src/renderer/api/<kind>/`; their
+  spec and status types (`*-types.ts`) were produced from the Go types of the
+  reviewed versions by a generator kept in the working folder of the port
+  (`tools/gen-api-types/`), which takes the optional fields from the generated
+  CRDs and reports where the markers disagree (nowhere, at these versions),
+  and were then reviewed. `api/types.ts` holds the Kubernetes core types they
+  use. The data access is in `src/renderer/data/`: `stores.ts` (the served
+  version of each kind, the host's stores, the events store), `load.ts` (load
+  and subscribe, with an abort signal), `controller-version.ts` and
+  `nodeclass.ts`. The `k8s/` folder of 1.0.1 is gone.

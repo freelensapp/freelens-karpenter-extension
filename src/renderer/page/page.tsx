@@ -2,31 +2,22 @@ import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 // transpiled .tsx code must have `React` symbol in the scope
 import React from "react";
+import { NodeClaim } from "../api/nodeclaim/nodeclaim-v1";
 import { KarpenterCard } from "../components/KarpenterCard/KarpenterCard";
 import { NodeClassesTab } from "../components/NodeClassesTab/NodeClassesTab";
 import { PieChart } from "../components/PieChart/pie-chart";
 import { ScalingDecisions } from "../components/ScalingDecisions/ScalingDecisions";
 import { KarpenterPageLoading } from "../components/shared/LoadingSkeleton";
 import { Topology } from "../components/Topology/Topology";
-import { getCrdStore } from "../k8s/core/crd";
-import { fetchAllNamespaceEvents, getKubeEventStore } from "../k8s/core/karpenter-events-store";
-import { getNodeStore } from "../k8s/core/node-store";
-import { getAKSNodeClassStore } from "../k8s/karpenter/aksNodeclass-store";
-import { getEC2NodeClassStore } from "../k8s/karpenter/ec2nodeclass-store";
-import {
-  getNodeClaimPoolName,
-  getNodeClaimStore,
-  getNodePoolStore,
-  isClaimingNodeClaim,
-  NodeClaim,
-  NodePool,
-} from "../k8s/karpenter/store";
-import { getInstanceType, getNodeStatus, getPodsStore } from "../utils/kube-helpers";
+import { type KarpenterData, loadKarpenterData } from "../data/load";
+import { getNodeClaimStore, getNodePoolStore, getNodeStore } from "../data/stores";
+import { getInstanceType, getNodeStatus } from "../utils/kube-helpers";
 // must be named `*.module.scss` for the default export to work
 import style from "./page.module.scss";
 // must be `?inline` for explicit CSS to use in `<style>` tag
 import styleInline from "./page.module.scss?inline";
 
+import type { NodePool } from "../api/nodepool/nodepool-v1";
 import type { CondStatus } from "../utils/kube-helpers";
 
 const {
@@ -47,15 +38,8 @@ export class KarpenterDashboard extends React.Component<
   { extension: Renderer.LensExtension },
   KarpenterDashboardState
 > {
-  private readonly watches: (() => void)[] = [];
   private readonly abortController = new AbortController();
-  private nodePoolStore?: ReturnType<typeof getNodePoolStore>;
-  private nodeStore?: ReturnType<typeof getNodeStore>;
-  private nodeClaimStore?: ReturnType<typeof getNodeClaimStore>;
-  private ec2NodeClassStore?: ReturnType<typeof getEC2NodeClassStore>;
-  private aksNodeClassStore?: ReturnType<typeof getAKSNodeClassStore>;
-  private kubeEventStore?: ReturnType<typeof getKubeEventStore>;
-  private podsStore?: any;
+  private data?: KarpenterData;
   public readonly state: Readonly<KarpenterDashboardState> = {
     nodePools: [],
     data: [],
@@ -70,11 +54,7 @@ export class KarpenterDashboard extends React.Component<
 
   componentWillUnmount(): void {
     this.abortController.abort();
-    this.watches.forEach((w) => {
-      w();
-    });
-    this.watches.splice(0, this.watches.length);
-    this.watches.length = 0;
+    this.data?.dispose();
   }
 
   componentDidMount() {
@@ -83,133 +63,13 @@ export class KarpenterDashboard extends React.Component<
 
   private async initializeDashboard() {
     try {
-      const crdStore = getCrdStore();
-      await crdStore.loadAll({ onLoadFailure: () => undefined });
-      // Look for nodepools.karpenter.sh CRD — presence confirms Karpenter is installed
-      const crd = crdStore.items.find((c) => (c as any).metadata?.name === "nodepools.karpenter.sh");
-      if (!crd) {
-        this.setState({ karpenterVersion: null });
-        return;
-      }
-
-      this.nodePoolStore = getNodePoolStore();
-      this.nodeStore = getNodeStore();
-      this.nodeClaimStore = getNodeClaimStore();
-      this.ec2NodeClassStore = getEC2NodeClassStore();
-      this.aksNodeClassStore = getAKSNodeClassStore();
-      this.kubeEventStore = getKubeEventStore();
-      this.podsStore = getPodsStore();
-
-      await Promise.all(
-        [this.nodePoolStore, this.nodeStore, this.nodeClaimStore, this.ec2NodeClassStore, this.aksNodeClassStore]
-          .filter((store): store is NonNullable<typeof store> => Boolean(store))
-          .map(async (store) => {
-            await store.loadAll({ onLoadFailure: () => undefined });
-            this.watches.push(store.subscribe());
-          }),
-      );
-
-      // Pods are namespace-scoped: passing namespaces:[] would load nothing
-      // (Freelens' isLoadingAll() returns false unless the list actually
-      // contains every namespace). Replicate core's loadPodsFromAllNamespaces:
-      // load the namespace store first, then use its items as the namespace list.
-      if (this.podsStore) {
-        try {
-          const namespaceStore = (Renderer.K8sApi as any).namespaceStore;
-          let namespaces: string[] = [];
-          if (namespaceStore) {
-            await namespaceStore.loadAll({ namespaces: [], onLoadFailure: () => undefined });
-            namespaces = (namespaceStore.items ?? [])
-              .map((n: any) => n.getName?.() ?? n.metadata?.name)
-              .filter(Boolean);
-          }
-          await this.podsStore.loadAll({ namespaces, onLoadFailure: () => undefined });
-          this.watches.push(this.podsStore.subscribe());
-        } catch {
-          // best-effort: pod counts will simply remain empty if this fails
-        }
-      }
-
-      // Load events explicitly from Karpenter namespaces (events live in "default"),
-      // then keep watching. fetchAllNamespaceEvents calls loadAll({namespaces:[...]}) internally.
-      await fetchAllNamespaceEvents().catch(() => undefined);
-      this.watches.push(this.kubeEventStore.subscribe());
-
-      // 1️⃣ Try to read the karpenter-controller Deployment image tag
-      //    (the most reliable source of the real semver, e.g. "1.9.0")
-      const version = (await this.fetchVersionFromDeployment()) ?? this.extractVersionFromCrd(crd) ?? "installed";
-
-      this.setState({ karpenterVersion: version });
+      const data = await loadKarpenterData(this.abortController.signal);
+      if (this.abortController.signal.aborted) return;
+      this.data = data ?? undefined;
+      this.setState({ karpenterVersion: data ? data.version : null });
     } catch {
       this.setState({ karpenterVersion: null });
     }
-  }
-
-  /** Fetch karpenter-controller Deployment and parse the controller container image tag.
-   *  Uses KubeApi.list() which routes through the Freelens cluster proxy — the only
-   *  reliable way to reach the K8s API from an Electron renderer extension. */
-  private async fetchVersionFromDeployment(): Promise<string | null> {
-    const KubeObject = Renderer.K8sApi.KubeObject;
-
-    // Minimal Deployment KubeObject — we only need the raw JSON shape
-    class Deployment extends (KubeObject as any) {
-      static readonly kind = "Deployment";
-      static readonly namespaced = true;
-      static readonly apiBase = "/apis/apps/v1/deployments";
-    }
-
-    const deploymentApi = new (Renderer.K8sApi.KubeApi as any)({ objectConstructor: Deployment });
-
-    const namespaces = ["karpenter", "karpenter-system"];
-    for (const ns of namespaces) {
-      try {
-        const items: any[] = (await deploymentApi.list({ namespace: ns }).catch(() => null)) ?? [];
-        if (!Array.isArray(items)) continue;
-        for (const dep of items) {
-          // Only look at deployments that are likely karpenter-controller
-          const name: string = dep?.metadata?.name ?? "";
-          if (!name.includes("karpenter")) continue;
-          const v = this.parseVersionFromDeploymentObj(dep);
-          if (v) return v;
-        }
-      } catch {
-        // try next namespace
-      }
-    }
-    return null;
-  }
-
-  /** Extract semver from a Deployment object's container images. */
-  private parseVersionFromDeploymentObj(deployment: any): string | null {
-    const containers: any[] = [
-      ...(deployment?.spec?.template?.spec?.containers ?? []),
-      ...(deployment?.spec?.template?.spec?.initContainers ?? []),
-    ];
-    for (const c of containers) {
-      const image: string = c?.image ?? "";
-      // image examples:
-      //   public.ecr.aws/karpenter/controller:1.9.0
-      //   ghcr.io/aws/karpenter/controller:0.37.1
-      //   karpenter/controller:v1.2.3
-      const match = image.match(/:v?(\d+\.\d+(?:\.\d+)?(?:[-+][^\s]*)?)/);
-      if (match) return match[1];
-    }
-    return null;
-  }
-
-  /** Extract version from CRD annotations/labels as fallback. */
-  private extractVersionFromCrd(crd: any): string | null {
-    const annotations: Record<string, string> = crd?.metadata?.annotations ?? {};
-    const labels: Record<string, string> = crd?.metadata?.labels ?? {};
-    const raw =
-      annotations["karpenter.sh/version"] ||
-      annotations["app.kubernetes.io/version"] ||
-      labels["app.kubernetes.io/version"] ||
-      labels["karpenter.sh/version"] ||
-      "";
-    if (!raw) return null;
-    // Strip leading "v" if present (e.g. "v1.9.0" → "1.9.0")
-    return raw.replace(/^v/, "");
   }
 
   render() {
@@ -270,7 +130,11 @@ export class KarpenterDashboard extends React.Component<
       );
     }
 
-    if (karpenterVersion === undefined || !this.nodePoolStore || !this.nodeStore) {
+    const nodePoolStore = getNodePoolStore();
+    const nodeStore = getNodeStore();
+    const nodeClaimStore = getNodeClaimStore();
+
+    if (karpenterVersion === undefined || !nodePoolStore) {
       return (
         <>
           <style>{styleInline}</style>
@@ -283,9 +147,6 @@ export class KarpenterDashboard extends React.Component<
       );
     }
 
-    const nodePoolStore = this.nodePoolStore;
-    const nodeStore = this.nodeStore;
-    const nodeClaimStore = this.nodeClaimStore;
     const getNodePoolsWithNodes = () => {
       return nodePoolStore.items
         .map((nodePool) => {
@@ -300,7 +161,9 @@ export class KarpenterDashboard extends React.Component<
     const nodePoolsWithNodes = getNodePoolsWithNodes();
 
     // NodeClaims that have been launched but not yet bound to a Node
-    const claimingClaims: NodeClaim[] = nodeClaimStore ? nodeClaimStore.items.filter(isClaimingNodeClaim) : [];
+    const claimingClaims: NodeClaim[] = nodeClaimStore
+      ? nodeClaimStore.items.filter((claim) => NodeClaim.isClaiming(claim))
+      : [];
 
     const tabs: { id: "topology" | "overview" | "nodeclasses" | "scaling"; label: string }[] = [
       { id: "overview", label: "Overview" },
@@ -420,7 +283,7 @@ function getOverwiewChart(
   // Build per-pool claiming counts (claims with no Node yet, grouped by NodePool label)
   const claimingByPool: Record<string, number> = {};
   for (const c of claimingClaims) {
-    const pool = getNodeClaimPoolName(c) || "__unknown__";
+    const pool = NodeClaim.getNodePoolName(c) || "__unknown__";
     claimingByPool[pool] = (claimingByPool[pool] ?? 0) + 1;
   }
   return (
@@ -555,13 +418,13 @@ const NodePoolList: React.FC<{
 
   // All NodeClaims that haven't yet been bound to a Node — grouped by pool below
   const claimingClaims: NodeClaim[] = nodeClaimStore
-    ? (nodeClaimStore.items as NodeClaim[]).filter(isClaimingNodeClaim)
+    ? nodeClaimStore.items.filter((claim: NodeClaim) => NodeClaim.isClaiming(claim))
     : [];
 
   const claimsByPool = React.useMemo(() => {
     const map: Record<string, NodeClaim[]> = {};
     for (const c of claimingClaims) {
-      const pool = getNodeClaimPoolName(c);
+      const pool = NodeClaim.getNodePoolName(c);
       if (!pool) continue;
       (map[pool] ??= []).push(c);
     }

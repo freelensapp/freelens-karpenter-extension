@@ -10,8 +10,6 @@
  * No React imports — pure TypeScript.
  */
 
-import { type Node } from "../../k8s/core/node-store";
-import { type NodePool } from "../../k8s/karpenter/store";
 import {
   type CondStatus,
   getInstanceType,
@@ -20,6 +18,9 @@ import {
   parseCpuCores,
   parseMemGi,
 } from "../../utils/kube-helpers";
+
+import type { NodePool } from "../../api/nodepool/nodepool-v1";
+import type { Node } from "../../utils/kube-helpers";
 
 // ── Palettes ─────────────────────────────────────────────────────────────────
 

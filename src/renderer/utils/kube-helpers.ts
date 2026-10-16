@@ -7,8 +7,13 @@
  */
 
 import { Renderer } from "@freelensapp/extensions";
-import { type Node } from "../k8s/core/node-store";
-import { type NodePool } from "../k8s/karpenter/store";
+import { getPodStore } from "../data/stores";
+
+import type { NodePool } from "../api/nodepool/nodepool-v1";
+import type { Condition } from "../api/types";
+
+export type Node = Renderer.K8sApi.Node;
+type Pod = Renderer.K8sApi.Pod;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -20,37 +25,41 @@ export type CondStatus = "Ready" | "NotReady" | "Provisioning" | "Claiming" | "T
  * Generic: find a condition by type in a conditions array and return
  * a normalized status string.
  */
-export function getConditionStatus(conditions: any[], type: string): CondStatus {
-  const c = conditions?.find((c: any) => c.type === type);
+export function getConditionStatus(
+  conditions: Pick<Condition, "type" | "status">[] | undefined,
+  type: string,
+): CondStatus {
+  const c = conditions?.find((c) => c.type === type);
   if (!c) return "Unknown";
   return c.status === "True" ? "Ready" : "NotReady";
 }
 
 export function getNodePoolStatus(nodePool: NodePool): CondStatus {
-  return getConditionStatus((nodePool as any).status?.conditions ?? [], "Ready");
+  return getConditionStatus(nodePool.status?.conditions, "Ready");
 }
 
-export function getNodeClassStatus(nodeClass: any): CondStatus {
-  return getConditionStatus((nodeClass as any).status?.conditions ?? [], "Ready");
+export function getNodeClassStatus(nodeClass: { status?: { conditions?: Condition[] } }): CondStatus {
+  return getConditionStatus(nodeClass.status?.conditions, "Ready");
 }
 
-export function getNodeStatus(node: Node): CondStatus {
-  const conditions: any[] = (node as any).status?.conditions ?? [];
-  const readyCond = conditions.find((c: any) => c.type === "Ready");
+/** `now` is the time to compare the node's age with, in milliseconds. */
+export function getNodeStatus(node: Node, now = Date.now()): CondStatus {
+  const conditions = node.status?.conditions ?? [];
+  const readyCond = conditions.find((c) => c.type === "Ready");
 
   // ── Terminating: deletionTimestamp is set (node is being deleted/drained) ──
-  if ((node as any).metadata?.deletionTimestamp) return "Terminating";
+  if (node.metadata.deletionTimestamp) return "Terminating";
 
   if (readyCond?.status === "True") return "Ready";
 
   // Check if node belongs to Karpenter
-  const labels = (node as any).metadata?.labels ?? {};
-  const annotations = (node as any).metadata?.annotations ?? {};
+  const labels = node.metadata.labels ?? {};
+  const annotations = node.metadata.annotations ?? {};
   const isKarpenter =
     !!labels["karpenter.sh/nodeclaim"] || !!labels["karpenter.sh/nodepool"] || !!annotations["karpenter.sh/nodeclaim"];
 
   if (isKarpenter) {
-    const taints: Array<{ key: string }> = (node as any).spec?.taints ?? [];
+    const taints = node.spec?.taints ?? [];
 
     // Karpenter disruption taint → node is being drained/consolidated
     const hasDisruptionTaint = taints.some((t) => t.key === "karpenter.sh/disruption");
@@ -62,10 +71,8 @@ export function getNodeStatus(node: Node): CondStatus {
     );
 
     // A brand-new node (< 5 min) that isn't Ready yet is still provisioning
-    const createdAt = node.metadata?.creationTimestamp
-      ? new Date(node.metadata.creationTimestamp as unknown as string).getTime()
-      : 0;
-    const ageMs = Date.now() - createdAt;
+    const createdAt = node.metadata.creationTimestamp ? new Date(node.metadata.creationTimestamp).getTime() : 0;
+    const ageMs = now - createdAt;
     const isNew = ageMs < 5 * 60 * 1000;
 
     if (!readyCond || hasBootstrapTaint || isNew) return "Provisioning";
@@ -80,14 +87,14 @@ export function getNodeStatus(node: Node): CondStatus {
 // ── Node metadata helpers ─────────────────────────────────────────────────────
 
 export function getNodeCpu(node: Node): string {
-  const allocatable = (node as any).status?.allocatable;
-  const capacity = (node as any).status?.capacity;
+  const allocatable = node.status?.allocatable;
+  const capacity = node.status?.capacity;
   return allocatable?.cpu || capacity?.cpu || "—";
 }
 
 export function getNodeMemory(node: Node): string {
-  const allocatable = (node as any).status?.allocatable;
-  const capacity = (node as any).status?.capacity;
+  const allocatable = node.status?.allocatable;
+  const capacity = node.status?.capacity;
   const raw: string = String(allocatable?.memory || capacity?.memory || "");
   if (!raw) return "—";
 
@@ -115,33 +122,32 @@ export function getNodeMemory(node: Node): string {
 
 export function getNodeClaimName(node: Node | undefined): string {
   if (!node?.metadata) return "";
-  const labels: Record<string, string> = (node as any).metadata?.labels ?? {};
-  const annotations: Record<string, string> = (node as any).metadata?.annotations ?? {};
+  const labels = node.metadata.labels ?? {};
+  const annotations = node.metadata.annotations ?? {};
   return (
     labels["karpenter.sh/nodeclaim"] ||
     annotations["karpenter.sh/nodeclaim"] ||
     labels["karpenter.sh/provisioner-name"] ||
     annotations["karpenter.sh/provisioner-name"] ||
-    (node as any).metadata?.ownerReferences?.find((ref: any) => ref.kind === "NodeClaim" || ref.kind === "Machine")
-      ?.name ||
+    node.metadata.ownerReferences?.find((ref) => ref.kind === "NodeClaim" || ref.kind === "Machine")?.name ||
     ""
   );
 }
 
 export function getNodeMaxPods(node: Node): number {
-  const allocatable = (node as any).status?.allocatable;
-  const capacity = (node as any).status?.capacity;
+  const allocatable = node.status?.allocatable;
+  const capacity = node.status?.capacity;
   const raw: string = allocatable?.pods || capacity?.pods || "0";
   return parseInt(raw, 10) || 0;
 }
 
 export function getInstanceType(node: Node): string {
-  return (node as any).metadata?.labels?.["node.kubernetes.io/instance-type"] ?? "—";
+  return node.metadata.labels?.["node.kubernetes.io/instance-type"] ?? "—";
 }
 
 // ── Memory / CPU parsing ──────────────────────────────────────────────────────
 
-export function parseMemGi(mem: string | number): number {
+export function parseMemGi(mem: string | number | null | undefined): number {
   if (mem === null || mem === undefined || mem === "") return 0;
   const s = String(mem).trim();
   if (s.endsWith("Ki")) return parseFloat(s) / (1024 * 1024);
@@ -154,7 +160,7 @@ export function parseMemGi(mem: string | number): number {
   return n || 0;
 }
 
-export function parseCpuCores(cpu: string | number): number {
+export function parseCpuCores(cpu: string | number | null | undefined): number {
   if (typeof cpu === "number") return cpu;
   if (!cpu) return 0;
   if (cpu.endsWith("m")) return parseFloat(cpu) / 1000;
@@ -163,40 +169,34 @@ export function parseCpuCores(cpu: string | number): number {
 
 // ── Pod count helpers ─────────────────────────────────────────────────────────
 
-export function getPodsStore(): any {
-  return (Renderer.K8sApi as any).podsStore ?? (Renderer.K8sApi.apiManager as any).getStore?.("/api/v1/pods");
-}
-
 /**
- * Build a {nodeName → podCount} map from the pods store.
+ * Build a {nodeName → podCount} map from the pods, by default those of the host's pod store.
  * Call this ONCE per render and pass the result down as a prop instead of
  * calling getPodCountForNode() inside every table row.
  */
-export function buildPodCountMap(): Record<string, number> {
-  try {
-    const podsStore = getPodsStore();
-    if (!podsStore?.items) return {};
-    const map: Record<string, number> = {};
-    for (const pod of podsStore.items as any[]) {
-      const nodeName: string = pod.spec?.nodeName;
-      if (nodeName) map[nodeName] = (map[nodeName] ?? 0) + 1;
-    }
-    return map;
-  } catch {
-    return {};
+export function buildPodCountMap(pods: Pod[] = getPodStore().items): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const pod of pods) {
+    const nodeName = pod.spec?.nodeName;
+    if (nodeName) map[nodeName] = (map[nodeName] ?? 0) + 1;
   }
+  return map;
 }
 
 // ── Navigation helpers ────────────────────────────────────────────────────────
+
+/** The URL of a Freelens list page with the details drawer open for `selfLink`. */
+export function detailUrl(listPath: string, selfLink: string): string {
+  const enc = encodeURIComponent(selfLink);
+  return `${listPath}?kube-details=${enc}&kube-selected=${enc}`;
+}
 
 /**
  * Navigate to a Freelens list page with the detail drawer open for `selfLink`.
  */
 export function navigateToDetail(listPath: string, selfLink: string): void {
   if (!selfLink) return;
-  const navigation = Renderer.Navigation as any;
-  const enc = encodeURIComponent(selfLink);
-  navigation.navigate(`${listPath}?kube-details=${enc}&kube-selected=${enc}`);
+  Renderer.Navigation.navigate(detailUrl(listPath, selfLink));
 }
 
 export function openNodeDetail(node: Node): void {
@@ -207,9 +207,7 @@ export function openNodeDetail(node: Node): void {
 }
 
 export function openNodePoolDetail(nodePool: NodePool): void {
-  const selfLink: string =
-    (nodePool as any).metadata?.selfLink || `/apis/karpenter.sh/v1/nodepools/${nodePool.metadata?.name ?? ""}`;
-  navigateToDetail("/crd/karpenter.sh/nodepools", selfLink);
+  navigateToDetail("/crd/karpenter.sh/nodepools", `/apis/karpenter.sh/v1/nodepools/${nodePool.metadata?.name ?? ""}`);
 }
 
 export function openNodeClaimDetail(name: string): void {

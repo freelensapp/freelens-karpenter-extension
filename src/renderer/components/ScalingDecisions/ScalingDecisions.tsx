@@ -18,16 +18,22 @@
  *     selected row scroll-into-view, vertical guide drawn on the chart.
  *   - Hover a table row    → chart highlights the bucket the event falls in.
  */
+
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { COLOR, EVENT_REASON_CONFIG, EVENT_REASON_FALLBACK } from "../../config/theme";
-import { getKubeEventStore, KubeEvent } from "../../k8s/core/karpenter-events-store";
-import { getNodeStore, type Node } from "../../k8s/core/node-store";
-import { getNodePoolStore, NodePool } from "../../k8s/karpenter/store";
+import { getKarpenterEventStore, getNodePoolStore, getNodeStore } from "../../data/stores";
 import { getNodeClaimName } from "../../utils/kube-helpers";
 import styles from "./scaling-decisions.module.scss";
 import stylesInline from "./scaling-decisions.module.scss?inline";
 import { TimelineChart, type TimelinePoint, type TimelineSeries } from "./timeline-chart";
+
+import type { Renderer } from "@freelensapp/extensions";
+
+import type { NodePool } from "../../api/nodepool/nodepool-v1";
+import type { Node } from "../../utils/kube-helpers";
+
+type KubeEvent = Renderer.K8sApi.KubeEvent;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -442,13 +448,9 @@ export const ScalingDecisions: React.FC = observer(() => {
   const [selectedBucket, setSelectedBucket] = useState<number | null>(null);
   const [hoveredTs, setHoveredTs] = useState<number | null>(null);
 
-  const nodePoolStore = getNodePoolStore();
-  const kubeEventStore = getKubeEventStore();
-  const nodeStore = getNodeStore();
-
-  const nodePools: NodePool[] = nodePoolStore.items;
-  const allEvents: KubeEvent[] = kubeEventStore.items;
-  const allNodes: Node[] = nodeStore.items;
+  const nodePools: NodePool[] = getNodePoolStore()?.items ?? [];
+  const allEvents: KubeEvent[] = getKarpenterEventStore().items;
+  const allNodes: Node[] = getNodeStore().items;
 
   const rowRefMap = useRef(new Map<string, HTMLTableRowElement>()).current;
 

@@ -2,6 +2,7 @@ import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import svgIconNode from "../../../../assets/node1.svg?raw"; // must be `?raw` as we need SVG element
+import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
 import {
   COLOR,
   EVENT_REASON_CONFIG,
@@ -11,11 +12,14 @@ import {
   STATUS_BORDER_COLOR,
   TIMING,
 } from "../../config/theme";
-import { eventTs, fmtAgo, useKarpenterCardData, usePoolEvents } from "../../hooks/useKarpenterData";
-import { getKubeEventStore, type RawKubeEvent } from "../../k8s/core/karpenter-events-store";
-import { type Node } from "../../k8s/core/node-store";
-import { detectProvider, openNodeClassDetail } from "../../k8s/karpenter/nodeclass-utils";
-import { type NodeClaim, type NodePool } from "../../k8s/karpenter/store";
+import { detectProvider, openNodeClassDetail } from "../../data/nodeclass";
+import {
+  eventTs,
+  fmtAgo,
+  type KarpenterEvent,
+  useKarpenterCardData,
+  usePoolEvents,
+} from "../../hooks/useKarpenterData";
 import {
   getInstanceType,
   getNodeClaimName,
@@ -35,9 +39,13 @@ import { StatusBadge } from "../shared/StatusBadge";
 import style from "./karpentercard.module.scss";
 import styleInline from "./karpentercard.module.scss?inline";
 
+import type { NodePool } from "../../api/nodepool/nodepool-v1";
+
 const {
   Component: { Icon },
 } = Renderer;
+
+type Node = Renderer.K8sApi.Node;
 
 // ── Pool event timeline ────────────────────────────────────────────────────────
 
@@ -51,7 +59,6 @@ const PoolEventTimeline = observer(function PoolEventTimeline({
   claimNames: string[];
 }) {
   const [showDebug, setShowDebug] = useState(false);
-  const kubeEventStore = getKubeEventStore();
 
   const nodeNameSet = useMemo(() => new Set(nodeNames), [nodeNames.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
   const claimNameSet = useMemo(() => new Set(claimNames), [claimNames.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -60,7 +67,6 @@ const PoolEventTimeline = observer(function PoolEventTimeline({
     poolName,
     nodeNameSet,
     claimNameSet,
-    kubeEventStore.items.length,
   );
 
   if (isLoading) {
@@ -118,7 +124,7 @@ const PoolEventTimeline = observer(function PoolEventTimeline({
 
 // ── EventRow ──────────────────────────────────────────────────────────────────
 
-function EventRow({ event: e }: { event: RawKubeEvent }) {
+function EventRow({ event: e }: { event: KarpenterEvent }) {
   const reason = e.reason ?? "";
   const cfg = EVENT_REASON_CONFIG[reason] ?? EVENT_REASON_FALLBACK;
   const ts = eventTs(e);
@@ -162,7 +168,7 @@ function EventsEmptyState({
   showDebug: boolean;
   onToggleDebug: () => void;
   onRefresh: () => void;
-  fetchedEvents: RawKubeEvent[];
+  fetchedEvents: KarpenterEvent[];
 }) {
   return (
     <div className={style.historyEmpty}>
@@ -204,7 +210,7 @@ const debugBtnStyle: React.CSSProperties = {
   padding: 0,
 };
 
-function DebugEventTable({ events }: { events: RawKubeEvent[] }) {
+function DebugEventTable({ events }: { events: KarpenterEvent[] }) {
   return (
     <table style={{ borderCollapse: "collapse", width: "100%", fontFamily: "monospace" }}>
       <thead>

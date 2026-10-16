@@ -10,13 +10,14 @@
 
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
-import { type Node } from "../../k8s/core/node-store";
-import { type NodePool } from "../../k8s/karpenter/store";
 import { buildPodCountMap, type CondStatus, getNodeStatus } from "../../utils/kube-helpers";
 import { ResponsiveTreemap } from "./TreemapView";
 import style from "./topology.module.scss";
 import styleInline from "./topology.module.scss?inline";
 import { computeKpi, type GroupBy, groupNodes, type NodeGroup, type SizeBy, STATUS_COLOR } from "./topology-utils";
+
+import type { NodePool } from "../../api/nodepool/nodepool-v1";
+import type { Node } from "../../utils/kube-helpers";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

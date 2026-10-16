@@ -4,8 +4,8 @@ import { getNodePoolStatus, getNodeStatus } from "../../utils/kube-helpers";
 import style from "./pie-chart.module.scss";
 import styleInline from "./pie-chart.module.scss?inline";
 
-import type { Node } from "../../k8s/core/node-store";
-import type { NodePool } from "../../k8s/karpenter/store";
+import type { NodePool } from "../../api/nodepool/nodepool-v1";
+import type { Node } from "../../utils/kube-helpers";
 
 export interface PieChartProps {
   nodes: Node[];

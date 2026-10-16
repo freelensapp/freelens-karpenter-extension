@@ -1,10 +1,7 @@
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
-import { getNodeStore } from "../../k8s/core/node-store";
-import { getAKSNodeClassStore } from "../../k8s/karpenter/aksNodeclass-store";
-import { getEC2NodeClassStore } from "../../k8s/karpenter/ec2nodeclass-store";
-import { NODE_CLASS_KIND, type NodeClassProvider, openNodeClassDetail } from "../../k8s/karpenter/nodeclass-utils";
-import { getNodePoolStore } from "../../k8s/karpenter/store";
+import { NODE_CLASS_KIND, type NodeClassProvider, openNodeClassDetail } from "../../data/nodeclass";
+import { getAKSNodeClassStore, getEC2NodeClassStore, getNodePoolStore, getNodeStore } from "../../data/stores";
 import { getNodeClassStatus, getNodePoolStatus, openNodePoolDetail } from "../../utils/kube-helpers";
 import { StatusBadge } from "../shared/StatusBadge";
 import style from "./nodeclasses-tab.module.scss";
@@ -64,7 +61,7 @@ function NodePoolRow({ nodePool, nodeCount }: { nodePool: any; nodeCount: number
 
 function NodeClassCard({ nodeClass }: { nodeClass: any }) {
   const [expanded, setExpanded] = useState(true);
-  const nodePoolStore = getNodePoolStore();
+  const nodePools = getNodePoolStore()?.items ?? [];
   const nodeStore = getNodeStore();
   const name: string = nodeClass.metadata?.name ?? "—";
   const status = getNodeClassStatus(nodeClass);
@@ -98,9 +95,9 @@ function NodeClassCard({ nodeClass }: { nodeClass: any }) {
 
   // Associated NodePools — memoized to avoid filtering on every render
   const associatedPools = useMemo(
-    () => nodePoolStore.items.filter((np: any) => np.spec?.template?.spec?.nodeClassRef?.name === name),
+    () => nodePools.filter((np: any) => np.spec?.template?.spec?.nodeClassRef?.name === name),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodePoolStore.items.length, name],
+    [nodePools.length, name],
   );
 
   // Node counts per NodePool — computed once, passed down as props
