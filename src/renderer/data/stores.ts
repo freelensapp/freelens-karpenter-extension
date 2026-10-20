@@ -52,7 +52,7 @@ export const karpenterEventNamespaces = ["default", "karpenter", "karpenter-syst
 
 type KubeEvent = Renderer.K8sApi.KubeEvent;
 
-type KubeEventApi = Renderer.K8sApi.KubeApi<KubeEvent, Renderer.K8sApi.KubeEventData>;
+type KubeEventApi = Renderer.K8sApi.KubeEventApi;
 
 export class KarpenterEventStore extends Renderer.K8sApi.KubeObjectStore<KubeEvent, KubeEventApi> {}
 
@@ -60,19 +60,10 @@ let karpenterEventStore: KarpenterEventStore | undefined;
 
 /**
  * A store of the extension for the events of the namespaces above: loading it leaves the host's own event store,
- * and what its Events page has loaded, as they are. One per cluster frame, as the module is.
- *
- * Its API is a `KubeApi` of its own, not `Renderer.K8sApi.eventApi`: through that object every function member
- * is wrapped in a plain function, `objectConstructor` included, so the store's `new api.objectConstructor()` for
- * each watch event throws "Class constructor KubeEvent cannot be invoked without 'new'". `autoRegister: false`
- * keeps it out of the host's API registry, where it would take the place of the host's event API.
+ * and what its Events page has loaded, as they are. One per cluster frame, as the module is. It is built over the
+ * host's `Renderer.K8sApi.eventApi`.
  */
 export function getKarpenterEventStore(): KarpenterEventStore {
-  karpenterEventStore ??= new KarpenterEventStore(
-    new Renderer.K8sApi.KubeApi<KubeEvent, Renderer.K8sApi.KubeEventData>({
-      objectConstructor: Renderer.K8sApi.KubeEvent,
-      autoRegister: false,
-    }),
-  );
+  karpenterEventStore ??= new KarpenterEventStore(Renderer.K8sApi.eventApi);
   return karpenterEventStore;
 }

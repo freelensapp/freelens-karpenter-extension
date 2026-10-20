@@ -8,10 +8,8 @@ const {
   Component: { DrawerItem, DrawerTitle },
 } = Renderer;
 
-// A link inside a details drawer opens the other object's details in its place, over the same page, as the host's
-// own links do. It prevents the click's default, as theirs do: the drawer closes on a click whose target is not
-// inside it, and the link is no longer inside it once the new details have replaced the old ones, which happens
-// before the drawer sees the click when the object is already in its store.
+// A link inside a details drawer opens the other object's details in its place, over the same page, and prevents the
+// click's default, as the host's own links do.
 const showDetails = (selfLink: string) => (event: React.MouseEvent) => {
   event.preventDefault();
   Renderer.Navigation.showDetails(selfLink);

@@ -213,10 +213,7 @@ export const NodesList = ({
         return (
           <tr
             key={node.metadata?.uid ?? nodeName ?? idx}
-            onClick={(event) => {
-              event.stopPropagation();
-              openNodeDetail(node);
-            }}
+            onClick={() => openNodeDetail(node)}
             title="Click to open node details"
           >
             <td>
@@ -246,12 +243,7 @@ export const NodesList = ({
         return (
           <tr
             key={`claim-${claim.metadata?.uid ?? claimName ?? idx}`}
-            onClick={(event) => {
-              // As every link to details here: an open drawer would take the click for one outside itself and close
-              // the details just opened (B14).
-              event.stopPropagation();
-              openNodeClaimDetail(claimName);
-            }}
+            onClick={() => openNodeClaimDetail(claimName)}
             title="Click to open NodeClaim details"
           >
             <td>
@@ -334,14 +326,7 @@ function NodePairRow({ node, podCountMap }: { node: Node; podCountMap: Record<st
           kind="NodeClaim"
           name={claimName || "—"}
           color={COLOR.nodeclaim}
-          onClick={
-            claimName
-              ? (event) => {
-                  event.stopPropagation();
-                  openNodeClaimDetail(claimName);
-                }
-              : undefined
-          }
+          onClick={claimName ? () => openNodeClaimDetail(claimName) : undefined}
         />
         <div className={style.treePairArrow}>{ICON.arrow}</div>
         <TreeLeaf
@@ -349,10 +334,7 @@ function NodePairRow({ node, podCountMap }: { node: Node; podCountMap: Record<st
           kind="Node"
           name={nodeName}
           color={color}
-          onClick={(event) => {
-            event.stopPropagation();
-            openNodeDetail(node);
-          }}
+          onClick={() => openNodeDetail(node)}
           extra={
             <div className={style.treeLeafStats}>
               <StatusBadge status={status} />
@@ -459,10 +441,7 @@ function CardInfoBar({
       <InfoPill
         kind={`${ICON.nodeclass} ${nodeClassKind}`}
         name={nodeClassName}
-        onClick={(event) => {
-          event.stopPropagation();
-          openNodeClassDetail(nodeClassName, provider);
-        }}
+        onClick={() => openNodeClassDetail(nodeClassName, provider)}
         title={`Open ${nodeClassKind} ${nodeClassName}`}
       />
 
@@ -471,10 +450,7 @@ function CardInfoBar({
       <InfoPill
         kind={`${ICON.nodepool} NodePool`}
         name={poolName}
-        onClick={(event) => {
-          event.stopPropagation();
-          openNodePoolDetail(nodePool);
-        }}
+        onClick={() => openNodePoolDetail(nodePool)}
         title={`Open NodePool ${poolName}`}
         badge={<StatusBadge status={poolStatus} />}
       />
@@ -517,10 +493,7 @@ const NodeOverlayMeta = observer(function NodeOverlayMeta({ nodePool }: { nodePo
           return (
             <span key={overlay.getName()} className={style.overlayItem}>
               <a
-                onClick={(event) => {
-                  event.stopPropagation();
-                  openNodeOverlayDetail(overlay.getName());
-                }}
+                onClick={() => openNodeOverlayDetail(overlay.getName())}
                 title={`Open NodeOverlay ${overlay.getName()} (weight ${NodeOverlay.getWeight(overlay)})`}
               >
                 {overlay.getName()}
