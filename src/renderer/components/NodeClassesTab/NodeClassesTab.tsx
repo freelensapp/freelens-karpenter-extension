@@ -25,14 +25,7 @@ function NodePoolRow({ nodePool, nodeCount }: { nodePool: NodePool; nodeCount: n
   const { cpuUsed, memoryUsed, limitCpu, limitMemory, consolidation, expireAfter } = nodePoolRowValues(nodePool);
 
   return (
-    <tr
-      className={style.poolRow}
-      onClick={(event) => {
-        event.stopPropagation();
-        openNodePoolDetail(nodePool);
-      }}
-      title="Click to open NodePool details"
-    >
+    <tr className={style.poolRow} onClick={() => openNodePoolDetail(nodePool)} title="Click to open NodePool details">
       <td className={style.poolName}>
         <span className={style.poolIcon}>🌊</span>
         {name}
@@ -76,6 +69,7 @@ const NodeClassCard = observer(({ nodeClass }: { nodeClass: NodeClass }) => {
           <span
             className={style.nodeClassName}
             onClick={(event) => {
+              // Keeps the click from the header around it, which expands and collapses the card.
               event.stopPropagation();
               openNodeClassDetail(name, provider);
             }}

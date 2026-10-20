@@ -200,12 +200,11 @@ extension has no list or details page of its own for a Karpenter kind.
   kind is used, so no object is counted twice. AKSNodeClass has two models,
   `v1beta1` and `v1alpha2`: the Azure provider 1.14 serves only `v1beta1`.
 - **Nodes and pods**: the host's `nodesStore` and `podsStore`.
-- **Events**: a store of the extension, `KarpenterEventStore`, over a
-  `KubeApi` of its own with `autoRegister: false`, for the namespaces in
+- **Events**: a store of the extension, `KarpenterEventStore`, over the
+  host's `Renderer.K8sApi.eventApi`, for the namespaces in
   `karpenterEventNamespaces` (`default`, where Karpenter writes the events of
-  its cluster-scoped objects, `karpenter` and `karpenter-system`). It is not
-  built over `Renderer.K8sApi.eventApi` (see "Rules That Fail Silently"), and
-  it leaves what the host's own Events page has loaded alone.
+  its cluster-scoped objects, `karpenter` and `karpenter-system`). It leaves
+  what the host's own Events page has loaded alone.
 - **Loading**: `data/load.ts` loads each served store and subscribes to it,
   then the controller version (`data/controller-version.ts`: the Deployment
   labelled `app.kubernetes.io/name=karpenter` in any namespace, then one
@@ -461,29 +460,9 @@ mechanism; this is the list to check a change against.
   array when an object is added, removed or updated (by id and
   `resourceVersion`); an `observer` that reads the items while it renders, with
   no memo, follows them anyway ("Data Layer").
-- **No `KubeObjectStore` over an API object of `Renderer.K8sApi`.** Those
-  objects (`eventApi`, `podsApi`, ...) are proxies that wrap every function
-  member in a plain function, `objectConstructor` included, so the store's
-  `new api.objectConstructor()` for each watch event throws "Class
-  constructor KubeEvent cannot be invoked without 'new'". The list loads; only
-  the watch fails. Build the store over a `new Renderer.K8sApi.KubeApi({
-  objectConstructor, autoRegister: false })`, as `getKarpenterEventStore()`
-  does.
 - **`loadAll` resolves when the load failed.** It reports the failure through
   `onLoadFailure` and leaves the store empty. Pass `onLoadFailure` and decide
   what a failure means, as `loadAndSubscribe` does.
-- **A click that opens details stops there.** The host's details drawer closes
-  on a click whose target is not inside a `.Drawer`, from a `click` listener on
-  `window`. A click that opens details re-renders the page at once when the
-  object is already in its store, so its target is no longer in the page when
-  the event reaches that listener, which closes the details just opened (or,
-  for a link inside a drawer, the drawer that replaced it). Every handler that
-  opens details calls `event.stopPropagation()`, or `event.preventDefault()`,
-  which the listener honours, as the host's own links do; a link inside a
-  details drawer uses `Renderer.Navigation.showDetails(selfLink)` and stays on
-  the page. The unit tests check that such a click does not reach the
-  document, on its way to `window` (B14); the host's side is
-  freelensapp/freelens#2761.
 - **CSS variables do not reach SVG attributes or a canvas.** `fill` and
   `stroke` take them only through `style` ("Colours and themes").
 

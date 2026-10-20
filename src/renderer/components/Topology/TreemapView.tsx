@@ -175,10 +175,7 @@ export const TreemapView: React.FC<TreemapViewProps> = observer(
                   dimmed={!matchesFilter(node)}
                   onEnter={(e) => onCellEnter(e, node, group)}
                   onLeave={() => setTooltip(null)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openNodeDetail(node);
-                  }}
+                  onClick={() => openNodeDetail(node)}
                 />
               ))}
             </g>
@@ -270,10 +267,7 @@ const Chip: React.FC<ChipProps> = ({ node, group: _group, rect, podCount, dimmed
       onMouseEnter={onEnter}
       onMouseMove={onEnter}
       onMouseLeave={onLeave}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick(e);
-      }}
+      onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
