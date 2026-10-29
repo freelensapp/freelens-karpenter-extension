@@ -543,6 +543,7 @@ packages:
 
   '@freelensapp/extensions@2.0.0-0-nightly-2026-10-17':
     resolution: {integrity: sha512-GWTZGCrVzjcg3+5q/r7GuJMry2SQG9gflhU5VhuVHT1kHrGxQ7rosQTTieIijnWT8CKULUSukPod5jurM0kLWg==}
+    deprecated: Pre-release nightly build, use @freelensapp/extensions@^2.0.0
     peerDependencies:
       '@types/react': ^19.3.0
       '@types/react-dom': ^19.3.0
