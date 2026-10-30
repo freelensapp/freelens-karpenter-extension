@@ -1231,7 +1231,6 @@ of editing the file in place:
    edit the original file under `.github/workflows/`.
 2. Make it a **complete** file — the entire workflow as it should look after
    the change, not just a diff or fragment — so it can be copied verbatim.
-   Keep its "Workflow summary" header up to date.
 3. Commit it with the change that needs it, list it in
    `github-workflow-fix/README.md` with what it changes, and list it in the
    report. In the
