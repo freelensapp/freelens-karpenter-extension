@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   countNodesByPool,
   type NodeClass,
+  nodeClassesEmptyMessage,
   nodeClassMetaItems,
   nodeClassProvider,
   nodePoolRowValues,
@@ -50,6 +51,24 @@ describe("nodeClassProvider", () => {
     expect(nodeClassProvider(aks("a"))).toBe("azure");
     expect(nodeClassProvider(aks("a", {}, "v1alpha2"))).toBe("azure");
     expect(nodeClassProvider(gce("a"))).toBe("gcp");
+  });
+});
+
+describe("nodeClassesEmptyMessage", () => {
+  it("names only the node class kinds the cluster serves", () => {
+    expect(nodeClassesEmptyMessage(["gcp"], false)).toBe("No GCENodeClass found");
+    expect(nodeClassesEmptyMessage(["aws"], false)).toBe("No EC2NodeClass found");
+    expect(nodeClassesEmptyMessage(["aws", "azure"], false)).toBe("No EC2NodeClass or AKSNodeClass found");
+  });
+
+  it("names every supported kind when the cluster serves none", () => {
+    expect(nodeClassesEmptyMessage([], false)).toBe(
+      "No node class of a supported provider is installed (EC2NodeClass, AKSNodeClass, GCENodeClass)",
+    );
+  });
+
+  it("is about the filter when there are node classes", () => {
+    expect(nodeClassesEmptyMessage(["gcp"], true)).toBe("No results for this filter");
   });
 });
 

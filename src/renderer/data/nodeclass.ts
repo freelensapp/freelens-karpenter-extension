@@ -37,12 +37,28 @@ export function detectProvider(nodeClassRef?: Partial<NodeClassReference>): Node
   return guessFromStores();
 }
 
-/** Heuristic: whichever store has loaded items wins */
+type KnownProvider = Exclude<NodeClassProvider, "unknown">;
+
+const NODE_CLASS_STORE: Record<KnownProvider, () => { items: unknown[] } | undefined> = {
+  aws: () => getEC2NodeClassStore(),
+  azure: () => getAKSNodeClassStore(),
+  gcp: () => getGCENodeClassStore(),
+};
+
+/**
+ * The providers whose node class the cluster serves, which is usually one: a cluster runs the Karpenter of one
+ * cloud. It reads the host's API registry, so an `observer` that calls it follows the CRDs as they come and go.
+ */
+export function servedNodeClassProviders(): KnownProvider[] {
+  return (Object.keys(NODE_CLASS_STORE) as KnownProvider[]).filter((provider) => !!NODE_CLASS_STORE[provider]());
+}
+
+/** Heuristic: whichever store has loaded items wins, else the only node class the cluster serves. */
 function guessFromStores(): NodeClassProvider {
-  if ((getAKSNodeClassStore()?.items.length ?? 0) > 0) return "azure";
-  if ((getEC2NodeClassStore()?.items.length ?? 0) > 0) return "aws";
-  if ((getGCENodeClassStore()?.items.length ?? 0) > 0) return "gcp";
-  return "unknown";
+  const served = servedNodeClassProviders();
+  const withItems = served.find((provider) => (NODE_CLASS_STORE[provider]()?.items.length ?? 0) > 0);
+  if (withItems) return withItems;
+  return served.length === 1 ? served[0] : "unknown";
 }
 
 /**

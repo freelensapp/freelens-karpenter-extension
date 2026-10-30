@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { useState } from "react";
-import { NODE_CLASS_KIND, openNodeClassDetail } from "../../data/nodeclass";
+import { NODE_CLASS_KIND, openNodeClassDetail, servedNodeClassProviders } from "../../data/nodeclass";
 import {
   getAKSNodeClassStore,
   getEC2NodeClassStore,
@@ -13,6 +13,7 @@ import { StatusBadge } from "../shared/StatusBadge";
 import {
   countNodesByPool,
   type NodeClass,
+  nodeClassesEmptyMessage,
   nodeClassMetaItems,
   nodeClassProvider,
   nodePoolRowValues,
@@ -162,7 +163,7 @@ const NodeClassCard = observer(({ nodeClass }: { nodeClass: NodeClass }) => {
 // ── Main tab component ────────────────────────────────────────────────────────
 
 export const NodeClassesTab: React.FC = observer(() => {
-  // Merge items from the AWS, Azure and GCP stores
+  // Merge items from the AWS, Azure and GCP stores; only the APIs the cluster serves have one.
   const nodeClasses: NodeClass[] = [
     ...(getEC2NodeClassStore()?.items ?? []),
     ...(getAKSNodeClassStore()?.items ?? []),
@@ -174,10 +175,7 @@ export const NodeClassesTab: React.FC = observer(() => {
     ? nodeClasses.filter((nc) => (nc.metadata?.name ?? "").toLowerCase().includes(search.trim().toLowerCase()))
     : nodeClasses;
 
-  const emptyMessage =
-    nodeClasses.length === 0
-      ? "No NodeClasses found (checked EC2NodeClass, AKSNodeClass and GCENodeClass)"
-      : "No results for this filter";
+  const emptyMessage = nodeClassesEmptyMessage(servedNodeClassProviders(), nodeClasses.length > 0);
 
   return (
     <div className={style.tabRoot}>

@@ -6,7 +6,7 @@ import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
 import { NodeOverlay } from "../../api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
 import { COLOR, ICON, LABEL, STATUS_BORDER_COLOR } from "../../config/theme";
-import { detectProvider, openNodeClassDetail } from "../../data/nodeclass";
+import { detectProvider, NODE_CLASS_KIND, openNodeClassDetail } from "../../data/nodeclass";
 import { getNodeOverlayStore } from "../../data/stores";
 import { fmtAgo, useKarpenterCardData, usePoolEvents } from "../../hooks/useKarpenterData";
 import { eventTs, eventVisual, type KarpenterEvent } from "../../utils/karpenter-events";
@@ -421,7 +421,8 @@ function InlineOverview({ resources, limits }: { resources?: ResourceList; limit
 
 // ── Info bar (NodeClass + NodePool pills + instance type chips) ───────────────
 
-function CardInfoBar({
+// An observer: without a kind in the nodeClassRef, it reads which node class stores the cluster serves.
+const CardInfoBar = observer(function CardInfoBar({
   nodePool,
   instanceTypeCounts,
 }: {
@@ -430,8 +431,9 @@ function CardInfoBar({
 }) {
   const nodeClassRef = NodePool.getTemplateSpec(nodePool)?.nodeClassRef;
   const nodeClassName = nodeClassRef?.name ?? "—";
-  const nodeClassKind = nodeClassRef?.kind ?? "EC2NodeClass";
   const provider = detectProvider(nodeClassRef);
+  // `nodeClassRef` is required in karpenter.sh/v1; without it, the kind of the node class the cluster serves.
+  const nodeClassKind = nodeClassRef?.kind ?? NODE_CLASS_KIND[provider];
   const poolName = nodePool.metadata?.name ?? "";
   const poolStatus = getNodePoolStatus(nodePool);
   const expireAfter = NodePool.getTemplateSpec(nodePool)?.expireAfter ?? null;
@@ -477,7 +479,7 @@ function CardInfoBar({
       <NodeOverlayMeta nodePool={nodePool} />
     </div>
   );
-}
+});
 
 /** The NodeOverlays that can apply to the NodePool's nodes, the one that takes precedence first. */
 const NodeOverlayMeta = observer(function NodeOverlayMeta({ nodePool }: { nodePool: NodePool }) {

@@ -4,10 +4,10 @@
 
 import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
+import { NODE_CLASS_KIND, type NodeClassProvider } from "../../data/nodeclass";
 import { formatMemory } from "../../utils/kube-helpers";
 
 import type { EC2NodeClass } from "../../api/ec2nodeclass/ec2nodeclass-v1";
-import type { NodeClassProvider } from "../../data/nodeclass";
 import type { AKSNodeClass } from "../../data/stores";
 import type { Node } from "../../utils/kube-helpers";
 
@@ -22,6 +22,23 @@ export function nodeClassProvider(nodeClass: NodeClass): Exclude<NodeClassProvid
     default:
       return "aws";
   }
+}
+
+const SUPPORTED_KINDS = [NODE_CLASS_KIND.aws, NODE_CLASS_KIND.azure, NODE_CLASS_KIND.gcp];
+
+/**
+ * What the tab shows when it has no card: the node class kinds the cluster serves, so that it names only those of
+ * the cloud the cluster runs on, or every kind the extension reads when the cluster serves none of them.
+ */
+export function nodeClassesEmptyMessage(
+  servedProviders: Exclude<NodeClassProvider, "unknown">[],
+  hasNodeClasses: boolean,
+): string {
+  if (hasNodeClasses) return "No results for this filter";
+  if (servedProviders.length === 0) {
+    return `No node class of a supported provider is installed (${SUPPORTED_KINDS.join(", ")})`;
+  }
+  return `No ${servedProviders.map((provider) => NODE_CLASS_KIND[provider]).join(" or ")} found`;
 }
 
 export interface MetaItem {
