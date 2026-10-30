@@ -469,6 +469,14 @@ mechanism; this is the list to check a change against.
 - **`loadAll` resolves when the load failed.** It reports the failure through
   `onLoadFailure` and leaves the store empty. Pass `onLoadFailure` and decide
   what a failure means, as `loadAndSubscribe` does.
+- **An effect creates what its cleanup aborts or releases.** Freelens dev
+  renders in `React.StrictMode`, which runs an effect, cleans it up and runs
+  it again on the same instance. An `AbortController` kept in a `useRef` is
+  aborted by the first cleanup, and every request of the second run with it;
+  the host takes an aborted `loadAll` for no failure, so the view shows
+  nothing and logs nothing. Create the controller, and the subscriptions to
+  stop, inside the effect, as `data/use-dashboard-data.ts` does. The
+  production build has no `StrictMode`, so only Freelens dev shows it.
 - **CSS variables do not reach SVG attributes or a canvas.** `fill` and
   `stroke` take them only through `style` ("Colours and themes").
 
@@ -914,6 +922,16 @@ Without the MCP server, a `playwright-core` script with
 script by exiting the process; do not close the browser, which belongs to
 Freelens.
 
+A profile of Freelens dev syncs no kubeconfig until one is added in
+"Kubeconfig Syncs" of the Kubernetes preferences, so its catalog lists none of
+the developer's clusters; `KUBECONFIG` does not change that. For the checks,
+add the kubeconfig of a lab, `.e2e/<profile>/kubeconfig`, which holds the lab's
+cluster alone. A fresh profile, in a `FREELENS_INTEGRATION_TESTING_DIR` under
+the system's temporary directory, can start with it already in place:
+`FreelensDev/lens-user-store.json` there seeds
+`preferences.syncKubeconfigEntries`, whose `filePath` is absolute ("Kubeconfig
+syncs of the dev profile" in Freelens's `DEVELOPMENT.md`).
+
 ### The local lab
 
 `e2e/` has two kind clusters with Karpenter objects, so that no check needs a
@@ -954,8 +972,9 @@ Safety, which every change to `e2e/` keeps:
    `dist/`.
 2. On the Extensions page, enter the checkout's directory and press
    "Install". Freelens then asks whether to load the extension in place;
-   confirm that too. The table lists the extension as "in place, unverified"
-   and enabled.
+   confirm that too. The table lists the extension as enabled, with
+   "development" in the version column and `Loaded from <directory>` in its
+   title.
 3. A rebuild, by `pnpm build` or by `pnpm dev` of the extension, reloads it
    once in the root frame and once in each cluster frame. `pnpm dev` rewrites
    only the entry whose sources changed, and the host waits up to 5 seconds
@@ -1002,6 +1021,13 @@ have a unique key", "Encountered two children with the same key"); they count
 as failures of the "no error in DevTools" check. The host's requests to the
 metrics API fail with 404 on the static lab, which has no metrics server;
 they are the host's, not the extension's.
+
+The renderer's requests to Kubernetes go through Chromium, which logs every
+response that is not a success as a console error,
+`Failed to load resource: the server responded with a status of N`, also one
+that the code that sent it handles. The text names no URL; the location of the
+message does. The 404 of the metrics API on the static lab is such an error;
+leave one out by its status and URL, not every "Failed to load resource".
 
 The main process logs to the terminal running Freelens, and to a file. On
 macOS it is `~/Library/Logs/Freelens/lens.log`, with the renderer's
