@@ -276,7 +276,7 @@ Results (2026-10-16, Roberto Bandini, on the build validated in Phase 5):
 1. EKS, read-only: as expected.
 2. AKS with node autoprovisioning: as expected.
 3. macOS and Windows, both themes: as expected.
-The labs of SPEC-0002 were also reviewed by hand in both themes.
+   The labs of SPEC-0002 were also reviewed by hand in both themes.
 
 ## Notes and deviations
 

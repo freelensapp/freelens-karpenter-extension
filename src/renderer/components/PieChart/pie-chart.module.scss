@@ -116,9 +116,7 @@
   border-radius: 6px;
   cursor: pointer;
   padding: 4px 8px;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
+  transition: border-color 0.15s, background 0.15s;
   &:hover {
     border-color: #f14668;
     background: #f1466822;
@@ -193,9 +191,7 @@
   padding: 3px 7px 3px 5px;
   cursor: pointer;
   user-select: none;
-  transition:
-    background 0.12s,
-    border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s;
 
   &:hover {
     background: rgba(0, 167, 225, 0.12);
