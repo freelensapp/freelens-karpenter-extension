@@ -107,8 +107,8 @@ const KARPENTER_REASONS = new Set(
 
 /**
  * An event is Karpenter's when its source or reporting component is, its object is a Karpenter kind or lives in a
- * Karpenter namespace, or its reason is one Karpenter writes (`FailedScheduling` of the scheduler included, as in
- * 1.0.1).
+ * Karpenter namespace, or its reason is one Karpenter writes. `FailedScheduling` of the scheduler counts too: a pod
+ * that does not fit is what Karpenter launches a node for.
  */
 export function isKarpenterEvent(event: KarpenterEvent): boolean {
   const source = (event.source?.component ?? "").toLowerCase();
@@ -218,7 +218,7 @@ export function buildBuckets(
   return [...buckets.entries()].sort(([a], [b]) => a - b).map(([t, counts]) => ({ t, counts }));
 }
 
-/** The reasons that add a node to its pool, and those that take it away (B11: `Finalized` of v1.15.0). */
+/** The reasons that add a node to its pool, and those that take it away (`Finalized` of v1.15.0). */
 const ADD_REASONS = new Set(["Launched", "DisruptionLaunched"]);
 const REMOVE_REASONS = new Set(["Finalized", "Terminated"]);
 

@@ -17,7 +17,7 @@ const showDetails = (selfLink: string) => (event: React.MouseEvent) => {
 
 const CAPACITY_TYPE_LABEL = { spot: "Spot", "on-demand": "On-Demand", unknown: "—" } as const;
 
-/** The Karpenter section of the host's Node details (C4); nothing for a node Karpenter does not manage. */
+/** The Karpenter section of the host's Node details; nothing for a node Karpenter does not manage. */
 export function NodeKarpenterDetails({
   object: node,
 }: Renderer.Component.KubeObjectDetailsProps<Renderer.K8sApi.Node>) {

@@ -11,7 +11,7 @@ export interface OverviewStats {
   notReady: number;
   provisioning: number;
   terminating: number;
-  /** Every NodePool, those without nodes included (C2). */
+  /** Every NodePool, those without nodes included. */
   poolCount: number;
   poolsReady: number;
   poolsNotReady: number;

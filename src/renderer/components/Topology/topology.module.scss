@@ -4,7 +4,7 @@
 // a canvas with rounded "chip" cells, the host's primary colour for active
 // controls, blue micro-dots for pods. The neutral colours are the host's theme
 // variables, layered with a little of the text colour, so that both themes
-// work (C1); the capacity and status colours are the same in both.
+// work; the capacity and status colours are the same in both.
 
 // A layer over the content colour: lighter in the dark theme, darker in the light one.
 @function layer($percent) {

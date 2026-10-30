@@ -112,7 +112,7 @@
   word-break: break-all;
   font-family: monospace;
   font-size: 11px;
-  // A light blue, darker in the light theme (C1).
+  // A light blue, darker in the light theme.
   color: color-mix(in srgb, #6ab0d4 75%, var(--textColorAccent));
 }
 
@@ -454,7 +454,7 @@
 
 // ── Grafana-style metric panels ──────────────────────────────────────────────
 //
-// The host's theme colours (C1): the header and tabs are layers of the text colour over the content colour.
+// The host's theme colours: the header and tabs are layers of the text colour over the content colour.
 
 .panelStack {
   display: flex;

@@ -38,13 +38,13 @@ export function nodeClassMetaItems(nodeClass: NodeClass): MetaItem[] {
     add("AMI Selectors", spec?.amiSelectorTerms?.length);
     add("Subnets", spec?.subnetSelectorTerms?.length);
     add("Security Groups", spec?.securityGroupSelectorTerms?.length);
-    // B4: `spec.kubelet` of karpenter.k8s.aws/v1.
+    // `spec.kubelet` of karpenter.k8s.aws/v1.
     if (hasSettings(spec?.kubelet)) add("Kubelet Config", "✓");
   } else {
     const spec = nodeClass.spec;
     add("Image Family", spec?.imageFamily);
     if (spec?.osDiskSizeGB != null) add("OS Disk", `${spec.osDiskSizeGB} GB`);
-    // B4: `spec.kubelet` of karpenter.azure.com, in v1beta1 and v1alpha2.
+    // `spec.kubelet` of karpenter.azure.com, in v1beta1 and v1alpha2.
     if (hasSettings(spec?.kubelet)) add("Kubelet Config", "✓");
   }
   return items;
@@ -56,7 +56,7 @@ function apiGroup(nodeClass: NodeClass): string {
 }
 
 /**
- * The NodePools whose `nodeClassRef` names this node class, by group, kind and name (B2).
+ * The NodePools whose `nodeClassRef` names this node class, by group, kind and name.
  * A reference without a group, which `karpenter.sh/v1` does not allow, matches by kind and name.
  */
 export function nodePoolsOfNodeClass(nodeClass: NodeClass, nodePools: NodePool[]): NodePool[] {
@@ -93,12 +93,12 @@ export function nodePoolRowValues(nodePool: NodePool): NodePoolRowValues {
   const memoryUsed = resources?.memory;
   return {
     cpuUsed: resources?.cpu ?? "—",
-    // B7: binary units, as the other tabs show memory.
+    // Binary units, as the other tabs show memory.
     memoryUsed: memoryUsed === undefined ? "—" : formatMemory(memoryUsed),
     limitCpu: nodePool.spec?.limits?.cpu ?? "—",
     limitMemory: nodePool.spec?.limits?.memory ?? "—",
     consolidation: nodePool.spec?.disruption?.consolidationPolicy ?? "—",
-    // B3: `spec.template.spec.expireAfter` of karpenter.sh/v1.
+    // `spec.template.spec.expireAfter` of karpenter.sh/v1.
     expireAfter: NodePool.getTemplateSpec(nodePool)?.expireAfter ?? "—",
   };
 }

@@ -685,7 +685,7 @@ export async function openTab(frame: Frame, tab: string, texts: (string | RegExp
 /**
  * Clicks an element and waits for the host's details drawer to show the title
  * (`Kind: name`), still open a moment later: a click that the drawer takes for
- * one outside itself closes the details it has just opened (B14). Checks that
+ * one outside itself closes the details it has just opened. Checks that
  * the drawer rendered no error page.
  */
 export async function clickAndExpectDetails(frame: Frame, target: Locator, title: RegExp) {

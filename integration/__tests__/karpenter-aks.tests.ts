@@ -78,8 +78,8 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
   // aborts its own second run under React.StrictMode.
   it("shows the Overview of the NodePools", async () => {
     // No Deployment, and no version in the CRDs. The NodePool has a card for
-    // its NodeClaim still waiting for its node; it sets no memory limit (B8),
-    // and the NodeOverlay that can apply to it is on its card (C5).
+    // its NodeClaim still waiting for its node; it sets no memory limit,
+    // and the NodeOverlay that can apply to it is on its card.
     await openTab(frame, "Overview", [
       "Karpenter installed",
       "azure",
@@ -95,13 +95,13 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
   });
 
   it("shows the node classes", async () => {
-    // The AKSNodeClass is served as v1beta1 (B1).
+    // The AKSNodeClass is served as v1beta1.
     await openTab(frame, "Node Classes", ["Node Classes", /^default\b/, "AKSNodeClass", "1 NodePool"]);
   });
 
   it("shows the scaling decisions", async () => {
-    // The events of the default namespace are Karpenter's (the namespaces of
-    // SPEC-0001).
+    // Karpenter writes the events of its cluster-scoped objects to the default
+    // namespace.
     await openTab(frame, "Scaling Decisions", [
       "Scaling decisions",
       "4 / 4 karpenter events",
@@ -111,7 +111,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
   });
 
   it("opens the details of the objects it links to, and they stay open", async () => {
-    // The row of the NodeClaim still waiting for its node (B14), and the
+    // The row of the NodeClaim still waiting for its node, and the
     // NodePool and the AKSNodeClass of its card. The sidebar link does not
     // leave the tab that is open, so the Overview is opened by its tab.
     await openTab(frame, "Overview", ["azure-pend1"]);

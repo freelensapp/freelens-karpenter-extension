@@ -30,7 +30,7 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
     },
   ].map((registration) => withPageErrorBoundary(this, registration));
 
-  // The Karpenter section of the host's Node details, after the host's own (C4).
+  // The Karpenter section of the host's Node details, after the host's own.
   kubeObjectDetailItems: Renderer.LensExtension["kubeObjectDetailItems"] = [
     Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, { Details: NodeKarpenterDetails }),
   ].map((registration) => withDetailsErrorBoundary(this, registration));

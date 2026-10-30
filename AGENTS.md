@@ -163,7 +163,6 @@ environment-tests/               # Probes for the per-environment programs
 build/                           # Vite plugins: host modules, standard decorators, CSS module declarations
 integration/__tests__/           # Integration tests, run against Freelens dev over CDP, and their shared module
 integration/fixtures/            # CRDs, objects and status of each Karpenter variant
-docs/specs/, docs/development/   # Specs, process and roadmap
 ```
 
 Build output goes to `dist/`: `main.js`, `renderer.js` and `renderer.css`, with
@@ -867,11 +866,11 @@ one app, and fails on any error logged by either process:
   app has and installs this checkout in place. It needs no cluster.
 - `karpenter-aws.tests.ts` and `karpenter-aks.tests.ts` are one session per
   Karpenter variant. Each opens every tab of the dashboard, the details that
-  the links of a card open, which must stay open (B14), and the details of the
-  kind cluster's own node, which Karpenter does not manage. Each tab checks
-  texts that only the variant's fixtures produce, several of them for a
-  numbered bug or improvement of a spec, named in a comment, and that the error
-  boundary rendered no error page. The Overview is the first view, because it
+  the links of a card open, which must stay open: a click that the drawer
+  takes for one outside itself would close them. Then the details of the kind
+  cluster's own node, which Karpenter does not manage. Each tab checks texts
+  that only the variant's fixtures produce, the reason named in a comment, and
+  that the error boundary rendered no error page. The Overview is the first view, because it
   is the one that loads the stores, and shows nothing when an effect breaks
   under `React.StrictMode`.
 
@@ -1069,18 +1068,6 @@ macOS it is `~/Library/Logs/Freelens/lens.log`, with the renderer's
 `lens-renderer-*.log` next to it; when the terminal is not at hand, it shows
 the extension's activation, its reloads and its own lines. Filter it as the
 console.
-
-## Specs and Process
-
-Changes of behaviour start from a spec in `docs/specs/`, written from
-`docs/specs/TEMPLATE.md` and approved by a maintainer before the code; the
-loop, the spec statuses and when to ask for manual testing are in
-`docs/development/PROCESS.md`, the milestones in `docs/development/ROADMAP.md`.
-A spec lists the tests at every level (unit, integration, functional on the
-fixtures of a variant, manual on a real cluster) and records in "Notes and
-deviations" what the implementation found. The bugs and improvements of a spec have numbers (B1-B14
-in SPEC-0001, C1-C6 in SPEC-0003), each with a test; a comment names the
-number where the code or a test depends on it.
 
 ## Code Style
 

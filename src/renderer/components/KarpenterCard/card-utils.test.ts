@@ -31,7 +31,7 @@ describe("formatUsage", () => {
     expect(formatUsage(47, 256, gi)).toBe("47.0Gi / 256.0Gi");
   });
 
-  it("shows a dash for a NodePool without a limit, not a zero limit (B8)", () => {
+  it("shows a dash for a NodePool without a limit, not a zero limit", () => {
     expect(formatUsage(47, undefined, gi)).toBe("47.0Gi / —");
     expect(formatUsage(47, 0, gi)).toBe("47.0Gi / 0.0Gi");
   });

@@ -78,8 +78,8 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
   it("shows the Overview of the NodePools", async () => {
     // The version is the image tag of the controller Deployment. Without nodes,
     // only general has a card, for its NodeClaim still waiting for its node;
-    // gpu and empty are folded as empty. general expires its nodes after 720h
-    // (B3), and the NodeOverlay that can apply to it is on its card (C5).
+    // gpu and empty are folded as empty. general expires its nodes after 720h,
+    // and the NodeOverlay that can apply to it is on its card.
     await openTab(frame, "Overview", [
       "Karpenter 1.15.1",
       "general",
@@ -96,8 +96,8 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
 
   it("shows the node classes", async () => {
     // A card names its node class next to a link arrow. The EC2NodeClass
-    // default has the NodePools general and empty only (B2) and kubelet
-    // settings (B4); gpu never expires its nodes (B3).
+    // default has the NodePools general and empty only and kubelet
+    // settings; gpu never expires its nodes.
     await openTab(frame, "Node Classes", [
       "Node Classes",
       /^default\b/,
@@ -109,8 +109,8 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
   });
 
   it("shows the scaling decisions", async () => {
-    // The events of the default namespace are Karpenter's (the namespaces of
-    // SPEC-0001). Finalized is the end of a NodeClaim (B11).
+    // Karpenter writes the events of its cluster-scoped objects to the default
+    // namespace. Finalized is the end of a NodeClaim.
     await openTab(frame, "Scaling Decisions", [
       "Scaling decisions",
       "15 / 15 karpenter events",
@@ -122,7 +122,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
   });
 
   it("opens the details of the objects it links to, and they stay open", async () => {
-    // The row of the NodeClaim still waiting for its node (B14), and the
+    // The row of the NodeClaim still waiting for its node, and the
     // NodePool and the EC2NodeClass of its card. The sidebar link does not leave the tab that is
     // open, so the Overview is opened by its tab.
     await openTab(frame, "Overview", ["general-pend1"]);

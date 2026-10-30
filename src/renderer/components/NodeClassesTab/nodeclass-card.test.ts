@@ -45,7 +45,7 @@ describe("nodeClassProvider", () => {
 });
 
 describe("nodeClassMetaItems", () => {
-  it("summarises an EC2NodeClass, its role and its kubelet settings (B4)", () => {
+  it("summarises an EC2NodeClass, its role and its kubelet settings", () => {
     const nodeClass = ec2("default", {
       amiFamily: "AL2023",
       role: "KarpenterNodeRole-lab",
@@ -71,7 +71,7 @@ describe("nodeClassMetaItems", () => {
     expect(nodeClassMetaItems(ec2("empty"))).toEqual([]);
   });
 
-  it("summarises an AKSNodeClass of v1beta1 and of v1alpha2 alike (B4)", () => {
+  it("summarises an AKSNodeClass of v1beta1 and of v1alpha2 alike", () => {
     for (const version of ["v1beta1", "v1alpha2"]) {
       const nodeClass = aks(
         "default",
@@ -86,7 +86,7 @@ describe("nodeClassMetaItems", () => {
     }
   });
 
-  it("does not read the v1beta1 name kubeletConfig (B4)", () => {
+  it("does not read the v1beta1 name kubeletConfig", () => {
     expect(nodeClassMetaItems(aks("a", { kubeletConfig: { maxPods: 10 } }))).toEqual([]);
     expect(nodeClassMetaItems(ec2("a", { kubeletConfig: { maxPods: 10 } }))).toEqual([]);
   });
@@ -103,7 +103,7 @@ describe("nodePoolsOfNodeClass", () => {
   ];
   const names = (nodeClass: NodeClass) => nodePoolsOfNodeClass(nodeClass, pools).map((np) => np.metadata.name);
 
-  it("matches a NodePool by the group, kind and name of its nodeClassRef (B2)", () => {
+  it("matches a NodePool by the group, kind and name of its nodeClassRef", () => {
     expect(names(ec2("default"))).toEqual(["general", "legacy"]);
     expect(names(aks("default"))).toEqual(["azure"]);
     expect(names(aks("default", {}, "v1alpha2"))).toEqual(["azure"]);
@@ -126,7 +126,7 @@ describe("countNodesByPool", () => {
 });
 
 describe("nodePoolRowValues", () => {
-  it("reads the resources, limits, consolidation and expiry of karpenter.sh/v1 (B3, B7)", () => {
+  it("reads the resources, limits, consolidation and expiry of karpenter.sh/v1", () => {
     const nodePool = pool("general", awsRef("default"), {
       spec: {
         limits: { cpu: "100", memory: "400Gi" },
@@ -145,7 +145,7 @@ describe("nodePoolRowValues", () => {
     });
   });
 
-  it("does not read the v1beta1 spec.disruption.expireAfter (B3), and shows a dash for what is not set", () => {
+  it("does not read the v1beta1 spec.disruption.expireAfter, and shows a dash for what is not set", () => {
     const nodePool = pool("p", awsRef("default"), { spec: { disruption: { expireAfter: "24h" } } });
     expect(nodePoolRowValues(nodePool)).toEqual({
       cpuUsed: "—",
