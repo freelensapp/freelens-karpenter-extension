@@ -50,8 +50,7 @@ and runs ahead of Freelens. Such an override gets a rule of its own, next to
 the catalog rule: `matchManagers: ["npm"]`, the override's key in
 `matchDepNames`, `overrideDatasource: "custom.freelens-catalog"`, the overridden
 package in `overridePackageName`, and the catalog rule's `rangeStrategy`,
-`minimumReleaseAge` and `groupName`
-(freelensapp/freelens-for-claude-extension@f2f49241828f201890423e070655c2dc04120b23).
+`minimumReleaseAge` and `groupName`.
 This repository has no override. What Freelens does not define (GitHub Actions, the
 tool versions in the workflows, `shx`) Renovate updates as usual.
 pnpm is the exception: Renovate updates it from the npm registry, in a pull
@@ -114,6 +113,7 @@ pnpm type:check                # All of the programs below, in this order
 pnpm type:check:sources        # main and renderer, each with src/common/
 pnpm type:check:tests          # Tests and test support
 pnpm type:check:tooling        # Vite and Vitest configs, build plugins
+pnpm type:check:integration    # Integration tests
 pnpm type:check:environments   # Environment tests
 
 # Linting & formatting
@@ -127,6 +127,7 @@ pnpm knip:check           # Unused files, unused and unlisted dependencies (knip
 
 # Tests
 pnpm test:unit            # vitest
+pnpm test:integration     # vitest, against Freelens dev with a kind cluster
 
 # Build
 pnpm build                # Both Vite runs, without the type check
@@ -134,11 +135,6 @@ pnpm dev                  # Both Vite runs in watch mode, for a directory instal
 
 # Pack for testing
 pnpm pack:dev             # Bump prerelease version, build, and create .tgz for install in Freelens app
-
-# Local lab (SPEC-0002, e2e/README.md)
-e2e/scripts/lab-up.sh static|live   # Create and fill a lab cluster (also refreshes the static events)
-e2e/scripts/lab-scale.sh 20 4       # live: scale the workloads, so Karpenter launches or consolidates
-e2e/scripts/lab-down.sh static|live # Delete a lab cluster
 
 # Clean
 pnpm clean                # Clean dist/
@@ -165,9 +161,8 @@ src/
 test/freelens-extensions.ts      # Stub of @freelensapp/extensions for the unit tests
 environment-tests/               # Probes for the per-environment programs
 build/                           # Vite plugins: host modules, standard decorators, CSS module declarations
-integration/__tests__/           # Integration tests, run inside a Freelens checkout, and their shared module
-e2e/                             # The local lab: kind clusters, fixtures, scripts (SPEC-0002)
-docs/specs/, docs/development/   # Specs, process and roadmap
+integration/__tests__/           # Integration tests, run against Freelens dev over CDP, and their shared module
+integration/fixtures/            # CRDs, objects and status of each Karpenter variant
 ```
 
 Build output goes to `dist/`: `main.js`, `renderer.js` and `renderer.css`, with
@@ -335,15 +330,15 @@ A new kind, or a new version of a kind, takes:
    and in the key of `data/use-dashboard-data.ts`; the getter in the
    `vi.mock("./stores")` of `use-dashboard-data.test.tsx`.
 4. **What the tabs show**, in a pure module with tests (see "Architecture").
-5. **The lab**: the CRD in `install_karpenter_crds` or
-   `install_provider_crds` of `e2e/scripts/lab-up.sh` if it is new, and an
-   object in `e2e/fixtures/static/`, numbered where it belongs; the list of
-   fixtures in SPEC-0002.
-6. **The integration test**: one text in `integration/__tests__/karpenter.tests.ts`
+5. **The fixtures**: the CRD in `crds/kustomization.yaml` of every variant
+   whose provider installs it, and an object in its `objects.yaml`, with its
+   status in `status.yaml`; a new variant is a new directory of
+   `integration/fixtures/` and a session of its own.
+6. **The integration test**: one text in the session of each such variant
    that only the new object makes the view show.
 
-Then check the result in Freelens ("Checking the Extension in Freelens") on
-both labs.
+Then check the result in Freelens ("Checking the Extension in Freelens") with
+every variant.
 
 ## Renderer Components
 
@@ -610,13 +605,14 @@ Main code runs in Node, renderer code in a browser page, and common code in
 both. Each is type-checked in a program of its own, so that an API the runtime
 does not have fails `pnpm type:check` rather than the extension:
 
-| Config                       | lib                       | types                 | Files                                                              |
-| ---------------------------- | ------------------------- | --------------------- | ------------------------------------------------------------------ |
-| `src/main/tsconfig.json`     | ES2024                    | `node`                | `src/main/`, `src/common/`                                         |
-| `src/renderer/tsconfig.json` | ES2024, DOM, DOM.Iterable | `vite/client`         | `src/renderer/`, `src/common/`                                     |
-| `src/common/tsconfig.json`   | ES2024, WebWorker         | none                  | `src/common/`                                                      |
-| `src/tsconfig.json`          | ES2024, DOM, DOM.Iterable | `node`, `vite/client` | `*.test.ts(x)` under `src/`, and `test/`                           |
-| `tsconfig.json`              | ES2024                    | `node`                | `vite.config.mjs`, `vitest.config.ts`, `svgo.config.mjs`, `build/` |
+| Config                       | lib                       | types                             | Files                                                              |
+| ---------------------------- | ------------------------- | --------------------------------- | ------------------------------------------------------------------ |
+| `src/main/tsconfig.json`     | ES2024                    | `node`                            | `src/main/`, `src/common/`                                         |
+| `src/renderer/tsconfig.json` | ES2024, DOM, DOM.Iterable | `vite/client`                     | `src/renderer/`, `src/common/`                                     |
+| `src/common/tsconfig.json`   | ES2024, WebWorker         | none                              | `src/common/`                                                      |
+| `src/tsconfig.json`          | ES2024, DOM, DOM.Iterable | `node`, `vite/client`             | `*.test.ts(x)` under `src/`, and `test/`                           |
+| `integration/tsconfig.json`  | ES2024, DOM, DOM.Iterable | `node`, `@freelensapp/extensions` | `integration/`                                                     |
+| `tsconfig.json`              | ES2024                    | `node`                            | `vite.config.mjs`, `vitest.config.ts`, `svgo.config.mjs`, `build/` |
 
 All of them extend `tsconfig.base.json`, which has the compiler options of
 Freelens's fixture extension: `strict`, `moduleResolution: Bundler`,
@@ -761,9 +757,9 @@ and there a path anchored at the repository root matches no file, so the
 override silently does nothing. A plain `biome check` matches both forms, so
 only `trunk check` shows the difference.
 
-In that sandbox, Biome also cannot apply `vcs.useIgnoreFile`: since 2.5.15 it
-matches every target against the repository's `.gitignore` and panics on a
-path outside the repository root, so every file fails. The Biome commands in
+In that sandbox, Biome also cannot apply `vcs.useIgnoreFile`: it matches every
+target against the repository's `.gitignore` and panics on a path outside the
+repository root, so every file fails. The Biome commands in
 `.trunk/trunk.yaml` pass `--vcs-use-ignore-file=false`, because Trunk applies
 `.gitignore` itself before it picks the targets; `biome.jsonc` keeps the
 setting on for `pnpm biome` and editors.
@@ -777,7 +773,7 @@ it for a manual edit and stop updating the branch.
 
 Biome formats SCSS, YAML and Markdown too, as in Freelens, so Trunk runs no
 Prettier, markdownlint or yamlfmt; yamllint still checks YAML. The manifests
-of the lab in `e2e/fixtures/` indent their sequences, as Biome does.
+in `integration/fixtures/` indent their sequences, as Biome does.
 `biome.jsonc` leaves out `pnpm-lock.yaml` and `pnpm-workspace.yaml`, which pnpm
 writes, and `.trunk/`, whose `trunk.yaml` `trunk upgrade` rewrites. Flow
 sequences keep no inner spaces (`yaml.formatter.bracketSpacing: false`), as
@@ -836,7 +832,7 @@ The workflows of the template:
 | `check.yaml`             | `pnpm build`, `pnpm lint:check`, `pnpm knip:check`                            |
 | `unit-tests.yaml`        | `pnpm test:unit`                                                              |
 | `trunk-check.yaml`       | `trunk check --all`                                                           |
-| `integration-tests.yaml` | the integration tests in `integration/`, against a Freelens build             |
+| `integration-tests.yaml` | the integration tests in `integration/`, against Freelens dev                 |
 | `mise-lock-check.yaml`   | on a change to `mise.lock`: no checksum changed for an unchanged tool version |
 
 The release workflows (`npm-version.yaml`, `tag.yaml`, `release.yaml`) are
@@ -852,118 +848,156 @@ type check for the same reason, so it does not run twice.
 
 ### Integration tests
 
-The integration tests run inside a Freelens checkout: the workflow builds the
-extension, packs it with a `.tgz.sha256` checksum next to the tarball, as the
-release publishes it, checks out and packages Freelens, starts the static lab
-of SPEC-0002 with `e2e/scripts/lab-up.sh static`, copies
-`integration/__tests__/` into `freelens/integration/__tests__/` and runs them
-there under Freelens's Vitest, with its helpers. Each test file is a session
-with an app of its own, which installs the tarball from the extensions page,
-and fails on any error logged by either process:
+The integration tests run in this repository, under its own Vitest
+(`vitest.integration.config.ts`, `pnpm test:integration`), against Freelens
+started with `pnpm dev` from a freelensapp/freelens checkout, as in the example
+extension. They attach to it with Playwright's `chromium.connectOverCDP` on the
+port that script opens (see "Checking the Extension in Freelens"), so they need
+no package of Freelens and no file of its checkout. `playwright` is a
+devDependency at the version of Freelens's catalog. The workflow builds the
+extension, checks out Freelens at each release tag of its matrix (`v2.0.0`),
+starts `pnpm dev` there in the background under `xvfb-run`, with its output in
+a file and a fresh profile in `FREELENS_INTEGRATION_TESTING_DIR`, which it seeds
+with a kubeconfig sync of the kind cluster alone, and runs
+`pnpm test:integration` here. Every test file is a session of its own on the
+one app, and fails on any error logged by either process:
 
-- `extensions.tests.ts` installs the extension. It needs no cluster.
-- `karpenter.tests.ts` opens the static lab and, in one `it` each, every tab
-  of the dashboard, the details of a Karpenter node, and the details its links
-  open (from the dashboard and from the node's details), which must stay open
-  (B14). Each checks texts that
-  only the fixtures of `e2e/fixtures/static/` produce (the NodePool `empty`,
-  a NodeOverlay, a disrupted node, the `Finalized` event, ...), several of them
-  for a bug of 1.0.1 or an improvement of SPEC-0003, named in a comment, and
-  that the error boundary rendered no error page. The session leaves out of
-  its error check only the host's requests to the metrics API, which the static
-  lab does not serve and the host's Nodes page asks for.
+- `extensions.tests.ts` uninstalls whatever installation of the extension the
+  app has and installs this checkout in place. It needs no cluster.
+- `karpenter-aws.tests.ts` and `karpenter-aks.tests.ts` are one session per
+  Karpenter variant. Each opens every tab of the dashboard, the details that
+  the links of a card open, which must stay open: a click that the drawer
+  takes for one outside itself would close them. Then the details of the kind
+  cluster's own node, which Karpenter does not manage. Each tab checks texts
+  that only the variant's fixtures produce, the reason named in a comment, and
+  that the error boundary rendered no error page. The Overview is the first view, because it
+  is the one that loads the stores, and shows nothing when an effect breaks
+  under `React.StrictMode`.
 
-The sessions only read the cluster: they create and delete nothing, and
-`clusterReady()` in `extension-helpers.ts` checks, read-only, that the kind
-cluster is up, has the fixtures and still has their events (the API server
-drops events an hour after they are written; `lab-up.sh static` writes them
-again). Outside CI a session skips with a warning when it is not; in CI (`CI`
-set) the run fails instead, so that a mistake in the workflow does not turn
-into a silent skip. `TEST_KIND_CLUSTER_NAME` names the kind cluster
-(`karpenter-lab-static` by default), and every kubectl call names its context,
-`kind-<name>`, so a run never acts on the current context. `EXTENSION_PATH`
-is the tarball to install.
+The tests check the views, not Karpenter: a session applies the CRDs of its
+variant and objects with their status, and nothing reconciles them. The
+fixtures are in `integration/fixtures/<variant>/`:
 
-The tests are deterministic, so the workflow does not retry them: it passes
-`--retry=0`, which overrides the `retry: 2` of Freelens's Vitest config, and
-runs the step once, under `timeout 600`.
+- `crds/kustomization.yaml`: the CRDs that the provider of the variant
+  installs, from `pkg/apis/crds/` of its newest release. Each provider ships
+  its own copy of the `karpenter.sh` CRDs, so the session has exactly what a
+  cluster of that variant has. A Renovate rule updates the release in the URLs.
+- `objects.yaml`: the node classes, NodePools, NodeOverlays, NodeClaims and
+  Karpenter's events. There are no nodes and no pods: without a kubelet a node
+  turns NotReady, and pods on it stay Pending. Without a node, the Overview
+  folds a NodePool into "+N empty"; a NodeClaim still waiting for its node
+  (`general-pend1`, `azure-pend1`) gives its NodePool a card. The events carry
+  no timestamps, so the API server dates them when they are applied, and the
+  extension takes `metadata.creationTimestamp` for their time. The AWS variant
+  has a controller Deployment scaled to zero, whose image gives the version;
+  AKS runs Karpenter outside the cluster, so it has none, and the dashboard
+  shows "Karpenter installed".
+- `status.yaml`: the status of those objects. The API server drops the status
+  of an object it creates, so the session applies it to the status
+  subresource.
 
-The code the sessions share is in `integration/__tests__/extension-helpers.ts`:
-starting the app with the error collector, installing the extension, opening
-the kind cluster, the dashboard, a tab and a node's details. Its name does not
-match `*.tests.ts`, so Freelens's Vitest does not collect it. The directory
-stays flat, because the workflow copies it with `cp integration/__tests__/*`.
-Freelens's helper `kindReady` deletes a namespace, so the sessions do not use
-it.
+The variants run one after another (`fileParallelism: false`), in no set
+order, because they share the `karpenter.sh` CRDs, and the app reads which
+CRDs are served when it connects. Each session disconnects the kind cluster,
+removes what an earlier run left (the namespace `integration-tests`, the
+events of `default` whose name starts with `integration-tests.`, and every
+CRD of the groups `karpenter.sh`, `karpenter.k8s.aws` and
+`karpenter.azure.com`), applies the CRDs, waits until they are established
+and their resources can be listed (until then a list answers 429, which the
+renderer logs), applies the objects and their status, and only then connects
+the cluster. Its teardown stops collecting the errors first, then disconnects
+the cluster, so that the app logs no watch error for a CRD deleted under it,
+then deletes the objects and the CRDs with `--wait`, also when a test failed.
+Only the newest version of each variant is tested, even where the code still
+reads an older one.
 
-To run them locally: start the static lab, build and package Freelens
-(`pnpm build && pnpm build:app:dir` in the Freelens checkout), pack the
-extension, copy `integration/__tests__/*` into the Freelens checkout as the
-workflow does, and run `pnpm test:integration --retry=0` there with
-`EXTENSION_PATH` and a `HOME` whose `.kube/config` is the
-lab's kubeconfig only. Freelens reads the default kubeconfig folder from the
-user's home directory in the system's user database, not from `HOME`, so on a
-machine with other clusters run the app in a sandbox where that directory
-holds only the lab's kubeconfig.
+A session leaves out of its error check only the host's requests to the
+metrics API (`hostMetricsRequestPattern`), which kind does not serve and the
+host's views of pods and nodes ask for. The details of the kind node are
+opened with `Renderer.Navigation.showDetails`, not from the host's Nodes page.
+The link of the dashboard in the sidebar does not leave the tab that is open,
+and a link of a card opens the host's list page of the kind, so `openTab`
+opens the dashboard from the sidebar first when its tab bar is not shown.
+
+The sessions reach the app through its renderer only, as in the example
+extension: they navigate with `Renderer.Navigation.navigate`, find the kind
+cluster in `Renderer.Catalog.catalogEntities` by its name, `kind-<name>`, and
+disconnect it with the entity's `disconnect()`. The renderer's console carries
+the errors of every frame; the main log is read from the file that
+`FREELENS_MAIN_LOG` names, every line that starts with `error:` counting,
+except the Kubernetes proxy's `Error while proxying request: context
+canceled`, which `React.StrictMode` causes. Without the variable only the
+renderer is checked. Freelens dev runs the development build of React, which
+reports what the production build does not, such as a text node inside a
+`<colgroup>`.
+
+The code the sessions share is in `integration/__tests__/extension-helpers.ts`.
+Its name does not match `*.tests.ts`, so Vitest does not collect it.
+`integration/tsconfig.json` compiles the directory with Node and the DOM,
+because the callbacks of `page.evaluate` run in the page, and with the types
+of `@freelensapp/extensions`, which declare `globalThis.FreelensExtensionApi`.
+
+`FREELENS_CDP_URL` is the CDP endpoint (`http://127.0.0.1:9223` by default),
+`FREELENS_MAIN_LOG` the main log, and `TEST_KIND_CLUSTER_NAME` names the kind
+cluster (`kind` by default, `freelens` in the workflow); every kubectl call
+names its context, `kind-<name>`, so a run never acts on the current context.
+Outside CI a session skips with a warning when Freelens dev does not answer or
+the cluster is not reachable; in CI (`CI` set) the run fails instead. The tests
+are deterministic, so nothing retries them.
+
+Run locally, the tests act on the profile of Freelens dev, which lists the
+kind cluster only once its kubeconfig is in "Kubeconfig Syncs". They leave this
+checkout installed in place and the kind cluster disconnected, and touch no
+other cluster of the catalog. A run deletes every Karpenter CRD on the kind
+cluster, and with them every Karpenter object: run it only against a kind
+cluster with nothing worth keeping.
 
 ## Checking the Extension in Freelens
 
-The functional checks of a change run against Freelens, started with
-`pnpm dev` from a freelensapp/freelens checkout or from a packaged build, and
-the local lab. `pnpm dev` of Freelens starts Electron with
+The functional checks of a change run against Freelens started with
+`pnpm dev` from a freelensapp/freelens checkout, and a kind cluster with the
+fixtures of a variant. `pnpm dev` of Freelens starts Electron with
 `--remoteDebuggingPort 9223`, so an agent can drive the app over the Chrome
 DevTools Protocol. How to attach Playwright MCP to it is in Freelens's
 `DEVELOPMENT.md`, "Inspecting the running dev app from an AI agent"; start
 Freelens before the session connects. Playwright MCP writes its snapshots to
 `.playwright-mcp/`, which is git-ignored.
 
-Without the MCP server, a `playwright-core` script with
-`chromium.connectOverCDP("http://127.0.0.1:9223")` does the same. End such a
-script by exiting the process; do not close the browser, which belongs to
-Freelens.
+Without the MCP server, a script with
+`chromium.connectOverCDP("http://127.0.0.1:9223")` of `playwright`, a
+devDependency, does the same, as the integration tests do. `browser.close()`
+of such a browser closes only the connection; the app belongs to Freelens and
+keeps running.
 
 A profile of Freelens dev syncs no kubeconfig until one is added in
 "Kubeconfig Syncs" of the Kubernetes preferences, so its catalog lists none of
 the developer's clusters; `KUBECONFIG` does not change that. For the checks,
-add the kubeconfig of a lab, `.e2e/<profile>/kubeconfig`, which holds the lab's
-cluster alone. A fresh profile, in a `FREELENS_INTEGRATION_TESTING_DIR` under
-the system's temporary directory, can start with it already in place:
+add a kubeconfig with the kind cluster alone, such as the output of
+`kubectl config view --minify --flatten --context kind-kind`. A fresh profile,
+in a `FREELENS_INTEGRATION_TESTING_DIR` under the system's temporary
+directory, can start with it already in place:
 `FreelensDev/lens-user-store.json` there seeds
 `preferences.syncKubeconfigEntries`, whose `filePath` is absolute ("Kubeconfig
 syncs of the dev profile" in Freelens's `DEVELOPMENT.md`).
 
-### The local lab
+### A variant on the kind cluster
 
-`e2e/` has two kind clusters with Karpenter objects, so that no check needs a
-cloud account (SPEC-0002, `e2e/README.md`):
+The fixtures of the integration tests are also the cluster of the functional
+checks and the screenshots. One variant at a time, as the tests do, with the
+cluster disconnected in Freelens while the CRDs change:
 
-- `static` (`karpenter-lab-static`): the Karpenter, EC2NodeClass and
-  AKSNodeClass CRDs and the numbered fixtures of `e2e/fixtures/static/`, with
-  written status and events, and no controller. Deterministic: the integration
-  tests and the screenshots use it. `e2e/scripts/lab-aks-v1alpha2.sh on` also
-  serves AKSNodeClass `v1alpha2`.
-- `live` (`karpenter-lab-live`): Karpenter 1.15.0 with its KWOK cloud provider,
-  in `kube-system` as its chart installs it, and workloads that
-  `e2e/scripts/lab-scale.sh` scales, so that Karpenter launches and
-  consolidates nodes and writes real events.
+```bash
+kubectl --context kind-kind apply --server-side -k integration/fixtures/aws/crds
+kubectl --context kind-kind wait --for=condition=Established crd --all
+kubectl --context kind-kind apply --server-side -f integration/fixtures/aws/objects.yaml
+kubectl --context kind-kind apply --server-side --subresource=status -f integration/fixtures/aws/status.yaml
 
-Safety, which every change to `e2e/` keeps:
+kubectl --context kind-kind delete -f integration/fixtures/aws/objects.yaml
+kubectl --context kind-kind delete -k integration/fixtures/aws/crds
+```
 
-- Each profile has its own kubeconfig, `.e2e/<profile>/kubeconfig`, written by
-  `kind create cluster --kubeconfig`; the scripts set `KUBECONFIG` to that file
-  only and name the context on every `kubectl` and `helm` call. They never read
-  or write the user's kubeconfig and never act on its current context; the
-  guard in `e2e/scripts/lib.sh` stops a script whose context is not a lab's.
-- Point Freelens at the lab's kubeconfig only. Freelens reads the default
-  kubeconfig folder from the user's home directory in the system's user
-  database, not from `HOME`, so on a machine with production contexts start the
-  app with a user data directory (`FREELENS_INTEGRATION_TESTING_DIR`) whose
-  preferences sync only the lab's kubeconfig, or in a sandbox.
-- Karpenter's own `make` targets for kind act on the current context; the lab
-  does not use them.
-- The static fixtures of nodes, NodeClaims, NodePool status and pods are
-  generated by `e2e/fixtures/static/gen-fixtures.py`; change the generator and
-  run it, rather than editing those files.
+The API server drops events an hour after they are created; apply
+`objects.yaml` again for fresh ones.
 
 ### Installing the checkout
 
@@ -1005,10 +1039,10 @@ Safety, which every change to `e2e/` keeps:
 - The theme is the preference `colorTheme` of the user store,
   `lens-user-store.json`: the name of a theme, `Light` or `Dark` (the host
   keys its themes by name, not by id), or none to follow the system. A change
-  to colours is checked with every tab of both labs in both themes.
+  to colours is checked with every tab of every variant in both themes.
 - A view that must follow the cluster is checked with the tab left open while
-  `lab-scale.sh` scales the live lab: the counts, charts and tables change
-  without leaving the tab.
+  objects of the variant are applied, changed or deleted: the counts, charts
+  and tables change without leaving the tab.
 
 ### Reading the console
 
@@ -1019,14 +1053,14 @@ lines, and never paste the full console into a PR, an issue or a report.
 React reports key problems as console errors ("Each child in a list should
 have a unique key", "Encountered two children with the same key"); they count
 as failures of the "no error in DevTools" check. The host's requests to the
-metrics API fail with 404 on the static lab, which has no metrics server;
+metrics API fail with 404 on a kind cluster, which has no metrics server;
 they are the host's, not the extension's.
 
 The renderer's requests to Kubernetes go through Chromium, which logs every
 response that is not a success as a console error,
 `Failed to load resource: the server responded with a status of N`, also one
 that the code that sent it handles. The text names no URL; the location of the
-message does. The 404 of the metrics API on the static lab is such an error;
+message does. The 404 of the metrics API on kind is such an error;
 leave one out by its status and URL, not every "Failed to load resource".
 
 The main process logs to the terminal running Freelens, and to a file. On
@@ -1034,18 +1068,6 @@ macOS it is `~/Library/Logs/Freelens/lens.log`, with the renderer's
 `lens-renderer-*.log` next to it; when the terminal is not at hand, it shows
 the extension's activation, its reloads and its own lines. Filter it as the
 console.
-
-## Specs and Process
-
-Changes of behaviour start from a spec in `docs/specs/`, written from
-`docs/specs/TEMPLATE.md` and approved by a maintainer before the code; the
-loop, the spec statuses and when to ask for manual testing are in
-`docs/development/PROCESS.md`, the milestones in `docs/development/ROADMAP.md`.
-A spec lists the tests at every level (unit, integration, functional on the
-lab, manual on a real cluster) and records in "Notes and deviations" what the
-implementation found. Each bug of 1.0.1 found during the v2 port has a number
-(B1-B13 in SPEC-0001) and a test; a comment names it where the code or a test
-depends on it.
 
 ## Code Style
 

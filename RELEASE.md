@@ -74,8 +74,8 @@ Before starting the release, verify that the following workflows are green on
 - `Type check` — every TypeScript program, tests and tooling included.
 - `Check` — build, lint, and Knip checks.
 - `Unit tests` and `Trunk Check`.
-- `Integration tests` — the extension installed in Freelens and every tab
-  checked against the static lab.
+- `Integration tests` — the extension installed in Freelens dev and every tab
+  checked with each Karpenter variant.
 - `Automated npm audit` — no outstanding critical vulnerabilities.
 
 ## Versions and Freelens

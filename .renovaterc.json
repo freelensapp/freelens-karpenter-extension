@@ -188,6 +188,15 @@
         "(\\s+|.*?@)(?<currentValue>\\S+?)!?\\s*#\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(\\s+versioning=(?<versioning>\\S+))?(\\s+registryUrl=(?<registryUrl>\\S+))?\\s*\\n"
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "description": "The release of a Karpenter provider whose CRDs the integration tests install, in the raw URLs of the CRDs of its variant.",
+      "customType": "regex",
+      "managerFilePatterns": ["/^integration\\/fixtures\\/[^/]+\\/crds\\/kustomization\\.yaml$/"],
+      "matchStrings": [
+        "https://raw\\.githubusercontent\\.com/(?<depName>[^/]+/[^/]+)/refs/tags/(?<currentValue>v[^/]+)/"
+      ],
+      "datasourceTemplate": "github-releases"
     }
   ]
 }

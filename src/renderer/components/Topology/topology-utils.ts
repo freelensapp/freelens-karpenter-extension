@@ -85,7 +85,7 @@ export function getNodeCapacityType(node: Node): "spot" | "on-demand" | "unknown
     labels["eks.amazonaws.com/capacityType"]?.toLowerCase() ||
     "";
   if (v === "spot") return "spot";
-  // EKS managed node groups label ON_DEMAND (B9).
+  // EKS managed node groups label ON_DEMAND.
   if (v === "on-demand" || v === "on_demand" || v === "ondemand") return "on-demand";
   return "unknown";
 }

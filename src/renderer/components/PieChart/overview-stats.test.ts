@@ -29,7 +29,7 @@ const node = (name: string, poolName: string | undefined, ready: "True" | "False
   }) as unknown as Node;
 
 describe("computeOverviewStats", () => {
-  it("counts every NodePool, those without nodes included (C2), and the nodes by status", () => {
+  it("counts every NodePool, those without nodes included, and the nodes by status", () => {
     const pools = [pool("general", "True"), pool("gpu", "False"), pool("azure", "True"), pool("empty", "True")];
     const nodes = [
       node("a", "general", "True"),

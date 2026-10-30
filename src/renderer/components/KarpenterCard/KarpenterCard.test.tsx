@@ -41,7 +41,7 @@ const node = {
 afterEach(cleanup);
 
 describe("KarpenterCard", () => {
-  it("says that the NodePool has no events, with a refresh and without the debug table (C3)", () => {
+  it("says that the NodePool has no events, with a refresh and without the debug table", () => {
     render(<KarpenterCard nodePool={nodePool} nodes={[node]} />);
 
     fireEvent.click(screen.getByTitle("Toggle scaling event history"));

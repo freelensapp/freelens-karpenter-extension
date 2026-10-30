@@ -38,7 +38,7 @@ import {
 
 import type { Node } from "../../utils/kube-helpers";
 
-// The neutral colours of the theme (C1), as `style` values: SVG presentation attributes take no CSS variables.
+// The neutral colours of the theme, as `style` values: SVG presentation attributes take no CSS variables.
 const CHIP_LAYER = (percent: number) => `color-mix(in srgb, var(--textColorAccent) ${percent}%, var(--contentColor))`;
 const TINT = (percent: number) => `color-mix(in srgb, var(--textColorAccent) ${percent}%, transparent)`;
 

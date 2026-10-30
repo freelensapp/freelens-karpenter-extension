@@ -1,4 +1,4 @@
-// What the Karpenter item of the host's Node details shows (C4): pure, from the node's own labels, annotations
+// What the Karpenter item of the host's Node details shows: pure, from the node's own labels, annotations
 // and taints, so that it needs no store.
 
 import { getNodeCapacityType, getNodeZone } from "../components/Topology/topology-utils";

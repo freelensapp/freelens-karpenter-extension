@@ -54,7 +54,7 @@ export const COLOR = {
   /** A gray for data (chart series, event dots) that shows on the background of either theme */
   neutral: "#9e9e9e",
 
-  /** The neutral colours of the host's theme (C1), for CSS: not for SVG attributes or a canvas */
+  /** The neutral colours of the host's theme, for CSS: not for SVG attributes or a canvas */
   border: "var(--borderColor)",
   borderFaint: "var(--borderFaintColor)",
   textPrimary: "var(--textColorAccent)",

@@ -1,0 +1,134 @@
+# The status of the objects in objects.yaml, applied to the status subresource.
+apiVersion: karpenter.azure.com/v1beta1
+kind: AKSNodeClass
+metadata:
+  name: default
+status:
+  kubernetesVersion: 1.33.2
+  images:
+    - id: /CommunityGalleries/AKSAzureLinux-f7c7cda5-1c9a-4bdc-a222-9614c968580b/images/V3gen2/versions/202610.01.0
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: [amd64]
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: azure
+status:
+  nodes: 2
+  nodeClassObservedGeneration: 1
+  resources:
+    cpu: "12"
+    memory: 49284200Ki
+    pods: "100"
+    nodes: "2"
+    ephemeral-storage: "0"
+  conditions:
+    - type: ValidationSucceeded
+      status: "True"
+      reason: ValidationSucceeded
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeClassReady
+      status: "True"
+      reason: NodeClassReady
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeRegistrationHealthy
+      status: "True"
+      reason: NodeRegistrationHealthy
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: azure-a1b2c
+status:
+  nodeName: aks-azure-a1b2c-12345678-vmss000000
+  providerID: azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mc_lab/providers/Microsoft.Compute/virtualMachines/azure-a1b2c
+  imageID: AKSAzureLinux-V3gen2-202610.01.0
+  capacity:
+    cpu: "4"
+    memory: 16393220Ki
+    pods: "50"
+    ephemeral-storage: 20Gi
+  allocatable:
+    cpu: 3920m
+    memory: 14753898Ki
+    pods: "50"
+    ephemeral-storage: 18Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: "True"
+      reason: Initialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: azure-d3e4f
+status:
+  nodeName: aks-azure-d3e4f-12345678-vmss000001
+  providerID: azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mc_lab/providers/Microsoft.Compute/virtualMachines/azure-d3e4f
+  imageID: AKSAzureLinux-V3gen2-202610.01.0
+  capacity:
+    cpu: "8"
+    memory: 32890980Ki
+    pods: "50"
+    ephemeral-storage: 20Gi
+  allocatable:
+    cpu: 7920m
+    memory: 29601882Ki
+    pods: "50"
+    ephemeral-storage: 18Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: "True"
+      reason: Initialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"

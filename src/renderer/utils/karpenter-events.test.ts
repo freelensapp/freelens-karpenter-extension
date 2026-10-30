@@ -120,7 +120,7 @@ describe("isKarpenterEvent", () => {
     expect(isKarpenterEvent(event({ reason: "X", kind: "Deployment", namespace: "karpenter" }))).toBe(true);
     expect(isKarpenterEvent(event({ reason: "Nominated", kind: "Pod" }))).toBe(true);
     expect(isKarpenterEvent(event({ reason: "Finalized", kind: "Node" }))).toBe(true);
-    // FailedScheduling of the scheduler, as 1.0.1 shows it
+    // FailedScheduling of the scheduler: the pod Karpenter launches a node for
     expect(isKarpenterEvent(event({ reason: "FailedScheduling", kind: "Pod", source: "default-scheduler" }))).toBe(
       true,
     );
@@ -231,7 +231,7 @@ describe("nodeCountTimeline", () => {
     expect(counts(result.general!)).toEqual([2, 2, 2, 2, 2, 2, 2]);
   });
 
-  it("adds a node at its launch and removes it at Finalized (B11), anchored at the live count", () => {
+  it("adds a node at its launch and removes it at Finalized, anchored at the live count", () => {
     const result = timeline(
       [node("a", "general", "general-a"), node("c", "general", "general-c")],
       [

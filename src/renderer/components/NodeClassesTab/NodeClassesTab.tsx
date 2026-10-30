@@ -104,15 +104,24 @@ const NodeClassCard = observer(({ nodeClass }: { nodeClass: NodeClass }) => {
           ) : (
             <table className={style.poolsTable}>
               <colgroup>
-                <col style={{ width: "20%" }} /> {/* NodePool */}
-                <col style={{ width: "10%" }} /> {/* Status */}
-                <col style={{ width: "6%" }} /> {/* Nodes */}
-                <col style={{ width: "10%" }} /> {/* CPU Used */}
-                <col style={{ width: "12%" }} /> {/* Memory Used */}
-                <col style={{ width: "14%" }} /> {/* Limits */}
-                <col style={{ width: "16%" }} /> {/* Consolidation */}
-                <col style={{ width: "10%" }} /> {/* Expire After */}
-                <col style={{ width: "2%" }} /> {/* arrow */}
+                {/* NodePool */}
+                <col style={{ width: "20%" }} />
+                {/* Status */}
+                <col style={{ width: "10%" }} />
+                {/* Nodes */}
+                <col style={{ width: "6%" }} />
+                {/* CPU Used */}
+                <col style={{ width: "10%" }} />
+                {/* Memory Used */}
+                <col style={{ width: "12%" }} />
+                {/* Limits */}
+                <col style={{ width: "14%" }} />
+                {/* Consolidation */}
+                <col style={{ width: "16%" }} />
+                {/* Expire After */}
+                <col style={{ width: "10%" }} />
+                {/* arrow */}
+                <col style={{ width: "2%" }} />
               </colgroup>
               <thead>
                 <tr>

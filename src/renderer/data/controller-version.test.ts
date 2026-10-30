@@ -74,7 +74,7 @@ describe("fetchControllerVersion", () => {
   const helm = deployment("karpenter", ["public.ecr.aws/karpenter/controller:1.15.0"]);
   const renamed = deployment("autoscaler", ["example.com/karpenter-kwok:v1.14.2"]);
 
-  it("finds the Deployment by its label in any namespace, whatever its name (C6)", async () => {
+  it("finds the Deployment by its label in any namespace, whatever its name", async () => {
     const list = vi.fn(async (namespace?: string, labelSelector?: string) =>
       namespace === undefined && labelSelector === controllerLabelSelector ? [renamed] : [],
     );

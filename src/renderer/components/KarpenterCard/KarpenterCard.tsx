@@ -479,7 +479,7 @@ function CardInfoBar({
   );
 }
 
-/** The NodeOverlays that can apply to the NodePool's nodes, the one that takes precedence first (C5). */
+/** The NodeOverlays that can apply to the NodePool's nodes, the one that takes precedence first. */
 const NodeOverlayMeta = observer(function NodeOverlayMeta({ nodePool }: { nodePool: NodePool }) {
   const overlays = NodeOverlay.forNodePool(getNodeOverlayStore()?.items ?? [], nodePool);
   if (overlays.length === 0) return null;

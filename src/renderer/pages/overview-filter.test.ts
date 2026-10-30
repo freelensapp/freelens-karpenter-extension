@@ -130,7 +130,7 @@ describe("selectVisibleNodePools", () => {
     expect(selectVisibleNodePools(pools, nodes, claims, parseSearchTokens(""), [], false, later).emptyCount).toBe(2);
   });
 
-  it("shows the NodePools without nodes that a filter on the status of the NodePools matches (C2)", () => {
+  it("shows the NodePools without nodes that a filter on the status of the NodePools matches", () => {
     expect(names(false, "poolstatus:notready")).toEqual(["broken"]);
     expect(names(false, "poolstatus:ready")).toEqual(["general", "gpu", "empty"]);
     expect(names(false, "general")).toEqual(["general"]);

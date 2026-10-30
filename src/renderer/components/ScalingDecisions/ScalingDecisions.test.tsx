@@ -94,7 +94,7 @@ describe("ScalingDecisions", () => {
     expect(screen.queryByText("Pulled web-1")).toBeNull();
   });
 
-  it("follows the stores while it is open (B12)", () => {
+  it("follows the stores while it is open", () => {
     runInAction(() => {
       nodePools.replace([pool("general")]);
       nodes.replace([node("n1", "general", "general-a")]);

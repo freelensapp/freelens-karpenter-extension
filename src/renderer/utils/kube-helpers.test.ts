@@ -70,7 +70,7 @@ describe("getNodeStatus", () => {
   });
 
   it.each(["karpenter.sh/disrupted", "karpenter.sh/disruption"])(
-    "is Terminating for a Karpenter node with the disruption taint %s (B13)",
+    "is Terminating for a Karpenter node with the disruption taint %s",
     (key) => {
       const n = node({ ready: "False", labels: karpenter, taints: [{ key, effect: "NoSchedule" }] });
       expect(getNodeStatus(n, created + 60 * 60_000)).toBe("Terminating");
@@ -169,7 +169,7 @@ describe("detailUrl", () => {
 });
 
 describe("formatMemory", () => {
-  it("shows a quantity in Gi, or in Mi below 1Gi (B7)", () => {
+  it("shows a quantity in Gi, or in Mi below 1Gi", () => {
     expect(formatMemory("59687568Ki")).toBe("56.9Gi");
     expect(formatMemory("524288Ki")).toBe("512Mi");
     expect(formatMemory("2048Mi")).toBe("2.0Gi");

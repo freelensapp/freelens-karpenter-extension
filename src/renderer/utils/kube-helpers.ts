@@ -42,7 +42,7 @@ export function getNodeClassStatus(nodeClass: { status?: { conditions?: Conditio
   return getConditionStatus(nodeClass.status?.conditions, "Ready");
 }
 
-/** The taint of a node Karpenter disrupts: `karpenter.sh/disrupted` of v1, `karpenter.sh/disruption` before (B13). */
+/** The taint of a node Karpenter disrupts: `karpenter.sh/disrupted` of v1, `karpenter.sh/disruption` before. */
 export const DISRUPTION_TAINTS = ["karpenter.sh/disrupted", "karpenter.sh/disruption"];
 
 /** The taints the kubelet sets while a node is starting. */

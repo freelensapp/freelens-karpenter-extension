@@ -69,7 +69,7 @@ describe("node classification", () => {
     expect(getNodeCapacityType(node("a", { labels: { "karpenter.k8s.aws/capacity-type": "on-demand" } }))).toBe(
       "on-demand",
     );
-    // B9: EKS managed node groups label ON_DEMAND.
+    // EKS managed node groups label ON_DEMAND.
     expect(getNodeCapacityType(node("a", { labels: { "eks.amazonaws.com/capacityType": "ON_DEMAND" } }))).toBe(
       "on-demand",
     );

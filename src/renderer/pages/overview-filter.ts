@@ -118,7 +118,7 @@ export function nodePoolMatchesFilter(
 /**
  * The NodePools the list shows, and the number of NodePools without nodes or pending NodeClaims. Those are left
  * out unless they are asked for, or the filter is on the status of the NodePools, which the NodePool figures of
- * the Overview count with or without nodes (C2).
+ * the Overview count with or without nodes.
  */
 export function selectVisibleNodePools(
   nodePools: NodePool[],
