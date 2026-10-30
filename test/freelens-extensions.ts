@@ -28,8 +28,9 @@ class LensExtensionKubeObject {
     return this.metadata?.name ?? "";
   }
 
+  // An empty namespace is undefined, as the host's.
   getNs() {
-    return this.metadata?.namespace;
+    return this.metadata?.namespace || undefined;
   }
 
   // The host returns the store it registered for one of the class's
