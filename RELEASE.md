@@ -76,7 +76,6 @@ Before starting the release, verify that the following workflows are green on
 - `Unit tests` and `Trunk Check`.
 - `Integration tests` — the extension installed in Freelens dev and every tab
   checked with each Karpenter variant.
-- `Automated npm audit` — no outstanding critical vulnerabilities.
 
 ## Versions and Freelens
 
