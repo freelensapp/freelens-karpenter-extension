@@ -32,8 +32,9 @@ What is included. What is explicitly excluded, and where it goes instead.
 ## Tests (non-regression list)
 
 - Unit: `<test file>`: `<cases>`
-- Integration: `<what the harness asserts>`
-- Functional (lab, Freelens dev over CDP): `<scenario>`
+- Integration: `<what the session of each Karpenter variant asserts>`
+- Functional (Freelens dev over CDP, the fixtures of a variant on kind):
+  `<scenario>`
 - Manual verification (if any): exact steps, expected outcome, and the
   recorded result (date, tester).
 

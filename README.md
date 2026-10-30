@@ -202,19 +202,21 @@ restarted once.
 To check the extension in Freelens with an AI agent, see "Checking the
 Extension in Freelens" in [AGENTS.md](AGENTS.md).
 
-### A local Karpenter lab
+### Karpenter objects on a kind cluster
 
-[`e2e/`](e2e/README.md) creates kind clusters with Karpenter objects, so you
-can work on the extension without a cloud account: a `static` one with fixed
-objects and events, and a `live` one where Karpenter, with its KWOK cloud
-provider, launches and removes nodes as workloads scale. Each has its own
-kubeconfig; the scripts never touch yours.
+The fixtures of the integration tests give a [kind](https://kind.sigs.k8s.io/)
+cluster the CRDs and objects of one Karpenter variant, `aws` or `aks`, without
+a controller, so you can work on the extension without a cloud account:
 
 ```sh
-e2e/scripts/lab-up.sh static
-e2e/scripts/lab-up.sh live
-e2e/scripts/lab-scale.sh 20 4   # live: scale the workloads up, or down
+kubectl --context kind-kind apply --server-side -k integration/fixtures/aws/crds
+kubectl --context kind-kind wait --for=condition=Established crd --all
+kubectl --context kind-kind apply --server-side -f integration/fixtures/aws/objects.yaml
+kubectl --context kind-kind apply --server-side --subresource=status -f integration/fixtures/aws/status.yaml
 ```
+
+Remove them with `kubectl delete -f` of `objects.yaml` and `kubectl delete -k`
+of `crds`, before you apply another variant.
 
 ### Check the code
 
@@ -231,8 +233,44 @@ and, for the formats that Biome does not cover:
 pnpm trunk:check
 ```
 
-The integration tests run inside a Freelens checkout against the `static`
-lab; see "Integration tests" in [AGENTS.md](AGENTS.md).
+### Integration tests
+
+The integration tests drive Freelens dev, started from a
+[freelensapp/freelens](https://github.com/freelensapp/freelens) checkout,
+against a kind cluster. In the Freelens checkout:
+
+```sh
+pnpm dev
+```
+
+Freelens dev lists no cluster until a kubeconfig is added in Preferences >
+Kubernetes > Kubeconfig Syncs. Add one with the kind cluster, for example:
+
+```sh
+kubectl config view --minify --flatten --context kind-kind > ~/kind-kind.kubeconfig
+```
+
+Then, with the kind cluster running, in the extension repository:
+
+```sh
+pnpm build
+pnpm test:integration
+```
+
+The tests install the checkout in place, replacing any other installation of
+the extension in Freelens dev. They delete every Karpenter CRD on the kind
+cluster, and with it every Karpenter object, so use a kind cluster with
+nothing worth keeping. Without Freelens dev or the cluster the tests are
+skipped.
+
+Optional variables:
+
+- `TEST_KIND_CLUSTER_NAME`: the kind cluster, `kind` by default, used
+  through the context `kind-<name>`.
+- `FREELENS_CDP_URL`: the CDP endpoint of Freelens dev,
+  `http://127.0.0.1:9223` by default.
+- `FREELENS_MAIN_LOG`: a log of the main process to check for errors. Without
+  it only the renderer's errors are checked.
 
 ### Testing the extension with unpublished Freelens
 

@@ -17,8 +17,9 @@ agent.
    change, the spec is updated in the same pull request and the change is
    called out in its description.
 4. **Tests are part of the feature.** A feature without the tests its spec
-   lists is not done. The test levels and the local lab are in
-   [SPEC-0002](../specs/SPEC-0002-local-lab.md).
+   lists is not done. The test levels are in [TEMPLATE.md](../specs/TEMPLATE.md),
+   the integration tests and the fixtures of each Karpenter variant in
+   "Integration tests" of `AGENTS.md`.
 5. **Docs in the same pull request.** [ROADMAP.md](ROADMAP.md), the status of
    the spec and `AGENTS.md` (when a pattern changed) change together with the
    code.
@@ -50,10 +51,11 @@ before it becomes `Verified`.
 - The extension is read-only: it writes nothing to a cluster. A write action
   needs a spec of its own and a confirmation that names the resource and the
   cluster.
-- Development and tests use only the local kind lab of SPEC-0002, with its
-  own kubeconfig. No script uses the current context of the user's
-  kubeconfig, and Freelens is started for checks with a user store that syncs
-  only the lab's kubeconfig.
+- Development and tests use only a local kind cluster with the fixtures of
+  `integration/fixtures/`. Every kubectl call names the kind context and none
+  uses the current context of the user's kubeconfig, and Freelens dev is
+  started for checks with a profile that syncs only the kind cluster's
+  kubeconfig.
 
 ## Upstream drift watch
 

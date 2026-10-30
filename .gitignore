@@ -48,7 +48,3 @@
 *.pfx
 *.pem
 *.key
-
-# Local lab of SPEC-0002: kubeconfigs, logs, the Karpenter source checkout.
-/.e2e/
-__pycache__/
