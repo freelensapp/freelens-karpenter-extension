@@ -97,14 +97,15 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
 
   it("shows the node classes", async () => {
     // The GCENodeClass is served as v1alpha1. Its image family comes from its
-    // family term, and its service account is shown.
+    // family term, and its service account is shown. A value follows its label
+    // in the element of the item, so the pattern names both.
     await openTab(frame, "Node Classes", [
       "Node Classes",
       /^default\b/,
       "GCENodeClass",
       "1 NodePool",
-      "ContainerOptimizedOS",
-      "karpenter-node@lab.iam.gserviceaccount.com",
+      /^Image Family\s+ContainerOptimizedOS$/,
+      /^Service Account\s+karpenter-node@lab\.iam\.gserviceaccount\.com$/,
     ]);
   });
 
