@@ -76,8 +76,7 @@ Before starting the release, verify that the following workflows are green on
 - `Unit tests` and `Trunk Check`.
 - `Integration tests` — the extension installed in Freelens and every tab
   checked against the static lab.
-- `OSV-Scanner` and `Automated npm audit` — no outstanding critical
-  vulnerabilities.
+- `Automated npm audit` — no outstanding critical vulnerabilities.
 
 ## Versions and Freelens
 
