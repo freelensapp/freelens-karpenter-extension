@@ -38,10 +38,12 @@ capacity type (spot or on-demand). A click on a node opens its details.
 
 ![Karpenter Node Classes](assets/screenshots/nodeclasses.png)
 
-Every EC2NodeClass (AWS) and AKSNodeClass (Azure) with its status and main
-settings (image family, role, selectors, kubelet settings, OS disk), and the
-NodePools that use it, with their nodes, usage, limits, consolidation and
-expiry.
+Every EC2NodeClass (AWS), AKSNodeClass (Azure) and GCENodeClass (GCP) with
+its status and main settings (image family, role or service account,
+selectors, disks, kubelet settings, OS disk), and the NodePools that use it,
+with their nodes, usage, limits, consolidation and expiry. The tab reads only
+the node classes of the provider the cluster runs, so a GKE cluster shows
+nothing of AWS or Azure, and the reverse.
 
 ### Scaling Decisions
 
@@ -64,9 +66,11 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 
 - Freelens >= 2.0.0. The 1.x versions of the extension are for Freelens 1.x
   and are no longer maintained.
-- Karpenter v1 (`karpenter.sh/v1`), on AWS EKS or Azure AKS (node
-  autoprovisioning). The extension follows Karpenter 1.15, the AWS provider
-  1.15 and the Azure provider 1.14.
+- Karpenter v1 (`karpenter.sh/v1`), on AWS EKS, Azure AKS (node
+  autoprovisioning) or Google GKE (the
+  [GCP provider](https://github.com/cloudpilot-ai/karpenter-provider-gcp) of
+  CloudPilot AI). The extension follows Karpenter 1.15, the AWS provider 1.15,
+  the Azure provider 1.14 and the GCP provider 0.6.
 
 ## Supported APIs
 
@@ -77,6 +81,7 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 | `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards)             |
 | `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes                |
 | `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass` | Overview, Node Classes                |
+| `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass` | Overview, Node Classes                |
 
 
 A kind that the cluster does not serve is left out; the page says so when the
@@ -205,7 +210,7 @@ Extension in Freelens" in [AGENTS.md](AGENTS.md).
 ### Karpenter objects on a kind cluster
 
 The fixtures of the integration tests give a [kind](https://kind.sigs.k8s.io/)
-cluster the CRDs and objects of one Karpenter variant, `aws` or `aks`, without
+cluster the CRDs and objects of one Karpenter variant, `aws`, `aks` or `gcp`, without
 a controller, so you can work on the extension without a cloud account:
 
 ```sh
