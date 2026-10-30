@@ -70,17 +70,14 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 
 ## Supported APIs
 
-<!-- markdownlint-disable MD013 -->
+| Group                 | API Version       | Kind           | Shown in                              |
+| --------------------- | ----------------- | -------------- | ------------------------------------- |
+| `karpenter.sh`        | v1                | `NodePool`     | every tab                             |
+| `karpenter.sh`        | v1                | `NodeClaim`    | Overview, Topology, Scaling Decisions |
+| `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards)             |
+| `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes                |
+| `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass` | Overview, Node Classes                |
 
-| Group | API Version | Kind | Shown in |
-| --- | --- | --- | --- |
-| `karpenter.sh` | v1 | `NodePool` | every tab |
-| `karpenter.sh` | v1 | `NodeClaim` | Overview, Topology, Scaling Decisions |
-| `karpenter.sh` | v1alpha1 | `NodeOverlay` | Overview (NodePool cards) |
-| `karpenter.k8s.aws` | v1 | `EC2NodeClass` | Overview, Node Classes |
-| `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass` | Overview, Node Classes |
-
-<!-- markdownlint-enable MD013 -->
 
 A kind that the cluster does not serve is left out; the page says so when the
 cluster has no NodePool CRD.

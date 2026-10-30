@@ -8,12 +8,12 @@ by a manual post-release version bump for ongoing development.
 Go to **Actions → Automated npm version → Run workflow** and choose the version
 bump type:
 
-| Input `newversion` | When to use |
-| --- | --- |
-| `patch` | Bug fix (e.g. 1.2.3 → 1.2.4) |
-| `minor` | New feature (e.g. 1.2.3 → 1.3.0) |
-| `major` | Breaking change (e.g. 1.2.3 → 2.0.0) |
-| `prerelease` | Pre-release preview (e.g. 1.2.3 → 1.2.4-0) |
+| Input `newversion` | When to use                                |
+| ------------------ | ------------------------------------------ |
+| `patch`            | Bug fix (e.g. 1.2.3 → 1.2.4)               |
+| `minor`            | New feature (e.g. 1.2.3 → 1.3.0)           |
+| `major`            | Breaking change (e.g. 1.2.3 → 2.0.0)       |
+| `prerelease`       | Pre-release preview (e.g. 1.2.3 → 1.2.4-0) |
 
 The workflow opens a pull request `automated/npm-version` with the version bump
 already applied to `package.json`.
@@ -76,8 +76,7 @@ Before starting the release, verify that the following workflows are green on
 - `Unit tests` and `Trunk Check`.
 - `Integration tests` — the extension installed in Freelens and every tab
   checked against the static lab.
-- `OSV-Scanner` and `Automated npm audit` — no outstanding critical
-  vulnerabilities.
+- `Automated npm audit` — no outstanding critical vulnerabilities.
 
 ## Versions and Freelens
 

@@ -40,7 +40,7 @@ Freelens's `mise.toml` and `.nvmrc` for Node and the other mise tools.
 Renovate keeps them there: custom datasources in `.renovaterc.json` read the
 versions from the same Freelens files on `main`, so an update arrives only once
 Freelens has adopted it, at that version, in one `Freelens dependencies` group
-PR together with the `@freelensapp/extensions` nightly. A dependency added to
+PR together with a release of `@freelensapp/extensions`. A dependency added to
 `package.json` follows the Freelens catalog unless the catalog rule excludes
 it; one that Freelens does not have must be excluded there, or its lookup fails
 on the Dependency Dashboard. The catalog rule matches only `dependencies` and
@@ -75,7 +75,8 @@ scripts only when `allowBuilds` sets it to `true`; a new dependency with
 install scripts that is not listed there fails `pnpm install`, so add it with
 `true` or `false` deliberately. pnpm refuses versions younger than its
 `minimumReleaseAge` (1 day), with `@freelensapp/extensions` excluded because
-its pinned nightly is often adopted on the day it is published.
+a Freelens release is adopted on the day it is published, together with the
+stack it was built with.
 
 `strictPeerDependencies: true` makes `pnpm install` fail when the extension's
 own copy of a shared library is outside the peer range that
@@ -116,10 +117,10 @@ pnpm type:check:tooling        # Vite and Vitest configs, build plugins
 pnpm type:check:environments   # Environment tests
 
 # Linting & formatting
-pnpm biome:check          # TypeScript/TSX, JS, JSON, CSS, HTML (biome)
+pnpm biome:check          # TypeScript/TSX, JS, JSON, CSS, SCSS, HTML, YAML, Markdown (biome)
 pnpm biome:fix            # Auto-fix the formats above
-pnpm trunk:check          # Markdown, YAML, TOML, SCSS, workflows, and Biome again (changed files)
-pnpm trunk:fix            # Auto-fix Markdown, YAML, SCSS, etc.
+pnpm trunk:check          # TOML, shell, workflows, yamllint, and Biome again (changed files)
+pnpm trunk:fix            # Auto-fix TOML, shell, and the Biome formats
 pnpm lint:check           # Alias for biome:check
 pnpm lint:fix             # Alias for biome:fix
 pnpm knip:check           # Unused files, unused and unlisted dependencies (knip)
@@ -450,6 +451,11 @@ mechanism; this is the list to check a change against.
   `pnpm dev` runs.** The host refuses to reload a CommonJS main and logs why,
   and it watches only the entries it started with, so a manifest change needs
   Freelens restarted.
+- **A bundled CommonJS package loads in the ESM main.** Main is built for
+  Rolldown's `node` platform, which gives it a `require`, and defines
+  `__dirname` and `__filename`. Without either, the package throws when
+  Freelens evaluates `dist/main.js`, and the extension does not activate;
+  `pnpm build` and `pnpm type:check` pass ("Process-specific settings").
 
 - **A memo over a store's items is keyed on `useItems(items)`.** The host keeps one
   observable array per store and updates it in place, with `replace` and
@@ -463,6 +469,14 @@ mechanism; this is the list to check a change against.
 - **`loadAll` resolves when the load failed.** It reports the failure through
   `onLoadFailure` and leaves the store empty. Pass `onLoadFailure` and decide
   what a failure means, as `loadAndSubscribe` does.
+- **An effect creates what its cleanup aborts or releases.** Freelens dev
+  renders in `React.StrictMode`, which runs an effect, cleans it up and runs
+  it again on the same instance. An `AbortController` kept in a `useRef` is
+  aborted by the first cleanup, and every request of the second run with it;
+  the host takes an aborted `loadAll` for no failure, so the view shows
+  nothing and logs nothing. Create the controller, and the subscriptions to
+  stop, inside the effect, as `data/use-dashboard-data.ts` does. The
+  production build has no `StrictMode`, so only Freelens dev shows it.
 - **CSS variables do not reach SVG attributes or a canvas.** `fill` and
   `stroke` take them only through `style` ("Colours and themes").
 
@@ -532,6 +546,13 @@ the bundle.
   throws ``Calling `require` for "node:assert" in an environment that doesn't
   expose the `require` function`` as soon as the bundle is evaluated, and for
   `node` it defines `__require` with `createRequire(import.meta.url)`.
+  `__dirname` and `__filename` are the other half: Node passes them to a
+  CommonJS module, Rolldown leaves them as they are on either platform, and
+  the ES module throws `ReferenceError: __dirname is not defined in ES module
+  scope`. Main defines them (`define`) as `import.meta.dirname` and
+  `import.meta.filename`, the directory and file of `dist/main.js`, not of the
+  package: a library that loads a file next to itself, such as a `.wasm`,
+  finds it only when the build puts it in `dist/`.
   `pnpm build` and `pnpm type:check` pass either way, and nothing before
   Freelens evaluates `dist/main.js`, so on the wrong platform the extension
   fails only when Freelens loads it. A main bundle without CommonJS is the
@@ -589,13 +610,13 @@ Main code runs in Node, renderer code in a browser page, and common code in
 both. Each is type-checked in a program of its own, so that an API the runtime
 does not have fails `pnpm type:check` rather than the extension:
 
-| Config                       | lib                       | types                 | Files                                                                |
-| ---------------------------- | ------------------------- | --------------------- | -------------------------------------------------------------------- |
-| `src/main/tsconfig.json`     | ES2024                    | `node`                | `src/main/`, `src/common/`                                           |
-| `src/renderer/tsconfig.json` | ES2024, DOM, DOM.Iterable | `vite/client`         | `src/renderer/`, `src/common/`                                       |
-| `src/common/tsconfig.json`   | ES2024, WebWorker         | none                  | `src/common/`                                                        |
-| `src/tsconfig.json`          | ES2024, DOM, DOM.Iterable | `node`, `vite/client` | `*.test.ts(x)` under `src/`, and `test/`                             |
-| `tsconfig.json`              | ES2024                    | `node`                | `vite.config.mjs`, `vitest.config.ts`, `svgo.config.mjs`, `build/`   |
+| Config                       | lib                       | types                 | Files                                                              |
+| ---------------------------- | ------------------------- | --------------------- | ------------------------------------------------------------------ |
+| `src/main/tsconfig.json`     | ES2024                    | `node`                | `src/main/`, `src/common/`                                         |
+| `src/renderer/tsconfig.json` | ES2024, DOM, DOM.Iterable | `vite/client`         | `src/renderer/`, `src/common/`                                     |
+| `src/common/tsconfig.json`   | ES2024, WebWorker         | none                  | `src/common/`                                                      |
+| `src/tsconfig.json`          | ES2024, DOM, DOM.Iterable | `node`, `vite/client` | `*.test.ts(x)` under `src/`, and `test/`                           |
+| `tsconfig.json`              | ES2024                    | `node`                | `vite.config.mjs`, `vitest.config.ts`, `svgo.config.mjs`, `build/` |
 
 All of them extend `tsconfig.base.json`, which has the compiler options of
 Freelens's fixture extension: `strict`, `moduleResolution: Bundler`,
@@ -754,7 +775,15 @@ migration are one pull request. The commit is by `github-actions[bot]`, which
 `gitIgnoredAuthors` in `.renovaterc.json` lists, so that Renovate does not take
 it for a manual edit and stop updating the branch.
 
-Biome does not read SCSS; Trunk formats it with Prettier.
+Biome formats SCSS, YAML and Markdown too, as in Freelens, so Trunk runs no
+Prettier, markdownlint or yamlfmt; yamllint still checks YAML. The manifests
+of the lab in `e2e/fixtures/` indent their sequences, as Biome does.
+`biome.jsonc` leaves out `pnpm-lock.yaml` and `pnpm-workspace.yaml`, which pnpm
+writes, and `.trunk/`, whose `trunk.yaml` `trunk upgrade` rewrites. Flow
+sequences keep no inner spaces (`yaml.formatter.bracketSpacing: false`), as
+yamlfmt left them.
+
+The Markdown rules are in `nursery`. Biome does not rewrap a paragraph.
 
 ### Knip
 
@@ -893,6 +922,16 @@ Without the MCP server, a `playwright-core` script with
 script by exiting the process; do not close the browser, which belongs to
 Freelens.
 
+A profile of Freelens dev syncs no kubeconfig until one is added in
+"Kubeconfig Syncs" of the Kubernetes preferences, so its catalog lists none of
+the developer's clusters; `KUBECONFIG` does not change that. For the checks,
+add the kubeconfig of a lab, `.e2e/<profile>/kubeconfig`, which holds the lab's
+cluster alone. A fresh profile, in a `FREELENS_INTEGRATION_TESTING_DIR` under
+the system's temporary directory, can start with it already in place:
+`FreelensDev/lens-user-store.json` there seeds
+`preferences.syncKubeconfigEntries`, whose `filePath` is absolute ("Kubeconfig
+syncs of the dev profile" in Freelens's `DEVELOPMENT.md`).
+
 ### The local lab
 
 `e2e/` has two kind clusters with Karpenter objects, so that no check needs a
@@ -933,8 +972,9 @@ Safety, which every change to `e2e/` keeps:
    `dist/`.
 2. On the Extensions page, enter the checkout's directory and press
    "Install". Freelens then asks whether to load the extension in place;
-   confirm that too. The table lists the extension as "in place, unverified"
-   and enabled.
+   confirm that too. The table lists the extension as enabled, with
+   "development" in the version column and `Loaded from <directory>` in its
+   title.
 3. A rebuild, by `pnpm build` or by `pnpm dev` of the extension, reloads it
    once in the root frame and once in each cluster frame. `pnpm dev` rewrites
    only the entry whose sources changed, and the host waits up to 5 seconds
@@ -982,6 +1022,13 @@ as failures of the "no error in DevTools" check. The host's requests to the
 metrics API fail with 404 on the static lab, which has no metrics server;
 they are the host's, not the extension's.
 
+The renderer's requests to Kubernetes go through Chromium, which logs every
+response that is not a success as a console error,
+`Failed to load resource: the server responded with a status of N`, also one
+that the code that sent it handles. The text names no URL; the location of the
+message does. The 404 of the metrics API on the static lab is such an error;
+leave one out by its status and URL, not every "Failed to load resource".
+
 The main process logs to the terminal running Freelens, and to a file. On
 macOS it is `~/Library/Logs/Freelens/lens.log`, with the renderer's
 `lens-renderer-*.log` next to it; when the terminal is not at hand, it shows
@@ -1002,8 +1049,8 @@ depends on it.
 
 ## Code Style
 
-- **Biome** formats **TypeScript/TSX, JS, JSON, CSS, HTML**: double quotes, semicolons, trailing commas, 2-space indent, 120 char line width — use `pnpm biome:fix`
-- **Trunk** formats **Markdown, YAML, SCSS** (with Prettier), and other formats not covered by biome — use `pnpm trunk:fix`
+- **Biome** formats **TypeScript/TSX, JS, JSON, CSS, SCSS, HTML, YAML, Markdown**: double quotes, semicolons, trailing commas, 2-space indent, 120 char line width — use `pnpm biome:fix`
+- **Trunk** formats **TOML and shell scripts**, and runs the linters for formats not covered by Biome (yamllint, actionlint, shellcheck) — use `pnpm trunk:fix`
 - Import order (enforced by biome organizeImports): built-in modules → `@freelensapp/**` → packages → relative paths
 - React 19; JSX compiles to `react/jsx-runtime` imports, which the build maps to the host's React
 - **No emoji** in Markdown files (`.md`), comments, or any source code
@@ -1069,8 +1116,8 @@ Code in `src/common/` is shared between both processes.
 2. **Follow existing patterns** — grep for similar implementations before creating new ones
 3. **Test changes** before committing
 4. **Run validation before committing:** `pnpm lint:fix && pnpm type:check && pnpm test:unit`
-5. **For TypeScript/TSX, JS, JSON, CSS, HTML files:** run `pnpm biome:fix` (or `biome check` directly if `biome` is installed locally)
-6. **For Markdown, YAML, SCSS and other formats:** run `pnpm trunk:fix` (or `trunk check` directly if `trunk` is installed locally)
+5. **For TypeScript/TSX, JS, JSON, CSS, SCSS, HTML, YAML and Markdown files:** run `pnpm biome:fix` (or `biome check` directly if `biome` is installed locally)
+6. **For other formats:** run `pnpm trunk:fix` (or `trunk check` directly if `trunk` is installed locally)
 7. **Full build** when in doubt about cached state: `pnpm clean:all && pnpm install && pnpm build`
 8. **Do not use Anthropic Fable for coding tasks** — Fable may be used only for planning,
    analysis, and thinking through problems. When writing or editing code,
@@ -1100,6 +1147,7 @@ When reviewing code and proposing fixes:
    ```
 
    You can generate this from the terminal with:
+
    ```bash
    git diff -u -- path/to/file
    ```
@@ -1131,9 +1179,9 @@ When reviewing code and proposing fixes:
    - Use GitHub's `suggestion` block for small targeted fixes so the PR
      author can accept the change with a single click:
 
-     ````suggestion
+     ```suggestion
      <same unified-diff format as shown above>
-     ````
+     ```
 
    - For larger multi-file changes, use `diff -u` blocks in a regular
      comment instead, with the proposed commit subject shown first
@@ -1183,7 +1231,6 @@ of editing the file in place:
    edit the original file under `.github/workflows/`.
 2. Make it a **complete** file — the entire workflow as it should look after
    the change, not just a diff or fragment — so it can be copied verbatim.
-   Keep its "Workflow summary" header up to date.
 3. Commit it with the change that needs it, list it in
    `github-workflow-fix/README.md` with what it changes, and list it in the
    report. In the

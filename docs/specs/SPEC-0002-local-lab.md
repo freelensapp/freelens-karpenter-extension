@@ -38,10 +38,10 @@ their status is written by the fixtures.
 
 ### Two profiles
 
-| Profile | Cluster | What runs | Used for |
-| --- | --- | --- | --- |
-| `static` | `karpenter-lab-static` | the Karpenter, AWS and Azure CRDs; the KWOK controller; numbered fixtures with written status; no Karpenter controller; no metrics-server | integration tests, deterministic screenshots, the parity baseline, the "no metrics-server" case |
-| `live` | `karpenter-lab-live` | Karpenter with the KWOK provider (real NodePools, NodeClaims, nodes, disruption and events); metrics-server with the KWOK metrics; an `inflate` Deployment scaled up and down | the live checks: objects appearing without a reload, scaling decisions, node usage |
+| Profile  | Cluster                | What runs                                                                                                                                                                     | Used for                                                                                        |
+| -------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `static` | `karpenter-lab-static` | the Karpenter, AWS and Azure CRDs; the KWOK controller; numbered fixtures with written status; no Karpenter controller; no metrics-server                                     | integration tests, deterministic screenshots, the parity baseline, the "no metrics-server" case |
+| `live`   | `karpenter-lab-live`   | Karpenter with the KWOK provider (real NodePools, NodeClaims, nodes, disruption and events); metrics-server with the KWOK metrics; an `inflate` Deployment scaled up and down | the live checks: objects appearing without a reload, scaling decisions, node usage              |
 
 The two are separate clusters because a running Karpenter would reconcile, or
 garbage-collect, the static NodeClaims and nodes.
@@ -108,16 +108,16 @@ A variant of the static profile serves only `AKSNodeClass` `v1alpha2` next to
 
 ### Test levels
 
-| Level | Tool | Where | Covers |
-| --- | --- | --- | --- |
-| Type check | `tsc`, per environment | `pnpm type:check` | the v2 API surface, no Node in the renderer |
-| Unit | Vitest, jsdom where needed, the `test/freelens-extensions.ts` stub | `pnpm test:unit` | models, helpers, layout, classification, page states (SPEC-0001) |
-| Build checks | scripts on `dist/` | after `pnpm build` | one CSS asset, no bare host modules, no `require(` in the renderer, `dist/main.js` loads in Node with a stand-in global |
-| Lint | Biome, knip, Trunk | `pnpm lint:check`, `knip:check`, `trunk:check` | dead code, unused dependencies, formatting |
-| Integration | the Freelens harness (Playwright, Electron), template style | inside a Freelens checkout, against the `static` lab | install, every tab renders its fixture content, no error in either process |
-| Functional | Playwright over CDP against Freelens dev, started in the sandbox | the `static` and `live` labs | the functional checks of the issues, screenshots per tab, console and main log filtered for errors |
-| Parity | the same CDP script against Freelens 1.10.3 with the 1.0.1 extension | the `static` lab | the baseline the functional checks compare with |
-| Manual | the maintainer | real clusters, other platforms | SPEC-0001 "Manual verification" |
+| Level        | Tool                                                                 | Where                                                | Covers                                                                                                                  |
+| ------------ | -------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Type check   | `tsc`, per environment                                               | `pnpm type:check`                                    | the v2 API surface, no Node in the renderer                                                                             |
+| Unit         | Vitest, jsdom where needed, the `test/freelens-extensions.ts` stub   | `pnpm test:unit`                                     | models, helpers, layout, classification, page states (SPEC-0001)                                                        |
+| Build checks | scripts on `dist/`                                                   | after `pnpm build`                                   | one CSS asset, no bare host modules, no `require(` in the renderer, `dist/main.js` loads in Node with a stand-in global |
+| Lint         | Biome, knip, Trunk                                                   | `pnpm lint:check`, `knip:check`, `trunk:check`       | dead code, unused dependencies, formatting                                                                              |
+| Integration  | the Freelens harness (Playwright, Electron), template style          | inside a Freelens checkout, against the `static` lab | install, every tab renders its fixture content, no error in either process                                              |
+| Functional   | Playwright over CDP against Freelens dev, started in the sandbox     | the `static` and `live` labs                         | the functional checks of the issues, screenshots per tab, console and main log filtered for errors                      |
+| Parity       | the same CDP script against Freelens 1.10.3 with the 1.0.1 extension | the `static` lab                                     | the baseline the functional checks compare with                                                                         |
+| Manual       | the maintainer                                                       | real clusters, other platforms                       | SPEC-0001 "Manual verification"                                                                                         |
 
 ## Tests (non-regression list)
 

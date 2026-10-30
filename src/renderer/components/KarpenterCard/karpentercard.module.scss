@@ -75,9 +75,7 @@
   padding: 0 12px;
   height: 30px; // fixed height — all pills identical
   cursor: pointer;
-  transition:
-    background 0.12s,
-    border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s;
   vertical-align: middle;
 
   &:hover {
@@ -277,9 +275,7 @@
   cursor: pointer;
   font-size: 12px;
   padding: 4px 12px;
-  transition:
-    background 0.1s,
-    color 0.1s;
+  transition: background 0.1s, color 0.1s;
 
   &:hover {
     background: var(--layoutTabsBackground, rgba(128, 128, 128, 0.1));
@@ -408,9 +404,7 @@
 
 .treeClickable {
   cursor: pointer;
-  transition:
-    background 0.12s,
-    border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s;
 
   &:hover {
     background: rgba(0, 167, 225, 0.08);
@@ -498,9 +492,7 @@
   min-width: 180px;
   max-width: none; // let it grow — never truncate node names
   cursor: default;
-  transition:
-    background 0.1s,
-    border-color 0.1s;
+  transition: background 0.1s, border-color 0.1s;
 
   &.treeClickable {
     cursor: pointer;

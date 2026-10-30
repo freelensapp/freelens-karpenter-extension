@@ -1,16 +1,3 @@
-# Workflow summary:
-# - Purpose: run the unit tests of the extension.
-# - Depends on: none.
-# - Trigger:
-#   - Automatic event: on push to main and on every pull request, by GitHub Actions, to validate behavior continuously.
-#   - Manual: via workflow_dispatch, by maintainers, to run the unit tests on demand.
-# - Steps:
-#   - Checkout code and setup Node.js plus pnpm cache.
-#   - Install dependencies with retry.
-#   - Run pnpm test:unit (Vitest).
-# - Docs:
-#   - https://vitest.dev/
-
 name: Unit tests
 
 on:

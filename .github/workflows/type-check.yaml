@@ -1,16 +1,3 @@
-# Workflow summary:
-# - Purpose: type-check every TypeScript program of the extension (sources, tests, tooling, environment tests).
-# - Depends on: none.
-# - Trigger:
-#   - Automatic event: on push to main and on every pull request, by GitHub Actions, so that a type error shows as its own failed check.
-#   - Manual: via workflow_dispatch, by maintainers, to run the type check on demand.
-# - Steps:
-#   - Checkout code and setup Node.js plus pnpm cache.
-#   - Install dependencies with retry.
-#   - Run pnpm type:check.
-# - Docs:
-#   - https://www.typescriptlang.org/docs/handbook/compiler-options.html
-
 name: Type check
 
 on:

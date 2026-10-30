@@ -1,16 +1,3 @@
-# Workflow summary:
-# - Purpose: run `biome migrate` on a pull request that updates Biome, and commit the migrated config to it.
-# - Depends on: Renovate pull requests that change the Biome version.
-# - Trigger:
-#   - Automatic event: on pull requests to main that change this workflow, .trunk/trunk.yaml, biome.jsonc or package.json, by GitHub Actions.
-# - Steps:
-#   - Checkout the pull request branch and prepare Node.js/pnpm.
-#   - Run Biome migration and detect changes.
-#   - Refuse to migrate twice on the same branch.
-#   - Commit and push the migrated config to the pull request branch.
-# - Docs:
-#   - https://biomejs.dev/guides/upgrade-to-biome-v2/
-
 name: Automated biome migrate
 
 # Renovate bumps the Biome version (the biome script in package.json and the

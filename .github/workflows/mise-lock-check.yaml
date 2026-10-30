@@ -1,15 +1,3 @@
-# Workflow summary:
-# - Purpose: make sure a change of mise.lock replaces no checksum of a tool version that did not change.
-# - Depends on: none.
-# - Trigger:
-#   - Automatic event: on pull requests to main that change .nvmrc, mise.lock or mise.toml, by GitHub Actions.
-# - Steps:
-#   - Checkout code.
-#   - Install the tools from mise.lock, which verifies their checksums.
-#   - Fail when an artifact of an unchanged tool version was replaced.
-# - Docs:
-#   - https://mise.jdx.dev/dev-tools/mise-lock.html
-
 name: Mise Lock Check
 
 on:

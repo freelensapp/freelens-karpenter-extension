@@ -388,9 +388,7 @@
   text-align: left;
   font: inherit;
   color: inherit;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 
   &:hover {
     border-color: #00a7e1;
@@ -482,11 +480,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: color-mix(
-    in srgb,
-    var(--textColorAccent) 5%,
-    var(--contentColor)
-  );
+  background: color-mix(in srgb, var(--textColorAccent) 5%, var(--contentColor));
   border-bottom: 1px solid var(--borderFaintColor);
 }
 
@@ -533,11 +527,7 @@
   align-items: stretch;
   justify-content: space-between;
   padding: 0 14px;
-  background: color-mix(
-    in srgb,
-    var(--textColorAccent) 2%,
-    var(--contentColor)
-  );
+  background: color-mix(in srgb, var(--textColorAccent) 2%, var(--contentColor));
   border-bottom: 1px solid var(--borderFaintColor);
   min-height: 32px;
 }
@@ -564,9 +554,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
+  transition: color 0.15s, border-color 0.15s;
 
   &:hover {
     color: var(--textColorPrimary);

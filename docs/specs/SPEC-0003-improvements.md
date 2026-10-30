@@ -141,7 +141,7 @@ integration test on the static lab and screenshots on both labs.
   applies a NodeOverlay to the instance types whose labels, with the
   NodePool's name and template labels, meet its requirements; the instance
   types are the cloud provider's, so the card lists the NodeOverlays that
-  *can* apply: a requirement on a label the NodePool fixes (by its name, a
+  _can_ apply: a requirement on a label the NodePool fixes (by its name, a
   template label, or an `In`, `NotIn`, `Exists` or `DoesNotExist`
   requirement) must be met, any other can. Highest weight first, then by
   name, as Karpenter merges them.

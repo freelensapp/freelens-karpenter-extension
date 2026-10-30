@@ -8,11 +8,7 @@
 
 // A layer over the content colour: lighter in the dark theme, darker in the light one.
 @function layer($percent) {
-  @return color-mix(
-    in srgb,
-    var(--textColorAccent) $percent,
-    var(--contentColor)
-  );
+  @return color-mix(in srgb, var(--textColorAccent) $percent, var(--contentColor));
 }
 
 // A tint of the text colour over whatever is underneath.
@@ -50,9 +46,7 @@ $cap-spot: #c98ad6; // soft purple — spot
   border: 1px solid $border-soft;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow:
-    0 1px 0 tint(3%) inset,
-    0 6px 18px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 0 tint(3%) inset, 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
 .kpi {
@@ -212,9 +206,7 @@ $cap-spot: #c98ad6; // soft purple — spot
   color: $text-secondary;
   font-size: 12px;
   cursor: pointer;
-  transition:
-    background 0.12s,
-    color 0.12s;
+  transition: background 0.12s, color 0.12s;
 }
 .segmentedButton:hover {
   background: tint(4%);
@@ -224,9 +216,7 @@ $cap-spot: #c98ad6; // soft purple — spot
   background: $accent;
   color: #0a1620;
   font-weight: 600;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--primary) 50%, transparent) inset,
-    0 1px 0 tint(18%) inset;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 50%, transparent) inset, 0 1px 0 tint(18%) inset;
 }
 .segmentedButtonActive:hover {
   background: color-mix(in srgb, var(--primary) 90%, white);
@@ -251,16 +241,8 @@ $cap-spot: #c98ad6; // soft purple — spot
 .chartCard {
   position: relative;
   background:
-    radial-gradient(
-      1200px 600px at 30% 0%,
-      color-mix(in srgb, var(--primary) 5%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 600px at 100% 100%,
-      rgba(74, 144, 226, 0.06),
-      transparent 60%
-    ),
+    radial-gradient(1200px 600px at 30% 0%, color-mix(in srgb, var(--primary) 5%, transparent), transparent 60%),
+    radial-gradient(900px 600px at 100% 100%, rgba(74, 144, 226, 0.06), transparent 60%),
     $bg-canvas;
   border: 1px solid $border-soft;
   border-radius: 10px;
@@ -313,17 +295,12 @@ $cap-spot: #c98ad6; // soft purple — spot
   fill: $bg-chip;
   stroke: $border-mid;
   stroke-width: 1;
-  transition:
-    fill 0.15s,
-    stroke 0.15s,
-    filter 0.15s;
+  transition: fill 0.15s, stroke 0.15s, filter 0.15s;
 }
 .chipBody:hover {
   fill: $bg-chip-hi;
   stroke: $accent-soft;
-  filter: drop-shadow(
-    0 0 6px color-mix(in srgb, var(--primary) 25%, transparent)
-  );
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--primary) 25%, transparent));
 }
 .chipBodyDimmed {
   opacity: 0.28;
@@ -410,9 +387,7 @@ $cap-spot: #c98ad6; // soft purple — spot
   cursor: pointer;
   font-size: 12px;
   color: $text-primary;
-  transition:
-    background 0.12s,
-    border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s;
   border: 1px solid transparent;
 }
 .legendRow:hover {

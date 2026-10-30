@@ -1,20 +1,3 @@
-# Workflow summary:
-# - Purpose: automate version bumping and lockfile refresh, then propose the changes via PR.
-# - Depends on: manual dispatch input for the standard release flow (release-event trigger is available but not relied on).
-# - Trigger:
-#   - Manual: via workflow_dispatch with input newversion, by maintainers, to request the desired semver bump.
-#   - Optional event hook: on GitHub release event type released, available as fallback integration trigger.
-# - Steps:
-#   - Checkout code and prepare Node.js/pnpm environment with cache.
-#   - Install dependencies with retry.
-#   - Bump package version from workflow input (or release event when explicitly used).
-#   - Refresh pnpm lockfile and dependencies.
-#   - Commit changes to automation branch and create/update PR, or close stale PR when no changes exist.
-# - Docs:
-#   - https://docs.github.com/webhooks/webhook-events-and-payloads#release
-#   - https://semver.org/
-#   - https://cli.github.com/manual/gh_pr
-
 name: Automated npm version
 
 on:
