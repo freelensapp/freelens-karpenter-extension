@@ -1,7 +1,13 @@
 import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { NODE_CLASS_KIND, openNodeClassDetail } from "../../data/nodeclass";
-import { getAKSNodeClassStore, getEC2NodeClassStore, getNodePoolStore, getNodeStore } from "../../data/stores";
+import {
+  getAKSNodeClassStore,
+  getEC2NodeClassStore,
+  getGCENodeClassStore,
+  getNodePoolStore,
+  getNodeStore,
+} from "../../data/stores";
 import { getNodeClassStatus, getNodePoolStatus, openNodePoolDetail } from "../../utils/kube-helpers";
 import { StatusBadge } from "../shared/StatusBadge";
 import {
@@ -84,7 +90,7 @@ const NodeClassCard = observer(({ nodeClass }: { nodeClass: NodeClass }) => {
           <span className={style.expandChevron}>{expanded ? "▾" : "▸"}</span>
         </div>
 
-        {/* Quick info row — unified for both AWS and Azure */}
+        {/* Quick info row — unified for AWS, Azure and GCP */}
         {metaItems.length > 0 && (
           <div className={style.nodeClassMeta}>
             {metaItems.map(({ label, value }) => (
@@ -156,10 +162,12 @@ const NodeClassCard = observer(({ nodeClass }: { nodeClass: NodeClass }) => {
 // ── Main tab component ────────────────────────────────────────────────────────
 
 export const NodeClassesTab: React.FC = observer(() => {
-  const ec2NodeClassStore = getEC2NodeClassStore();
-  const aksNodeClassStore = getAKSNodeClassStore();
-  // Merge items from both AWS and Azure stores
-  const nodeClasses: NodeClass[] = [...(ec2NodeClassStore?.items ?? []), ...(aksNodeClassStore?.items ?? [])];
+  // Merge items from the AWS, Azure and GCP stores
+  const nodeClasses: NodeClass[] = [
+    ...(getEC2NodeClassStore()?.items ?? []),
+    ...(getAKSNodeClassStore()?.items ?? []),
+    ...(getGCENodeClassStore()?.items ?? []),
+  ];
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
@@ -167,8 +175,8 @@ export const NodeClassesTab: React.FC = observer(() => {
     : nodeClasses;
 
   const emptyMessage =
-    (ec2NodeClassStore?.items.length ?? 0) === 0 && (aksNodeClassStore?.items.length ?? 0) === 0
-      ? "No NodeClasses found (checked EC2NodeClass and AKSNodeClass)"
+    nodeClasses.length === 0
+      ? "No NodeClasses found (checked EC2NodeClass, AKSNodeClass and GCENodeClass)"
       : "No results for this filter";
 
   return (

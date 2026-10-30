@@ -2,19 +2,21 @@
  * Provider-agnostic helpers for the Karpenter node classes:
  *  - AWS: EC2NodeClass (karpenter.k8s.aws/v1)
  *  - Azure: AKSNodeClass (karpenter.azure.com/v1beta1, or v1alpha2 on an older provider)
+ *  - GCP: GCENodeClass (karpenter.k8s.gcp/v1alpha1)
  */
 
 import { navigateToDetail } from "../utils/kube-helpers";
-import { getAKSNodeClassStore, getEC2NodeClassStore } from "./stores";
+import { getAKSNodeClassStore, getEC2NodeClassStore, getGCENodeClassStore } from "./stores";
 
 import type { NodeClassReference } from "../api/karpenter/karpenter-v1-types";
 
-export type NodeClassProvider = "aws" | "azure" | "unknown";
+export type NodeClassProvider = "aws" | "azure" | "gcp" | "unknown";
 
 /** The kind string as it appears in nodeClassRef.kind */
 export const NODE_CLASS_KIND: Record<NodeClassProvider, string> = {
   aws: "EC2NodeClass",
   azure: "AKSNodeClass",
+  gcp: "GCENodeClass",
   unknown: "NodeClass",
 };
 
@@ -30,6 +32,7 @@ export function detectProvider(nodeClassRef?: Partial<NodeClassReference>): Node
 
   if (kind === "AKSNodeClass" || group.includes("azure")) return "azure";
   if (kind === "EC2NodeClass" || group.includes("aws")) return "aws";
+  if (kind === "GCENodeClass" || group.includes("gcp")) return "gcp";
 
   return guessFromStores();
 }
@@ -38,6 +41,7 @@ export function detectProvider(nodeClassRef?: Partial<NodeClassReference>): Node
 function guessFromStores(): NodeClassProvider {
   if ((getAKSNodeClassStore()?.items.length ?? 0) > 0) return "azure";
   if ((getEC2NodeClassStore()?.items.length ?? 0) > 0) return "aws";
+  if ((getGCENodeClassStore()?.items.length ?? 0) > 0) return "gcp";
   return "unknown";
 }
 
@@ -48,6 +52,7 @@ function guessFromStores(): NodeClassProvider {
 const NODE_CLASS_LIST_PATH: Record<NodeClassProvider, string> = {
   aws: "/crd/karpenter.k8s.aws/ec2nodeclasses",
   azure: "/crd/karpenter.azure.com/aksnodeclasses",
+  gcp: "/crd/karpenter.k8s.gcp/gcenodeclasses",
   unknown: "/crd/definitions",
 };
 
@@ -58,6 +63,8 @@ function nodeClassApiBase(provider: NodeClassProvider): string {
       return getEC2NodeClassStore()?.api.apiBase ?? "/apis/karpenter.k8s.aws/v1/ec2nodeclasses";
     case "azure":
       return getAKSNodeClassStore()?.api.apiBase ?? "/apis/karpenter.azure.com/v1beta1/aksnodeclasses";
+    case "gcp":
+      return getGCENodeClassStore()?.api.apiBase ?? "/apis/karpenter.k8s.gcp/v1alpha1/gcenodeclasses";
     default:
       return "";
   }

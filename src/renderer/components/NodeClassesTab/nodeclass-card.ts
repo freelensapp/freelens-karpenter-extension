@@ -2,6 +2,7 @@
  * What the cards of the Node Classes tab show, as pure functions of the objects.
  */
 
+import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
 import { formatMemory } from "../../utils/kube-helpers";
 
@@ -10,10 +11,17 @@ import type { NodeClassProvider } from "../../data/nodeclass";
 import type { AKSNodeClass } from "../../data/stores";
 import type { Node } from "../../utils/kube-helpers";
 
-export type NodeClass = EC2NodeClass | AKSNodeClass;
+export type NodeClass = EC2NodeClass | AKSNodeClass | GCENodeClass;
 
 export function nodeClassProvider(nodeClass: NodeClass): Exclude<NodeClassProvider, "unknown"> {
-  return nodeClass.kind === "AKSNodeClass" ? "azure" : "aws";
+  switch (nodeClass.kind) {
+    case "AKSNodeClass":
+      return "azure";
+    case "GCENodeClass":
+      return "gcp";
+    default:
+      return "aws";
+  }
 }
 
 export interface MetaItem {
@@ -40,6 +48,16 @@ export function nodeClassMetaItems(nodeClass: NodeClass): MetaItem[] {
     add("Security Groups", spec?.securityGroupSelectorTerms?.length);
     // `spec.kubelet` of karpenter.k8s.aws/v1.
     if (hasSettings(spec?.kubelet)) add("Kubelet Config", "✓");
+  } else if (nodeClass.kind === "GCENodeClass") {
+    const spec = nodeClass.spec;
+    add("Image Family", GCENodeClass.getImageFamily(nodeClass));
+    add("Service Account", spec?.serviceAccount);
+    add("Image Selectors", spec?.imageSelectorTerms?.length);
+    add("Disks", spec?.disks?.length);
+    add("Network Tags", spec?.networkTags?.length);
+    add("Subnet Range", spec?.subnetRangeName);
+    // `spec.kubeletConfiguration` of karpenter.k8s.gcp/v1alpha1.
+    if (hasSettings(spec?.kubeletConfiguration)) add("Kubelet Config", "✓");
   } else {
     const spec = nodeClass.spec;
     add("Image Family", spec?.imageFamily);
