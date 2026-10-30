@@ -1,0 +1,138 @@
+# The status of the objects in objects.yaml, applied to the status subresource.
+apiVersion: karpenter.k8s.gcp/v1alpha1
+kind: GCENodeClass
+metadata:
+  name: default
+status:
+  images:
+    - sourceImage: projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: [amd64]
+  conditions:
+    - type: ImagesReady
+      status: "True"
+      reason: ImagesReady
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: gke
+status:
+  nodes: 2
+  nodeClassObservedGeneration: 1
+  resources:
+    cpu: "12"
+    memory: 49283072Ki
+    pods: "128"
+    nodes: "2"
+    ephemeral-storage: "0"
+  conditions:
+    - type: ValidationSucceeded
+      status: "True"
+      reason: ValidationSucceeded
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeClassReady
+      status: "True"
+      reason: NodeClassReady
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeRegistrationHealthy
+      status: "True"
+      reason: NodeRegistrationHealthy
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: gke-a1b2c
+status:
+  nodeName: karpenter-gke-a1b2c
+  providerID: gce://lab/us-central1-a/karpenter-gke-a1b2c
+  imageID: projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre
+  capacity:
+    cpu: "4"
+    memory: 16393216Ki
+    pods: "64"
+    ephemeral-storage: 100Gi
+  allocatable:
+    cpu: 3920m
+    memory: 13603840Ki
+    pods: "64"
+    ephemeral-storage: 90Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: "True"
+      reason: Initialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: gke-d3e4f
+status:
+  nodeName: karpenter-gke-d3e4f
+  providerID: gce://lab/us-central1-b/karpenter-gke-d3e4f
+  imageID: projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre
+  capacity:
+    cpu: "8"
+    memory: 32889856Ki
+    pods: "64"
+    ephemeral-storage: 100Gi
+  allocatable:
+    cpu: 7910m
+    memory: 29679616Ki
+    pods: "64"
+    ephemeral-storage: 90Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: "True"
+      reason: Initialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
