@@ -1,6 +1,6 @@
 {
   "name": "@freelensapp/karpenter-extension",
-  "version": "2.0.0-0",
+  "version": "2.0.0",
   "description": "Karpenter extension",
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
     "node": ">= 24.0.0",
     "freelens": "^2.0.0"
   },
-  "copyright": "\u00a9 2025-2026 Freelens Authors",
+  "copyright": "© 2025-2026 Freelens Authors",
   "license": "MIT",
   "type": "module",
   "author": {
