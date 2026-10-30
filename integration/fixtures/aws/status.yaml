@@ -1,0 +1,364 @@
+# The status of the objects in objects.yaml, applied to the status subresource.
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+status:
+  instanceProfile: lab_1234567890
+  amis:
+    - id: ami-0a1b2c3d4e5f60001
+      name: amazon-eks-node-al2023-x86_64-standard-1.33-v20261001
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: [amd64]
+  subnets:
+    - id: subnet-0a1b2c3d4e5f60001
+      zone: eu-west-1a
+      zoneID: euw1-az1
+    - id: subnet-0a1b2c3d4e5f60002
+      zone: eu-west-1b
+      zoneID: euw1-az2
+  securityGroups:
+    - id: sg-0a1b2c3d4e5f60001
+      name: lab-node
+  conditions:
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: gpu
+status:
+  conditions:
+    - type: Ready
+      status: "False"
+      reason: AMIsNotFound
+      message: AMISelector did not match any AMIs
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: general
+status:
+  nodes: 4
+  nodeClassObservedGeneration: 1
+  resources:
+    cpu: "16"
+    memory: 59687568Ki
+    pods: "174"
+    nodes: "4"
+    ephemeral-storage: "0"
+  conditions:
+    - type: ValidationSucceeded
+      status: "True"
+      reason: ValidationSucceeded
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeClassReady
+      status: "True"
+      reason: NodeClassReady
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeRegistrationHealthy
+      status: "True"
+      reason: NodeRegistrationHealthy
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: gpu
+status:
+  nodes: 1
+  nodeClassObservedGeneration: 1
+  resources:
+    cpu: "4"
+    memory: 16202400Ki
+    pods: "58"
+    nodes: "1"
+    ephemeral-storage: "0"
+  conditions:
+    - type: ValidationSucceeded
+      status: "True"
+      reason: ValidationSucceeded
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeClassReady
+      status: "False"
+      reason: NodeClassNotReady
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeRegistrationHealthy
+      status: "True"
+      reason: NodeRegistrationHealthy
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "False"
+      reason: NodeClassNotReady
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: empty
+status:
+  nodes: 0
+  nodeClassObservedGeneration: 1
+  resources:
+    cpu: "0"
+    memory: 0Ki
+    pods: "0"
+    nodes: "0"
+    ephemeral-storage: "0"
+  conditions:
+    - type: ValidationSucceeded
+      status: "True"
+      reason: ValidationSucceeded
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeClassReady
+      status: "True"
+      reason: NodeClassReady
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: NodeRegistrationHealthy
+      status: "True"
+      reason: NodeRegistrationHealthy
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: general-7xk2p
+status:
+  nodeName: ip-10-0-1-11.eu-west-1.compute.internal
+  providerID: aws:///eu-west-1a/i-0149364d6382a695e
+  imageID: ami-0a1b2c3d4e5f60001
+  capacity:
+    cpu: "4"
+    memory: 15896604Ki
+    pods: "58"
+    ephemeral-storage: 20Gi
+  allocatable:
+    cpu: 3920m
+    memory: 14306943Ki
+    pods: "58"
+    ephemeral-storage: 18Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: "True"
+      reason: Initialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: general-9qwmt
+status:
+  nodeName: ip-10-0-2-12.eu-west-1.compute.internal
+  providerID: aws:///eu-west-1b/i-0b79059e1a64a764c
+  imageID: ami-0a1b2c3d4e5f60001
+  capacity:
+    cpu: "8"
+    memory: 32118888Ki
+    pods: "58"
+    ephemeral-storage: 20Gi
+  allocatable:
+    cpu: 7920m
+    memory: 28906999Ki
+    pods: "58"
+    ephemeral-storage: 18Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: "True"
+      reason: Initialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: general-b4n8r
+status:
+  nodeName: ip-10-0-1-13.eu-west-1.compute.internal
+  providerID: aws:///eu-west-1a/i-0d1052b8d0e475b2c
+  imageID: ami-0a1b2c3d4e5f60001
+  capacity:
+    cpu: "2"
+    memory: 3885916Ki
+    pods: "29"
+    ephemeral-storage: 20Gi
+  allocatable:
+    cpu: 1920m
+    memory: 3497324Ki
+    pods: "29"
+    ephemeral-storage: 18Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: "True"
+      reason: Initialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Disrupting
+      status: "True"
+      reason: Underutilized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: general-c2v6l
+status:
+  nodeName: ip-10-0-1-14.eu-west-1.compute.internal
+  providerID: aws:///eu-west-1a/i-0b4445cdfe100ef5c
+  imageID: ami-0a1b2c3d4e5f60001
+  capacity:
+    cpu: "2"
+    memory: 7786160Ki
+    pods: "29"
+    ephemeral-storage: 20Gi
+  allocatable:
+    cpu: 1920m
+    memory: 7007544Ki
+    pods: "29"
+    ephemeral-storage: 18Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: Unknown
+      reason: NotInitialized
+      message: Node not ready
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: Unknown
+      reason: NotInitialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: gpu-h5j3d
+status:
+  nodeName: ip-10-0-2-21.eu-west-1.compute.internal
+  providerID: aws:///eu-west-1b/i-017b7590e379ae856
+  imageID: ami-0a1b2c3d4e5f60001
+  capacity:
+    cpu: "4"
+    memory: 16202400Ki
+    pods: "58"
+    ephemeral-storage: 20Gi
+  allocatable:
+    cpu: 3920m
+    memory: 14582160Ki
+    pods: "58"
+    ephemeral-storage: 18Gi
+  conditions:
+    - type: Launched
+      status: "True"
+      reason: Launched
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Registered
+      status: "True"
+      reason: Registered
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Initialized
+      status: "True"
+      reason: Initialized
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: general-pend1
+status:
+  conditions:
+    - type: Launched
+      status: Unknown
+      reason: NotLaunched
+      message: Waiting for an instance
+      lastTransitionTime: "2026-10-01T08:00:00Z"

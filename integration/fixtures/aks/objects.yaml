@@ -1,0 +1,212 @@
+# The objects of the AKS session: node autoprovisioning, where Karpenter runs
+# outside the cluster and has no controller Deployment, without nodes. The
+# events carry no timestamps, so the API server dates them when they are
+# applied.
+apiVersion: karpenter.azure.com/v1beta1
+kind: AKSNodeClass
+metadata:
+  name: default
+spec:
+  imageFamily: AzureLinux
+  osDiskSizeGB: 128
+  maxPods: 50
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: azure
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.azure.com
+        kind: AKSNodeClass
+        name: default
+      requirements:
+        - key: karpenter.azure.com/sku-family
+          operator: In
+          values: [D]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: [spot, on-demand]
+      expireAfter: 336h
+  limits:
+    cpu: "48"
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 5m
+---
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
+  name: spot-discount
+spec:
+  weight: 10
+  requirements:
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: [spot]
+  priceAdjustment: -10%
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: azure-a1b2c
+  labels:
+    karpenter.sh/nodepool: azure
+    karpenter.sh/capacity-type: on-demand
+    node.kubernetes.io/instance-type: Standard_D4s_v5
+    topology.kubernetes.io/zone: westeurope-1
+    kubernetes.io/arch: amd64
+    kubernetes.io/os: linux
+    kubernetes.io/hostname: aks-azure-a1b2c-12345678-vmss000000
+    karpenter.azure.com/aksnodeclass: default
+    karpenter.azure.com/sku-name: Standard_D4s_v5
+    karpenter.azure.com/sku-family: D
+    karpenter.azure.com/sku-cpu: "4"
+    karpenter.azure.com/sku-memory: "16009"
+    topology.kubernetes.io/region: westeurope
+  annotations:
+    karpenter.sh/nodepool-hash-version: v3
+spec:
+  nodeClassRef:
+    group: karpenter.azure.com
+    kind: AKSNodeClass
+    name: default
+  requirements:
+    - key: karpenter.sh/nodepool
+      operator: In
+      values:
+        - azure
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values:
+        - Standard_D4s_v5
+  expireAfter: 720h
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: azure-d3e4f
+  labels:
+    karpenter.sh/nodepool: azure
+    karpenter.sh/capacity-type: spot
+    node.kubernetes.io/instance-type: Standard_D8s_v5
+    topology.kubernetes.io/zone: westeurope-2
+    kubernetes.io/arch: amd64
+    kubernetes.io/os: linux
+    kubernetes.io/hostname: aks-azure-d3e4f-12345678-vmss000001
+    karpenter.azure.com/aksnodeclass: default
+    karpenter.azure.com/sku-name: Standard_D8s_v5
+    karpenter.azure.com/sku-family: D
+    karpenter.azure.com/sku-cpu: "8"
+    karpenter.azure.com/sku-memory: "32120"
+    topology.kubernetes.io/region: westeurope
+  annotations:
+    karpenter.sh/nodepool-hash-version: v3
+spec:
+  nodeClassRef:
+    group: karpenter.azure.com
+    kind: AKSNodeClass
+    name: default
+  requirements:
+    - key: karpenter.sh/nodepool
+      operator: In
+      values:
+        - azure
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values:
+        - Standard_D8s_v5
+  expireAfter: 720h
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: integration-tests.azure-d3e4f-launched
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: azure-d3e4f
+reason: Launched
+message: "Status condition transitioned, Type: Launched, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: integration-tests.azure-d3e4f-registered
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: azure-d3e4f
+reason: Registered
+message: "Status condition transitioned, Type: Registered, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: integration-tests.azure-d3e4f-initialized
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: azure-d3e4f
+reason: Initialized
+message: "Status condition transitioned, Type: Initialized, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: azure-pend1
+  labels:
+    karpenter.sh/nodepool: azure
+    karpenter.sh/capacity-type: spot
+spec:
+  nodeClassRef:
+    group: karpenter.azure.com
+    kind: AKSNodeClass
+    name: default
+  requirements:
+    - key: karpenter.sh/nodepool
+      operator: In
+      values:
+        - azure
+  expireAfter: 336h
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: integration-tests.azure-pend1-launching
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: azure-pend1
+reason: NotLaunched
+message: Waiting for an instance
+type: Warning
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter

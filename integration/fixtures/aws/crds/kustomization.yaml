@@ -1,0 +1,9 @@
+# The CRDs that aws/karpenter-provider-aws installs, of its newest release.
+# Renovate updates the tag.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - https://raw.githubusercontent.com/aws/karpenter-provider-aws/refs/tags/v1.15.1/pkg/apis/crds/karpenter.sh_nodeclaims.yaml
+  - https://raw.githubusercontent.com/aws/karpenter-provider-aws/refs/tags/v1.15.1/pkg/apis/crds/karpenter.sh_nodeoverlays.yaml
+  - https://raw.githubusercontent.com/aws/karpenter-provider-aws/refs/tags/v1.15.1/pkg/apis/crds/karpenter.sh_nodepools.yaml
+  - https://raw.githubusercontent.com/aws/karpenter-provider-aws/refs/tags/v1.15.1/pkg/apis/crds/karpenter.k8s.aws_ec2nodeclasses.yaml
