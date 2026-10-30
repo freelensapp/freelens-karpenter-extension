@@ -50,8 +50,7 @@ and runs ahead of Freelens. Such an override gets a rule of its own, next to
 the catalog rule: `matchManagers: ["npm"]`, the override's key in
 `matchDepNames`, `overrideDatasource: "custom.freelens-catalog"`, the overridden
 package in `overridePackageName`, and the catalog rule's `rangeStrategy`,
-`minimumReleaseAge` and `groupName`
-(freelensapp/freelens-for-claude-extension@f2f49241828f201890423e070655c2dc04120b23).
+`minimumReleaseAge` and `groupName`.
 This repository has no override. What Freelens does not define (GitHub Actions, the
 tool versions in the workflows, `shx`) Renovate updates as usual.
 pnpm is the exception: Renovate updates it from the npm registry, in a pull
@@ -759,9 +758,9 @@ and there a path anchored at the repository root matches no file, so the
 override silently does nothing. A plain `biome check` matches both forms, so
 only `trunk check` shows the difference.
 
-In that sandbox, Biome also cannot apply `vcs.useIgnoreFile`: since 2.5.15 it
-matches every target against the repository's `.gitignore` and panics on a
-path outside the repository root, so every file fails. The Biome commands in
+In that sandbox, Biome also cannot apply `vcs.useIgnoreFile`: it matches every
+target against the repository's `.gitignore` and panics on a path outside the
+repository root, so every file fails. The Biome commands in
 `.trunk/trunk.yaml` pass `--vcs-use-ignore-file=false`, because Trunk applies
 `.gitignore` itself before it picks the targets; `biome.jsonc` keeps the
 setting on for `pnpm biome` and editors.
@@ -870,8 +869,8 @@ one app, and fails on any error logged by either process:
   Karpenter variant. Each opens every tab of the dashboard, the details that
   the links of a card open, which must stay open (B14), and the details of the
   kind cluster's own node, which Karpenter does not manage. Each tab checks
-  texts that only the variant's fixtures produce, several of them for a bug of
-  1.0.1 or an improvement of SPEC-0003, named in a comment, and that the error
+  texts that only the variant's fixtures produce, several of them for a
+  numbered bug or improvement of a spec, named in a comment, and that the error
   boundary rendered no error page. The Overview is the first view, because it
   is the one that loads the stores, and shows nothing when an effect breaks
   under `React.StrictMode`.
@@ -1078,10 +1077,10 @@ Changes of behaviour start from a spec in `docs/specs/`, written from
 loop, the spec statuses and when to ask for manual testing are in
 `docs/development/PROCESS.md`, the milestones in `docs/development/ROADMAP.md`.
 A spec lists the tests at every level (unit, integration, functional on the
-fixtures of a variant, manual on a real cluster) and records in "Notes and deviations" what the
-implementation found. Each bug of 1.0.1 found during the v2 port has a number
-(B1-B13 in SPEC-0001) and a test; a comment names it where the code or a test
-depends on it.
+fixtures of a variant, manual on a real cluster) and records in "Notes and
+deviations" what the implementation found. The bugs and improvements of a spec have numbers (B1-B14
+in SPEC-0001, C1-C6 in SPEC-0003), each with a test; a comment names the
+number where the code or a test depends on it.
 
 ## Code Style
 
