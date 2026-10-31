@@ -7,10 +7,12 @@ This file provides guidance to coding agents when working with code in this repo
 ## Project Overview
 
 This repository is the Freelens extension for [Karpenter](https://karpenter.sh/).
-It adds one cluster page, "Karpenter", with four tabs (Overview, Topology, Node
-Classes, Scaling Decisions), and a Karpenter section to the host's Node
-details. It reads the Karpenter objects, the nodes, the pods and the events of
-the cluster, and writes nothing to it.
+It adds "Karpenter" to the cluster sidebar, with its pages as entries: the
+dashboard, "Overview", with four tabs (Overview, Topology, Node Classes,
+Scaling Decisions), and a list page with details for each Karpenter kind that
+has its page so far, "Node Pools". It also adds a Karpenter section to the
+host's Node details. It reads the Karpenter objects, the nodes, the pods and
+the events of the cluster, and writes nothing to it.
 
 The build, type-check, test and release setup is the one of
 freelensapp/freelens-example-extension, the reference template for Freelens
@@ -149,15 +151,18 @@ pnpm clean:all            # Clean everything (dist, dts, node_modules, tgz)
 ```text
 src/
   main/index.ts                  # Main entry (Main.LensExtension): nothing to do in main
-  renderer/index.tsx             # Renderer entry: the page, its menu entry, the Node details item
+  renderer/index.tsx             # Renderer entry: the pages, their menu entries, the details items
+  renderer/custom-resources.ts   # The model classes of customResources: the kinds with a page
   renderer/api/<kind>/           # One model per kind and version, its generated types, its tests
-  renderer/api/types.ts          # Kubernetes core types the models share
+  renderer/api/types.ts          # Kubernetes core types the models share, and the crd with a title
   renderer/data/                 # Where the data comes from: stores, loading, controller version
-  renderer/pages/                # The dashboard (states and tabs) and the Overview tab
+  renderer/pages/                # The dashboard (states and tabs), the Overview tab, the page ids and URLs
+  renderer/pages/<plural>/       # The list page of a kind, and the values of its columns
   renderer/components/           # The other tabs, the NodePool card, charts, error boundary, ErrorPage
-  renderer/details/              # The Karpenter section of the host's Node details
+  renderer/components/KindListPage/ # The list page the kinds share, its Name, Age and text columns
+  renderer/details/              # The details of the kinds and the Karpenter section of the Node details
   renderer/hooks/                # Data hooks of the NodePool card
-  renderer/utils/                # Pure helpers: node status and resources, Karpenter events
+  renderer/utils/                # Pure helpers: node status and resources, Karpenter events, printer columns
   renderer/config/theme.ts       # Colours, icons, labels and status mappings
   renderer/icons/                # SVG icons, imported with ?raw
 test/freelens-extensions.ts      # Stub of @freelensapp/extensions for the unit tests
@@ -178,14 +183,21 @@ from the objects is in pure modules next to them, which the unit tests cover:
 `components/Topology/topology-utils.ts`,
 `components/NodeClassesTab/nodeclass-card.ts`,
 `components/KarpenterCard/card-utils.ts`, `utils/karpenter-events.ts`,
-`utils/kube-helpers.ts` and `details/node-karpenter.ts`. Keep it that way: logic
-that needs the host or a store goes into `data/`, logic on objects into a pure
-module with a test, and the component only renders.
+`utils/kube-helpers.ts`, `utils/printer-columns.ts`,
+`pages/nodepools/nodepool-columns.ts`, `details/node-karpenter.ts`,
+`details/karpenter-v1.ts` and `details/nodepool-relations.ts`. Keep it that
+way: logic that needs the host or a store goes into `data/`, logic on objects
+into a pure module with a test, and the component only renders.
 
-A click on an object opens the host's details drawer of that object on the
-host's list page (`detailUrl` and the `open*Detail` helpers of
-`utils/kube-helpers.ts`, `openNodeClassDetail` of `data/nodeclass.ts`); the
-extension has no list or details page of its own for a Karpenter kind.
+A kind with a page of the extension (NodePool) has an entry under "Karpenter"
+in the sidebar, a list page and details; see "Pages and Details of a Kind". A
+click on such an object in a tab opens its page with its details
+(`openNodePoolDetail` of `utils/kube-helpers.ts`), and a link inside a details
+drawer opens the other object's details over the page (`DetailsLink` of
+`components/shared/`). A kind without a page yet opens the host's details
+drawer on the host's page of its CRD (`detailUrl` and the other `open*Detail`
+helpers of `utils/kube-helpers.ts`, `openNodeClassDetail` of
+`data/nodeclass.ts`).
 
 ## Data Layer
 
@@ -228,10 +240,18 @@ extension has no list or details page of its own for a Karpenter kind.
 - **Memos over a store's items**: `useItems(store.items)` of
   `data/use-items.ts`, never `store.items` itself (see "Rules That Fail
   Silently").
+- **The stores of details**: details open over any page, also one that has
+  not loaded the stores of the objects they relate to, such as the NodeClaims
+  and NodeOverlays of a NodePool. `useSubscribedStores` of
+  `data/use-subscribed-stores.ts` loads them when they are not loaded, and
+  subscribes to them while the details are open.
 
-The extension sets no `customResources`: it has no page for any Karpenter
-kind, so the kinds stay in the Custom Resources tree of the cluster sidebar,
-where the host lists and shows them.
+`customResources` lists the model classes of the kinds with a page of the
+extension (`custom-resources.ts`, with a test): while the extension is
+enabled, the host leaves them out of the Custom Resources tree of the cluster
+sidebar, where they would be listed a second time next to "Karpenter". A kind
+gets into the list with its page, and not before, so that the tree keeps the
+kinds the extension has no page for.
 
 ## CRD KubeObject Pattern
 
@@ -252,6 +272,10 @@ it throws. So:
 
 - **Metadata**: `static readonly` `kind`, `namespaced`, `apiBase` and `crd`.
   Every Karpenter kind is cluster-scoped: `Renderer.K8sApi.ClusterScopedMetadata`.
+  The `crd` of a kind with a page is a `KarpenterKubeObjectCRD` of
+  `api/types.ts`, with the `title` of its sidebar entry and its list page:
+  words separated by spaces ("Node Pools"), not the name of the kind. The
+  models of the versions of a kind carry the same title.
 - **Instance type**: `declare kind` and `declare apiVersion`, with the class's
   kind and version as literals, so that the two AKSNodeClass models, which
   differ only in optional fields, are not assignable to each other, and
@@ -279,10 +303,11 @@ export class NodePool extends Renderer.K8sApi.LensExtensionKubeObject<
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.sh/v1/nodepools";
 
-  static readonly crd = {
+  static readonly crd: KarpenterKubeObjectCRD = {
     apiVersions: ["karpenter.sh/v1"],
     plural: "nodepools",
     singular: "nodepool",
+    title: "Node Pools",
   };
 
   static getTemplateSpec(nodePool: NodePool): NodeClaimTemplateSpec | undefined {
@@ -352,14 +377,58 @@ A new kind, or a new version of a kind, takes:
 Then check the result in Freelens ("Checking the Extension in Freelens") with
 every variant.
 
+### Pages and Details of a Kind
+
+A kind gets its page and its details together, built from the parts the
+kinds share, as Node Pools has them:
+
+1. **The title**: `crd.title` of each of its models, with their tests.
+2. **The sidebar entry**: a `clusterPageMenus` entry under `parentId:
+   "karpenter"`, with `title: Model.crd.title`, its page as target and
+   `visible: computed(() => getXStore() !== undefined)`, so that a cluster
+   that does not serve the kind has no entry. "Overview", the dashboard, stays
+   the first entry, always shown. The page id goes into `pageId` of
+   `pages/routes.ts`, and is also the id of the entry.
+3. **The list page**, `pages/<plural>/<plural>-page.tsx`, an `observer` that
+   renders `KindListPage` of `components/KindListPage/` with
+   `store={getXStore()}`: the host's `KubeObjectListLayout` over the version
+   the cluster serves, newest first, searchable and with the columns the user
+   chooses, or a message when the cluster serves none. The columns are those
+   of `kubectl get <plural> -o wide`, from the `additionalPrinterColumns` of
+   the newest CRD the fixtures install, in their order and under their names,
+   `-o wide` (`priority: 1`) included. A cell has the value of the column's
+   `jsonPath`, from a pure function of `pages/<plural>/<kind>-columns.ts`
+   with a test; a colour (`ConditionStatus` for a condition's status) or a
+   link (`DetailsLink`) on top of the value is fine, another value is not.
+   Every column with a value sorts, numbers and quantities by their amount.
+4. **The details**, `details/<kind>-details.tsx`, an `observer` registered
+   with `detailsFor` for every modeled version, with `priority: 10`, in
+   `kubeObjectDetailItems`, which maps them through `withDetailsErrorBoundary`.
+   The host already shows, before them, the metadata, the printer columns and
+   the conditions of a custom resource, and, after them, the events of the
+   object; the details show the rest of the spec and the status, grouped as
+   the Go structs group them, and the objects around it as `DetailsLink`s.
+   What they compute is in pure modules with tests (`details/karpenter-v1.ts`
+   for what the kinds of `karpenter.sh/v1` share). The stores of the objects
+   around it are loaded with `useSubscribedStores`.
+5. **The links**: the `open*Detail` helper of the kind opens its page with its
+   details (`navigateToDetail(pageUrl(pageId.x), selfLink)`).
+6. **`customResources`**: its model classes, every version, in
+   `custom-resources.ts` and its test.
+7. **The integration tests**: in the session of each variant that serves the
+   kind, `openKindPage` with its entry, `expectListRow` with a value of each
+   column against the fixtures, and the details of one object with
+   `clickAndExpectDetails` and `expectInDetails`, with a text that only they
+   show.
+
 ## Renderer Components
 
 - Components that read a store or an observable are `observer` components from `mobx-react`, which the build maps to
   the host's copy. They are function components; the only class component is the error boundary.
-- The page and the Node details item render inside an `ErrorBoundary` from `src/renderer/components/error-boundary.tsx`,
+- The pages and the details items render inside an `ErrorBoundary` from `src/renderer/components/error-boundary.tsx`,
   a class component of the host's React with `getDerivedStateFromError` and `componentDidCatch`. It logs what its
   children throw while React renders them, with `extension.name` and the component stack, and renders `ErrorPage` in
-  their place. The details item renders again when the host passes a new `object`, which is the boundary's reset key.
+  their place. A details item renders again when the host passes a new `object`, which is the boundary's reset key.
   - The boundary is applied where the registrations are made: `clusterPages` and `kubeObjectDetailItems` are mapped
     through `withPageErrorBoundary` and `withDetailsErrorBoundary`, each taking `this` and a registration, so an entry
     added to a field is wrapped as well. A `kubeObjectMenuItems` field would be mapped through
@@ -374,6 +443,9 @@ every variant.
   `kind` and `apiVersions` from the class and types the props of `Details` from it. Its props are
   `Renderer.Component.KubeObjectDetailsProps<Renderer.K8sApi.Node>`. The host renders it for every node, after its own
   sections, so it renders nothing for a node Karpenter does not manage.
+- The pages are entries under "Karpenter" in the sidebar, which has no page of its own. The host renders a page whose
+  entry has a parent inside a tab layout with a tab for each entry of the parent ("Overview", "Node Pools"), above the
+  page; the dashboard has its own tabs below them.
 - The host renders a cluster page with `params` only. The page gets the extension from the registration
   (`Page: () => <KarpenterDashboard extension={this} />`).
 - Components import their CSS module for the class names only, with no `?inline` import and no `<style>` tag; the
@@ -737,8 +809,10 @@ check still uses the real declaration. So a test that reaches a member the stub
 lacks compiles and fails on `undefined`: add the member to the stub, as small as
 the test needs. Here it has, besides the template's `LensExtensionKubeObject`,
 `KubeApi`, `KubeObjectStore` and `Common.logger`, the drawer components
-`DrawerItem` and `DrawerTitle` and the `Icon` component as plain elements, and
-`Navigation.navigate` as a spy. The other host modules are not stubbed: `react`, `mobx` and
+`DrawerItem`, `DrawerItemLabels` and `DrawerTitle`, `Badge`, `Icon`,
+`WithTooltip` and `KubeObjectAge` as plain elements, `KubeObjectListLayout` as
+a plain table of the items of its store, and `Navigation.navigate` and
+`Navigation.showDetails` as spies. The other host modules are not stubbed: `react`, `mobx` and
 `mobx-react` resolve to the devDependencies, the host's versions.
 
 Vitest runs the development build of mobx, so a test that imports
@@ -880,8 +954,10 @@ one app, and fails on any error logged by either process:
   `karpenter-gcp.tests.ts` are one session per
   Karpenter variant. Each opens every tab of the dashboard, the details that
   the links of a card open, which must stay open: a click that the drawer
-  takes for one outside itself would close them. Then the details of the kind
-  cluster's own node, which Karpenter does not manage. Each tab checks texts
+  takes for one outside itself would close them. Then the page of each kind
+  that has one, from its entry in the sidebar, with a value of each column
+  of a row (`expectListRow`), and the details of that row's object. Then the
+  details of the kind cluster's own node, which Karpenter does not manage. Each tab checks texts
   that only the variant's fixtures produce, the reason named in a comment, and
   that the error boundary rendered no error page. The Overview is the first view, because it
   is the one that loads the stores, and shows nothing when an effect breaks
@@ -930,8 +1006,11 @@ metrics API (`hostMetricsRequestPattern`), which kind does not serve and the
 host's views of pods and nodes ask for. The details of the kind node are
 opened with `Renderer.Navigation.showDetails`, not from the host's Nodes page.
 The link of the dashboard in the sidebar does not leave the tab that is open,
-and a link of a card opens the host's list page of the kind, so `openTab`
-opens the dashboard from the sidebar first when its tab bar is not shown.
+and a link of a card opens the page of the kind, so `openTab` opens the
+dashboard from the sidebar first when its tab bar is not shown. The sidebar
+keeps "Karpenter" closed until it is clicked, so the helpers open it first
+when its entries are not shown. `openTab` looks for its texts in the main area,
+not in the sidebar, whose entries have titles that the tabs show too.
 
 The sessions reach the app through its renderer only, as in the example
 extension: they navigate with `Renderer.Navigation.navigate`, find the kind
@@ -1035,14 +1114,16 @@ The API server drops events an hour after they are created; apply
 ### Driving the UI
 
 - Every cluster renders in a cross-origin `<clusterId>.renderer.freelens.app`
-  iframe. The page and the Node details item live in that frame, not in the
-  main page.
-- The page's URL is `/extension/freelensapp--karpenter-extension/dashboard`.
-  The sidebar entry navigates in `onClick`; its `href` is not the page URL. A
-  click on `[data-testid="sidebar-item-…"]` does not navigate; a DOM `click()`
-  on the link inside it,
-  `[data-testid="link-for-sidebar-item-freelensapp--karpenter-extension-dashboard"]`,
-  does. Neither does `history.pushState` in the cluster frame.
+  iframe. The pages and the details live in that frame, not in the main page.
+- The URL of a page is `/extension/freelensapp--karpenter-extension/<page id>`,
+  with the ids of `pages/routes.ts`: `dashboard` for the Overview, `nodepools`.
+  The sidebar entries navigate in `onClick`; their `href` is not the page URL.
+  "Karpenter" opens and closes its entries, and is closed until it is clicked.
+  A click on `[data-testid="sidebar-item-…"]` does not navigate; a DOM
+  `click()` on the link inside it,
+  `[data-testid="link-for-sidebar-item-freelensapp--karpenter-extension-<id>"]`,
+  does, with the parent's id `karpenter`. Neither does `history.pushState` in
+  the cluster frame.
 - The tabs are buttons with their names ("Overview", "Topology", "Node
   Classes", "Scaling Decisions").
 - Playwright's actionability checks can fail on the hotbar, where
