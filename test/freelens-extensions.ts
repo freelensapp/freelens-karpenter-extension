@@ -52,6 +52,18 @@ function DrawerItem({ name, hidden, children }: { name: ReactNode; hidden?: bool
     : createElement(Fragment, null, createElement("span", null, name), createElement("span", null, children));
 }
 
+// A badge as its label, and the labels of a drawer item as `key=value` badges, unless there are none.
+function Badge({ label }: { label?: ReactNode }) {
+  return createElement("span", null, label);
+}
+
+function DrawerItemLabels({ name, labels }: { name: ReactNode; labels: Record<string, string> | string[] }) {
+  const texts = Array.isArray(labels) ? labels : Object.entries(labels).map(([key, value]) => `${key}=${value}`);
+  return texts.length === 0
+    ? null
+    : createElement(DrawerItem, { name }, ...texts.map((text) => createElement(Badge, { key: text, label: text })));
+}
+
 // An icon as an empty element.
 function Icon() {
   return createElement("i");
@@ -103,7 +115,9 @@ function KubeObjectListLayout<I>({
 
 export const Renderer = {
   Component: {
+    Badge,
     DrawerItem,
+    DrawerItemLabels,
     DrawerTitle,
     Icon,
     KubeObjectAge,
