@@ -78,6 +78,11 @@ function KubeObjectAge() {
   return createElement("span", null, "age");
 }
 
+// A date as the text it was given.
+function LocaleDate({ date }: { date: string | Date }) {
+  return createElement("span", null, String(date));
+}
+
 // The list of a store as a plain table: the title, the header cells and the cells of every item of the store.
 function KubeObjectListLayout<I>({
   renderHeaderTitle,
@@ -122,6 +127,7 @@ export const Renderer = {
     Icon,
     KubeObjectAge,
     KubeObjectListLayout,
+    LocaleDate,
     WithTooltip,
   },
   K8sApi: {
