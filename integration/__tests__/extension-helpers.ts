@@ -45,7 +45,7 @@ const testNamespace = "integration-tests";
 
 // The API groups of the CRDs of every variant: Karpenter's own and the node
 // classes of its providers.
-const karpenterGroups = ["karpenter.sh", "karpenter.k8s.aws", "karpenter.azure.com"];
+const karpenterGroups = ["karpenter.sh", "karpenter.k8s.aws", "karpenter.azure.com", "karpenter.k8s.gcp"];
 
 // The package name with `@` dropped and `/` turned into `--`
 // (`sanitizeExtensionName` in Freelens's `lens-extension.ts`).

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   countNodesByPool,
   type NodeClass,
+  nodeClassesEmptyMessage,
   nodeClassMetaItems,
   nodeClassProvider,
   nodePoolRowValues,
@@ -21,6 +22,13 @@ const aks = (name: string, spec: Record<string, unknown> = {}, version = "v1beta
     metadata: { name },
     spec,
   }) as unknown as NodeClass;
+const gce = (name: string, spec: Record<string, unknown> = { imageSelectorTerms: [] }) =>
+  ({
+    apiVersion: "karpenter.k8s.gcp/v1alpha1",
+    kind: "GCENodeClass",
+    metadata: { name },
+    spec,
+  }) as unknown as NodeClass;
 
 const pool = (
   name: string,
@@ -35,12 +43,32 @@ const pool = (
 
 const awsRef = (name: string) => ({ group: "karpenter.k8s.aws", kind: "EC2NodeClass", name });
 const azureRef = (name: string) => ({ group: "karpenter.azure.com", kind: "AKSNodeClass", name });
+const gcpRef = (name: string) => ({ group: "karpenter.k8s.gcp", kind: "GCENodeClass", name });
 
 describe("nodeClassProvider", () => {
-  it("is aws for an EC2NodeClass and azure for an AKSNodeClass of either version", () => {
+  it("is aws for an EC2NodeClass, azure for an AKSNodeClass of either version and gcp for a GCENodeClass", () => {
     expect(nodeClassProvider(ec2("a"))).toBe("aws");
     expect(nodeClassProvider(aks("a"))).toBe("azure");
     expect(nodeClassProvider(aks("a", {}, "v1alpha2"))).toBe("azure");
+    expect(nodeClassProvider(gce("a"))).toBe("gcp");
+  });
+});
+
+describe("nodeClassesEmptyMessage", () => {
+  it("names only the node class kinds the cluster serves", () => {
+    expect(nodeClassesEmptyMessage(["gcp"], false)).toBe("No GCENodeClass found");
+    expect(nodeClassesEmptyMessage(["aws"], false)).toBe("No EC2NodeClass found");
+    expect(nodeClassesEmptyMessage(["aws", "azure"], false)).toBe("No EC2NodeClass or AKSNodeClass found");
+  });
+
+  it("names every supported kind when the cluster serves none", () => {
+    expect(nodeClassesEmptyMessage([], false)).toBe(
+      "No node class of a supported provider is installed (EC2NodeClass, AKSNodeClass, GCENodeClass)",
+    );
+  });
+
+  it("is about the filter when there are node classes", () => {
+    expect(nodeClassesEmptyMessage(["gcp"], true)).toBe("No results for this filter");
   });
 });
 
@@ -86,6 +114,30 @@ describe("nodeClassMetaItems", () => {
     }
   });
 
+  it("summarises a GCENodeClass, its image family and its kubelet configuration", () => {
+    const nodeClass = gce("default", {
+      serviceAccount: "karpenter-node@lab.iam.gserviceaccount.com",
+      imageSelectorTerms: [{ family: "ContainerOptimizedOS", channel: "stable" }],
+      disks: [{ boot: true, category: "pd-balanced", sizeGiB: 100 }],
+      networkTags: ["karpenter", "web"],
+      subnetRangeName: "pods",
+      kubeletConfiguration: { maxPods: 64 },
+    });
+    expect(nodeClassMetaItems(nodeClass)).toEqual([
+      { label: "Image Family", value: "ContainerOptimizedOS" },
+      { label: "Service Account", value: "karpenter-node@lab.iam.gserviceaccount.com" },
+      { label: "Image Selectors", value: 1 },
+      { label: "Disks", value: 1 },
+      { label: "Network Tags", value: 2 },
+      { label: "Subnet Range", value: "pods" },
+      { label: "Kubelet Config", value: "✓" },
+    ]);
+  });
+
+  it("does not read the name kubelet of the other providers in a GCENodeClass", () => {
+    expect(nodeClassMetaItems(gce("a", { imageSelectorTerms: [], kubelet: { maxPods: 10 } }))).toEqual([]);
+  });
+
   it("does not read the v1beta1 name kubeletConfig", () => {
     expect(nodeClassMetaItems(aks("a", { kubeletConfig: { maxPods: 10 } }))).toEqual([]);
     expect(nodeClassMetaItems(ec2("a", { kubeletConfig: { maxPods: 10 } }))).toEqual([]);
@@ -97,6 +149,7 @@ describe("nodePoolsOfNodeClass", () => {
     pool("general", awsRef("default")),
     pool("gpu", awsRef("gpu")),
     pool("azure", azureRef("default")),
+    pool("gcp", gcpRef("default")),
     pool("legacy", { kind: "EC2NodeClass", name: "default" }),
     pool("other-group", { group: "example.com", kind: "EC2NodeClass", name: "default" }),
     pool("no-ref", undefined),
@@ -107,6 +160,7 @@ describe("nodePoolsOfNodeClass", () => {
     expect(names(ec2("default"))).toEqual(["general", "legacy"]);
     expect(names(aks("default"))).toEqual(["azure"]);
     expect(names(aks("default", {}, "v1alpha2"))).toEqual(["azure"]);
+    expect(names(gce("default"))).toEqual(["gcp"]);
     expect(names(ec2("gpu"))).toEqual(["gpu"]);
     expect(names(ec2("unused"))).toEqual([]);
   });

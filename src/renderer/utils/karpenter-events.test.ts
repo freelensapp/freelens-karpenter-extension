@@ -117,6 +117,7 @@ describe("isKarpenterEvent", () => {
     expect(isKarpenterEvent(event({ reason: "X", kind: "Pod", reportingComponent: "Karpenter" }))).toBe(true);
     expect(isKarpenterEvent(event({ reason: "X", kind: "EC2NodeClass" }))).toBe(true);
     expect(isKarpenterEvent(event({ reason: "X", kind: "AKSNodeClass" }))).toBe(true);
+    expect(isKarpenterEvent(event({ reason: "X", kind: "GCENodeClass" }))).toBe(true);
     expect(isKarpenterEvent(event({ reason: "X", kind: "Deployment", namespace: "karpenter" }))).toBe(true);
     expect(isKarpenterEvent(event({ reason: "Nominated", kind: "Pod" }))).toBe(true);
     expect(isKarpenterEvent(event({ reason: "Finalized", kind: "Node" }))).toBe(true);

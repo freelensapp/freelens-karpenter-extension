@@ -1,0 +1,248 @@
+# The objects of the GCP session: self-hosted Karpenter on GKE with a
+# GCENodeClass, without nodes. The events carry no timestamps, so the API
+# server dates them when they are applied. The controller Deployment is scaled
+# to zero; the dashboard reads the version from its image.
+apiVersion: karpenter.k8s.gcp/v1alpha1
+kind: GCENodeClass
+metadata:
+  name: default
+spec:
+  serviceAccount: karpenter-node@lab.iam.gserviceaccount.com
+  imageSelectorTerms:
+    - family: ContainerOptimizedOS
+      channel: stable
+  disks:
+    - category: pd-balanced
+      sizeGiB: 100
+      boot: true
+  networkTags:
+    - karpenter
+  kubeletConfiguration:
+    maxPods: 64
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: gke
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.gcp
+        kind: GCENodeClass
+        name: default
+      requirements:
+        - key: karpenter.k8s.gcp/instance-family
+          operator: In
+          values: [e2, n2]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: [spot, on-demand]
+      expireAfter: 480h
+  limits:
+    cpu: "64"
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 5m
+---
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
+  name: spot-discount
+spec:
+  weight: 10
+  requirements:
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: [spot]
+  priceAdjustment: -10%
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: gke-a1b2c
+  labels:
+    karpenter.sh/nodepool: gke
+    karpenter.sh/capacity-type: on-demand
+    node.kubernetes.io/instance-type: e2-standard-4
+    topology.kubernetes.io/zone: us-central1-a
+    kubernetes.io/arch: amd64
+    kubernetes.io/os: linux
+    kubernetes.io/hostname: karpenter-gke-a1b2c
+    karpenter.k8s.gcp/gcenodeclass: default
+    karpenter.k8s.gcp/instance-family: e2
+    karpenter.k8s.gcp/instance-cpu: "4"
+    karpenter.k8s.gcp/instance-memory: "16384"
+    topology.kubernetes.io/region: us-central1
+  annotations:
+    karpenter.sh/nodepool-hash-version: v3
+spec:
+  nodeClassRef:
+    group: karpenter.k8s.gcp
+    kind: GCENodeClass
+    name: default
+  requirements:
+    - key: karpenter.sh/nodepool
+      operator: In
+      values:
+        - gke
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values:
+        - e2-standard-4
+  expireAfter: 480h
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: gke-d3e4f
+  labels:
+    karpenter.sh/nodepool: gke
+    karpenter.sh/capacity-type: spot
+    node.kubernetes.io/instance-type: n2-standard-8
+    topology.kubernetes.io/zone: us-central1-b
+    kubernetes.io/arch: amd64
+    kubernetes.io/os: linux
+    kubernetes.io/hostname: karpenter-gke-d3e4f
+    karpenter.k8s.gcp/gcenodeclass: default
+    karpenter.k8s.gcp/instance-family: n2
+    karpenter.k8s.gcp/instance-cpu: "8"
+    karpenter.k8s.gcp/instance-memory: "32768"
+    topology.kubernetes.io/region: us-central1
+  annotations:
+    karpenter.sh/nodepool-hash-version: v3
+spec:
+  nodeClassRef:
+    group: karpenter.k8s.gcp
+    kind: GCENodeClass
+    name: default
+  requirements:
+    - key: karpenter.sh/nodepool
+      operator: In
+      values:
+        - gke
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values:
+        - n2-standard-8
+  expireAfter: 480h
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: integration-tests.gke-d3e4f-launched
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: gke-d3e4f
+reason: Launched
+message: "Status condition transitioned, Type: Launched, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: integration-tests.gke-d3e4f-registered
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: gke-d3e4f
+reason: Registered
+message: "Status condition transitioned, Type: Registered, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: integration-tests.gke-d3e4f-initialized
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: gke-d3e4f
+reason: Initialized
+message: "Status condition transitioned, Type: Initialized, Status: True"
+type: Normal
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+---
+apiVersion: karpenter.sh/v1
+kind: NodeClaim
+metadata:
+  name: gke-pend1
+  labels:
+    karpenter.sh/nodepool: gke
+    karpenter.sh/capacity-type: spot
+spec:
+  nodeClassRef:
+    group: karpenter.k8s.gcp
+    kind: GCENodeClass
+    name: default
+  requirements:
+    - key: karpenter.sh/nodepool
+      operator: In
+      values:
+        - gke
+  expireAfter: 480h
+---
+apiVersion: v1
+kind: Event
+metadata:
+  name: integration-tests.gke-pend1-launching
+  namespace: default
+involvedObject:
+  apiVersion: karpenter.sh/v1
+  kind: NodeClaim
+  name: gke-pend1
+reason: NotLaunched
+message: Waiting for an instance
+type: Warning
+count: 1
+source:
+  component: karpenter
+reportingComponent: karpenter
+reportingInstance: karpenter
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: integration-tests
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karpenter
+  namespace: integration-tests
+  labels:
+    app.kubernetes.io/name: karpenter
+    app.kubernetes.io/instance: karpenter
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: karpenter
+      app.kubernetes.io/instance: karpenter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: karpenter
+        app.kubernetes.io/instance: karpenter
+    spec:
+      containers:
+        - name: karpenter
+          image: public.ecr.aws/cloudpilotai/gcp/karpenter:v0.6.1

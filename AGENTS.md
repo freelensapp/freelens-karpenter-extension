@@ -26,8 +26,10 @@ there, and is copied here.
   `karpenter.sh/v1alpha1` (NodeOverlay) of kubernetes-sigs/karpenter,
   `karpenter.k8s.aws/v1` (EC2NodeClass) of aws/karpenter-provider-aws,
   `karpenter.azure.com/v1beta1` and `v1alpha2` (AKSNodeClass) of
-  Azure/karpenter-provider-azure; the types follow Karpenter 1.15.0, the AWS
-  provider 1.15.0 and the Azure provider 1.14.5
+  Azure/karpenter-provider-azure, `karpenter.k8s.gcp/v1alpha1`
+  (GCENodeClass) of cloudpilot-ai/karpenter-provider-gcp; the types follow
+  Karpenter 1.15.0, the AWS provider 1.15.0, the Azure provider 1.14.5 and the
+  GCP provider 0.6.1
 - **Toolchain**: Node.js 24.x, yq 4.x and cosign 3.x (`mise.toml` with
   `mise.lock`; Node also in `.nvmrc`)
 - **Package manager**: pnpm 12.x (`packageManager`, run through corepack)
@@ -192,9 +194,18 @@ extension has no list or details page of its own for a Karpenter kind.
   `data/stores.ts` reaches them through `getServedStore(...)`, which tries the
   versions of a kind newest first and returns `undefined` when none is served
   (`getNodePoolStore()`, `getNodeClaimStore()`, `getNodeOverlayStore()`,
-  `getEC2NodeClassStore()`, `getAKSNodeClassStore()`). Only one version of a
-  kind is used, so no object is counted twice. AKSNodeClass has two models,
-  `v1beta1` and `v1alpha2`: the Azure provider 1.14 serves only `v1beta1`.
+  `getEC2NodeClassStore()`, `getAKSNodeClassStore()`,
+  `getGCENodeClassStore()`). Only one version of a kind is used, so no object
+  is counted twice. AKSNodeClass has two models, `v1beta1` and `v1alpha2`: the
+  Azure provider 1.14 serves only `v1beta1`.
+- **The provider of the cluster**: a cluster runs the Karpenter of one cloud,
+  and serves the node class of that provider only.
+  `servedNodeClassProviders()` of `data/nodeclass.ts` lists the providers
+  whose node class store is served; what the page shows of a provider (the
+  empty state of the Node Classes tab, the kind of a NodePool card without
+  one) follows it, so a GKE cluster shows nothing of AWS or Azure, and the
+  reverse. Called while an `observer` renders, it follows the CRDs as they
+  come and go.
 - **Nodes and pods**: the host's `nodesStore` and `podsStore`.
 - **Events**: a store of the extension, `KarpenterEventStore`, over the
   host's `Renderer.K8sApi.eventApi`, for the namespaces in
@@ -227,7 +238,8 @@ where the host lists and shows them.
 A model is a subclass of `Renderer.K8sApi.LensExtensionKubeObject`, one file
 per kind and API version, `src/renderer/api/<kind>/<kind>-<version>.ts`:
 `nodepool-v1.ts`, `nodeclaim-v1.ts`, `nodeoverlay-v1alpha1.ts`,
-`ec2nodeclass-v1.ts`, `aksnodeclass-v1beta1.ts` and `aksnodeclass-v1alpha2.ts`.
+`ec2nodeclass-v1.ts`, `aksnodeclass-v1beta1.ts`, `aksnodeclass-v1alpha2.ts`
+and `gcenodeclass-v1alpha1.ts`.
 Their spec and status types are in `*-types.ts` next to them; NodePool and
 NodeClaim share `api/karpenter/karpenter-v1-types.ts`.
 
@@ -300,10 +312,10 @@ A new kind, or a new version of a kind, takes:
 
 1. **The types.** They follow the API of the controller that serves the
    resource, read from its sources at the release that serves the version,
-   and not from memory. Karpenter and both providers are written with
+   and not from memory. Karpenter and its providers are written with
    kubebuilder, so the types follow their Go types (`pkg/apis/<version>/` of
    each repository), with the optional fields of the generated CRD
-   (`pkg/apis/crds/`):
+   (`pkg/apis/crds/`, or `charts/karpenter/crds/` of the GCP provider):
    - Every Go struct has a TypeScript interface of the same name, with the
      same fields under their `json` names.
    - A field is optional when the CRD does not require it. `controller-gen`
@@ -864,7 +876,8 @@ one app, and fails on any error logged by either process:
 
 - `extensions.tests.ts` uninstalls whatever installation of the extension the
   app has and installs this checkout in place. It needs no cluster.
-- `karpenter-aws.tests.ts` and `karpenter-aks.tests.ts` are one session per
+- `karpenter-aws.tests.ts`, `karpenter-aks.tests.ts` and
+  `karpenter-gcp.tests.ts` are one session per
   Karpenter variant. Each opens every tab of the dashboard, the details that
   the links of a card open, which must stay open: a click that the drawer
   takes for one outside itself would close them. Then the details of the kind
@@ -879,19 +892,20 @@ variant and objects with their status, and nothing reconciles them. The
 fixtures are in `integration/fixtures/<variant>/`:
 
 - `crds/kustomization.yaml`: the CRDs that the provider of the variant
-  installs, from `pkg/apis/crds/` of its newest release. Each provider ships
+  installs, from `pkg/apis/crds/` of its newest release
+  (`charts/karpenter/crds/` for GCP). Each provider ships
   its own copy of the `karpenter.sh` CRDs, so the session has exactly what a
   cluster of that variant has. A Renovate rule updates the release in the URLs.
 - `objects.yaml`: the node classes, NodePools, NodeOverlays, NodeClaims and
   Karpenter's events. There are no nodes and no pods: without a kubelet a node
   turns NotReady, and pods on it stay Pending. Without a node, the Overview
   folds a NodePool into "+N empty"; a NodeClaim still waiting for its node
-  (`general-pend1`, `azure-pend1`) gives its NodePool a card. The events carry
-  no timestamps, so the API server dates them when they are applied, and the
-  extension takes `metadata.creationTimestamp` for their time. The AWS variant
-  has a controller Deployment scaled to zero, whose image gives the version;
-  AKS runs Karpenter outside the cluster, so it has none, and the dashboard
-  shows "Karpenter installed".
+  (`general-pend1`, `azure-pend1`, `gke-pend1`) gives its NodePool a card. The
+  events carry no timestamps, so the API server dates them when they are
+  applied, and the extension takes `metadata.creationTimestamp` for their
+  time. The AWS and GCP variants have a controller Deployment scaled to zero,
+  whose image gives the version; AKS runs Karpenter outside the cluster, so it
+  has none, and the dashboard shows "Karpenter installed".
 - `status.yaml`: the status of those objects. The API server drops the status
   of an object it creates, so the session applies it to the status
   subresource.
@@ -901,8 +915,8 @@ order, because they share the `karpenter.sh` CRDs, and the app reads which
 CRDs are served when it connects. Each session disconnects the kind cluster,
 removes what an earlier run left (the namespace `integration-tests`, the
 events of `default` whose name starts with `integration-tests.`, and every
-CRD of the groups `karpenter.sh`, `karpenter.k8s.aws` and
-`karpenter.azure.com`), applies the CRDs, waits until they are established
+CRD of the groups `karpenter.sh`, `karpenter.k8s.aws`, `karpenter.azure.com`
+and `karpenter.k8s.gcp`), applies the CRDs, waits until they are established
 and their resources can be listed (until then a list answers 429, which the
 renderer logs), applies the objects and their status, and only then connects
 the cluster. Its teardown stops collecting the errors first, then disconnects

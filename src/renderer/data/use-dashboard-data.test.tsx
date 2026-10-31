@@ -17,6 +17,7 @@ vi.mock("./stores", () => ({
   getNodeOverlayStore: () => undefined,
   getEC2NodeClassStore: () => undefined,
   getAKSNodeClassStore: () => undefined,
+  getGCENodeClassStore: () => undefined,
 }));
 
 vi.mock("./load", () => ({ loadKarpenterData: vi.fn() }));

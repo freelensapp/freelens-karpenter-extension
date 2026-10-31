@@ -92,7 +92,15 @@ export function eventGroup(event: KarpenterEvent): EventGroup {
 
 // ── Which events are Karpenter's ─────────────────────────────────────────────
 
-const KARPENTER_KINDS = new Set(["NodePool", "NodeClaim", "Machine", "EC2NodeClass", "AKSNodeClass", "NodeClass"]);
+const KARPENTER_KINDS = new Set([
+  "NodePool",
+  "NodeClaim",
+  "Machine",
+  "EC2NodeClass",
+  "AKSNodeClass",
+  "GCENodeClass",
+  "NodeClass",
+]);
 
 const KARPENTER_NAMESPACES = new Set(["karpenter", "karpenter-system"]);
 
