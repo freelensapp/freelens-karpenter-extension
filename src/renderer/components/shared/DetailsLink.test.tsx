@@ -27,6 +27,27 @@ describe("DetailsLink", () => {
     expect(rowClick).not.toHaveBeenCalled();
   });
 
+  it("opens the details on the page of the kind, when it has one, and keeps the click from the row", () => {
+    const rowClick = vi.fn();
+    render(
+      <div onClick={rowClick}>
+        <DetailsLink
+          selfLink="/apis/karpenter.sh/v1/nodepools/general"
+          page="/extension/freelensapp--karpenter-extension/nodepools"
+        >
+          general
+        </DetailsLink>
+      </div>,
+    );
+
+    expect(fireEvent.click(screen.getByText("general"))).toBe(false);
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/nodepools?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral",
+    );
+    expect(Renderer.Navigation.showDetails).not.toHaveBeenCalled();
+    expect(rowClick).not.toHaveBeenCalled();
+  });
+
   it("is the text alone without a selfLink", () => {
     render(<DetailsLink selfLink="">general</DetailsLink>);
 
