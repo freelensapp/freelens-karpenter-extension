@@ -11,6 +11,7 @@ export const pageId = {
   /** The dashboard with its tabs, "Overview" in the sidebar. */
   overview: "dashboard",
   nodePools: "nodepools",
+  nodeClaims: "nodeclaims",
 } as const;
 
 export type PageId = (typeof pageId)[keyof typeof pageId];
