@@ -8,6 +8,7 @@
 
 import { Renderer } from "@freelensapp/extensions";
 import { getPodStore } from "../data/stores";
+import { pageId, pageUrl } from "../pages/routes";
 
 import type { NodePool } from "../api/nodepool/nodepool-v1";
 import type { Condition, Quantity } from "../api/types";
@@ -227,11 +228,14 @@ export const nodePoolSelfLink = (name: string) => `/apis/karpenter.sh/v1/nodepoo
 export const nodeClaimSelfLink = (name: string) => `/apis/karpenter.sh/v1/nodeclaims/${name}`;
 export const nodeOverlaySelfLink = (name: string) => `/apis/karpenter.sh/v1alpha1/nodeoverlays/${name}`;
 
+/** Opens the extension's Node Pools page with the details of a NodePool. */
 export function openNodePoolDetail(nodePool: NodePool): void {
   const name = nodePool.metadata?.name ?? "";
   if (!name) return;
-  navigateToDetail("/crd/karpenter.sh/nodepools", nodePoolSelfLink(name));
+  navigateToDetail(pageUrl(pageId.nodePools), nodePoolSelfLink(name));
 }
+
+// The kinds the extension has no page for yet open on the host's page of their CRD.
 
 export function openNodeOverlayDetail(name: string): void {
   if (!name) return;

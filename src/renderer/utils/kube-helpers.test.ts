@@ -1,3 +1,4 @@
+import { Renderer } from "@freelensapp/extensions";
 import { describe, expect, it } from "vitest";
 import {
   buildPodCountMap,
@@ -11,12 +12,12 @@ import {
   getNodeMaxPods,
   getNodeMemory,
   getNodeStatus,
+  openNodePoolDetail,
   parseCpuCores,
   parseMemGi,
 } from "./kube-helpers";
 
-import type { Renderer } from "@freelensapp/extensions";
-
+import type { NodePool } from "../api/nodepool/nodepool-v1";
 import type { Node } from "./kube-helpers";
 
 // The helpers read only the fields of the objects, as the host's objects have them.
@@ -165,6 +166,15 @@ describe("detailUrl", () => {
   it("opens the details of the object on the list page", () => {
     expect(detailUrl("/nodes", "/api/v1/nodes/a")).toBe(
       "/nodes?kube-details=%2Fapi%2Fv1%2Fnodes%2Fa&kube-selected=%2Fapi%2Fv1%2Fnodes%2Fa",
+    );
+  });
+});
+
+describe("openNodePoolDetail", () => {
+  it("opens the extension's Node Pools page with the details of the NodePool", () => {
+    openNodePoolDetail({ metadata: { name: "general" } } as NodePool);
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/nodepools?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral",
     );
   });
 });
