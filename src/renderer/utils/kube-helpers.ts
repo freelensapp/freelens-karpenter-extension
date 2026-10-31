@@ -10,7 +10,7 @@ import { Renderer } from "@freelensapp/extensions";
 import { getPodStore } from "../data/stores";
 
 import type { NodePool } from "../api/nodepool/nodepool-v1";
-import type { Condition } from "../api/types";
+import type { Condition, Quantity } from "../api/types";
 
 export type Node = Renderer.K8sApi.Node;
 type Pod = Renderer.K8sApi.Pod;
@@ -102,9 +102,14 @@ export function getNodeMemory(node: Node): string {
   return formatMemory(allocatable?.memory || capacity?.memory);
 }
 
-/** A memory quantity in Gi, or Mi below 1Gi; `—` without one. */
-export function formatMemory(quantity: string | undefined): string {
-  const raw = String(quantity || "");
+/** A quantity as `kubectl` prints it, a string or a number; `—` without one. */
+export function formatQuantity(quantity: Quantity | undefined): string {
+  return quantity === undefined || quantity === "" ? "—" : String(quantity);
+}
+
+/** A memory quantity, a string or a number of bytes, in Gi, or Mi below 1Gi; `—` without one. */
+export function formatMemory(quantity: Quantity | undefined): string {
+  const raw = quantity === undefined ? "" : String(quantity).trim();
   if (!raw) return "—";
 
   if (raw.endsWith("Ki")) {
@@ -156,7 +161,9 @@ export function getInstanceType(node: Node): string {
 
 // ── Memory / CPU parsing ──────────────────────────────────────────────────────
 
-export function parseMemGi(mem: string | number | null | undefined): number {
+/** A memory quantity in Gi. A number is a quantity written without quotes, which has no suffix: bytes. */
+export function parseMemGi(mem: Quantity | null | undefined): number {
+  if (typeof mem === "number") return mem / (1024 * 1024 * 1024);
   if (mem === null || mem === undefined || mem === "") return 0;
   const s = String(mem).trim();
   if (s.endsWith("Ki")) return parseFloat(s) / (1024 * 1024);
@@ -169,7 +176,8 @@ export function parseMemGi(mem: string | number | null | undefined): number {
   return n || 0;
 }
 
-export function parseCpuCores(cpu: string | number | null | undefined): number {
+/** A CPU quantity in cores, a string such as `3920m` or a number. */
+export function parseCpuCores(cpu: Quantity | null | undefined): number {
   if (typeof cpu === "number") return cpu;
   if (!cpu) return 0;
   if (cpu.endsWith("m")) return parseFloat(cpu) / 1000;

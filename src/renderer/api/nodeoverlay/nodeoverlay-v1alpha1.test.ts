@@ -71,6 +71,10 @@ describe("NodeOverlay (karpenter.sh/v1alpha1)", () => {
     expect(NodeOverlay.getWeight(o)).toBe(7);
     expect(NodeOverlay.getWeight(overlay("none", {}))).toBe(0);
     expect(NodeOverlay.describe(o)).toEqual(["price 0.25", "price -10%", "+2 example.com/fpga"]);
+    // A quantity written without quotes comes back as a number.
+    expect(NodeOverlay.describe(overlay("n", { capacity: { "example.com/fpga": 2 } }))).toEqual([
+      "+2 example.com/fpga",
+    ]);
   });
 
   it.each([

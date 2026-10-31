@@ -3,6 +3,7 @@ import {
   buildPodCountMap,
   detailUrl,
   formatMemory,
+  formatQuantity,
   getConditionStatus,
   getInstanceType,
   getNodeClaimName,
@@ -183,5 +184,23 @@ describe("formatMemory", () => {
     expect(formatMemory(undefined)).toBe("—");
     expect(formatMemory("")).toBe("—");
     expect(formatMemory("8G")).toBe("8G");
+  });
+});
+
+describe("quantities written as numbers", () => {
+  it("parses a number of cores, and a number of bytes", () => {
+    expect(parseCpuCores(100)).toBe(100);
+    expect(parseMemGi(2147483648)).toBe(2);
+    expect(parseMemGi(0)).toBe(0);
+  });
+
+  it("formats a number as kubectl prints it", () => {
+    expect(formatQuantity(100)).toBe("100");
+    expect(formatQuantity(0)).toBe("0");
+    expect(formatQuantity("4")).toBe("4");
+    expect(formatQuantity(undefined)).toBe("—");
+    expect(formatQuantity("")).toBe("—");
+    expect(formatMemory(8589934592)).toBe("8.0Gi");
+    expect(formatMemory(0)).toBe("0");
   });
 });

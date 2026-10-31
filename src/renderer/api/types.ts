@@ -10,8 +10,14 @@ export type Condition = Renderer.K8sApi.Condition;
  */
 export type NillableDuration = string;
 
-/** `corev1.ResourceList`: quantities by resource name, such as `{ cpu: "4", memory: "16Gi" }`. */
-export type ResourceList = Record<string, string>;
+/**
+ * `resource.Quantity`, `x-kubernetes-int-or-string` in a CRD. The API server keeps a quantity of a custom resource
+ * as it was written, so one written without quotes, such as `cpu: 100`, comes back as a number.
+ */
+export type Quantity = string | number;
+
+/** `corev1.ResourceList`: quantities by resource name, such as `{ cpu: "4", memory: "16Gi" }` or `{ cpu: 100 }`. */
+export type ResourceList = Record<string, Quantity>;
 
 /** `corev1.NodeSelectorOperator`. */
 export type NodeSelectorOperator = "In" | "NotIn" | "Exists" | "DoesNotExist" | "Gt" | "Lt";
