@@ -7,6 +7,7 @@ import { Renderer } from "@freelensapp/extensions";
 import { computed } from "mobx";
 import { NodePool } from "./api/nodepool/nodepool-v1";
 import { withDetailsErrorBoundary, withPageErrorBoundary } from "./components/error-boundary";
+import { customResources } from "./custom-resources";
 import { getNodePoolStore } from "./data/stores";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 import { NodePoolDetails } from "./details/nodepool-details";
@@ -27,6 +28,8 @@ export function KarpenterIcon(props: Renderer.Component.IconProps) {
 // The pages render inside an error boundary, so that an error they throw stays in the page instead of replacing the
 // main area of the cluster with the host's error.
 export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
+  customResources = customResources;
+
   clusterPages: Renderer.LensExtension["clusterPages"] = [
     {
       id: pageId.overview,
