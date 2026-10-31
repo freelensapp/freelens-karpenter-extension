@@ -25,6 +25,7 @@ kind: NodePool
 metadata:
   name: gke
 spec:
+  weight: 10
   template:
     spec:
       nodeClassRef:

@@ -8,10 +8,11 @@ Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robert
 
 ## What it shows
 
-The extension adds a **Karpenter** page to the cluster sidebar, with four
-tabs, and a Karpenter section to the details of a node. It follows the
-Freelens theme, light or dark, and updates while it is open, as Karpenter
-launches and removes nodes.
+The extension adds **Karpenter** to the cluster sidebar, with its pages as
+entries: **Overview**, a dashboard with four tabs, and **Node Pools**, the
+list of the NodePools with their details. It also adds a Karpenter section to
+the details of a node. It follows the Freelens theme, light or dark, and
+updates while it is open, as Karpenter launches and removes nodes.
 
 ### Overview
 
@@ -54,6 +55,25 @@ and other, for the last hour, 6 hours, 24 hours or all; the number of nodes of
 each NodePool over time; and the pod and node decisions as tables. A click on
 a time bucket highlights its events in the tables.
 
+### Node Pools
+
+The NodePools with the columns of `kubectl get nodepools -o wide`: NodeClass,
+Nodes, Ready, Age, Weight, CPU and Memory, sortable, searchable, and with the
+columns you choose. The entry is in the sidebar while the cluster serves
+NodePools.
+
+A click on a NodePool, here or in the tabs, opens its details: why it is not
+ready, its node class, weight, replicas and nodes, the resources in use
+against its limits, the template of its NodeClaims (labels, annotations,
+requirements, taints, startup taints, expiry and termination grace period),
+its disruption settings and budgets, and its NodeClaims and the NodeOverlays
+that apply to it, as links. Freelens shows its conditions and events with
+them.
+
+While the extension is enabled, NodePools are no longer listed under Custom
+Resources in the sidebar. The other Karpenter kinds stay there, and their
+links open them there, until they get pages of their own.
+
 ### Node details
 
 ![Karpenter section of the node details](assets/screenshots/node-details.png)
@@ -76,7 +96,7 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 
 | Group                 | API Version       | Kind           | Shown in                              |
 | --------------------- | ----------------- | -------------- | ------------------------------------- |
-| `karpenter.sh`        | v1                | `NodePool`     | every tab                             |
+| `karpenter.sh`        | v1                | `NodePool`     | every tab, Node Pools                 |
 | `karpenter.sh`        | v1                | `NodeClaim`    | Overview, Topology, Scaling Decisions |
 | `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards)             |
 | `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes                |
@@ -84,7 +104,7 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 | `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass` | Overview, Node Classes                |
 
 
-A kind that the cluster does not serve is left out; the page says so when the
+A kind that the cluster does not serve is left out; the Overview says so when the
 cluster has no NodePool CRD.
 
 ## Permissions

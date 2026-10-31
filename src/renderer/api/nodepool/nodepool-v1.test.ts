@@ -28,6 +28,12 @@ describe("NodePool (karpenter.sh/v1)", () => {
     expect(NodePool.namespaced).toBe(false);
     expect(NodePool.apiBase).toBe("/apis/karpenter.sh/v1/nodepools");
     expect(NodePool.crd.apiVersions).toEqual(["karpenter.sh/v1"]);
+    expect(NodePool.crd.plural).toBe("nodepools");
+    expect(NodePool.crd.singular).toBe("nodepool");
+  });
+
+  it("has the title of its sidebar entry and its list page", () => {
+    expect(NodePool.crd.title).toBe("Node Pools");
   });
 
   it("reads the spec of the NodeClaim template", () => {

@@ -1,8 +1,10 @@
+import { Renderer } from "@freelensapp/extensions";
 import { describe, expect, it } from "vitest";
 import {
   buildPodCountMap,
   detailUrl,
   formatMemory,
+  formatQuantity,
   getConditionStatus,
   getInstanceType,
   getNodeClaimName,
@@ -10,12 +12,12 @@ import {
   getNodeMaxPods,
   getNodeMemory,
   getNodeStatus,
+  openNodePoolDetail,
   parseCpuCores,
   parseMemGi,
 } from "./kube-helpers";
 
-import type { Renderer } from "@freelensapp/extensions";
-
+import type { NodePool } from "../api/nodepool/nodepool-v1";
 import type { Node } from "./kube-helpers";
 
 // The helpers read only the fields of the objects, as the host's objects have them.
@@ -168,6 +170,15 @@ describe("detailUrl", () => {
   });
 });
 
+describe("openNodePoolDetail", () => {
+  it("opens the extension's Node Pools page with the details of the NodePool", () => {
+    openNodePoolDetail({ metadata: { name: "general" } } as NodePool);
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/nodepools?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral",
+    );
+  });
+});
+
 describe("formatMemory", () => {
   it("shows a quantity in Gi, or in Mi below 1Gi", () => {
     expect(formatMemory("59687568Ki")).toBe("56.9Gi");
@@ -183,5 +194,23 @@ describe("formatMemory", () => {
     expect(formatMemory(undefined)).toBe("—");
     expect(formatMemory("")).toBe("—");
     expect(formatMemory("8G")).toBe("8G");
+  });
+});
+
+describe("quantities written as numbers", () => {
+  it("parses a number of cores, and a number of bytes", () => {
+    expect(parseCpuCores(100)).toBe(100);
+    expect(parseMemGi(2147483648)).toBe(2);
+    expect(parseMemGi(0)).toBe(0);
+  });
+
+  it("formats a number as kubectl prints it", () => {
+    expect(formatQuantity(100)).toBe("100");
+    expect(formatQuantity(0)).toBe("0");
+    expect(formatQuantity("4")).toBe("4");
+    expect(formatQuantity(undefined)).toBe("—");
+    expect(formatQuantity("")).toBe("—");
+    expect(formatMemory(8589934592)).toBe("8.0Gi");
+    expect(formatMemory(0)).toBe("0");
   });
 });

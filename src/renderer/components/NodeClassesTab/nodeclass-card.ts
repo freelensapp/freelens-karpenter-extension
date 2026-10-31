@@ -5,7 +5,7 @@
 import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
 import { NODE_CLASS_KIND, type NodeClassProvider } from "../../data/nodeclass";
-import { formatMemory } from "../../utils/kube-helpers";
+import { formatMemory, formatQuantity } from "../../utils/kube-helpers";
 
 import type { EC2NodeClass } from "../../api/ec2nodeclass/ec2nodeclass-v1";
 import type { AKSNodeClass } from "../../data/stores";
@@ -127,11 +127,12 @@ export function nodePoolRowValues(nodePool: NodePool): NodePoolRowValues {
   const resources = nodePool.status?.resources;
   const memoryUsed = resources?.memory;
   return {
-    cpuUsed: resources?.cpu ?? "—",
+    cpuUsed: formatQuantity(resources?.cpu),
     // Binary units, as the other tabs show memory.
-    memoryUsed: memoryUsed === undefined ? "—" : formatMemory(memoryUsed),
-    limitCpu: nodePool.spec?.limits?.cpu ?? "—",
-    limitMemory: nodePool.spec?.limits?.memory ?? "—",
+    memoryUsed: formatMemory(memoryUsed),
+    // A limit can be a number, written without quotes.
+    limitCpu: formatQuantity(nodePool.spec?.limits?.cpu),
+    limitMemory: formatQuantity(nodePool.spec?.limits?.memory),
     consolidation: nodePool.spec?.disruption?.consolidationPolicy ?? "—",
     // `spec.template.spec.expireAfter` of karpenter.sh/v1.
     expireAfter: NodePool.getTemplateSpec(nodePool)?.expireAfter ?? "—",
