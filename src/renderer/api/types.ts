@@ -1,5 +1,13 @@
 import type { Renderer } from "@freelensapp/extensions";
 
+/**
+ * The `crd` of a model with a page of the extension: `title` is the title of its sidebar entry and of its list page,
+ * words separated by spaces ("Node Pools"), as the host titles its own.
+ */
+export interface KarpenterKubeObjectCRD extends Renderer.K8sApi.LensExtensionKubeObjectCRD {
+  title: string;
+}
+
 // Types of other packages that the Karpenter APIs use, shared by the models.
 
 /** `status.Condition` of awslabs/operatorpkg: the host's condition type has the same fields. */

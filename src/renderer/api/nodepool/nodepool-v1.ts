@@ -1,7 +1,7 @@
 import { Renderer } from "@freelensapp/extensions";
 
 import type { NodeClaimTemplateSpec, NodePoolSpec, NodePoolStatus } from "../karpenter/karpenter-v1-types";
-import type { Condition } from "../types";
+import type { Condition, KarpenterKubeObjectCRD } from "../types";
 
 export class NodePool extends Renderer.K8sApi.LensExtensionKubeObject<
   Renderer.K8sApi.ClusterScopedMetadata,
@@ -15,10 +15,11 @@ export class NodePool extends Renderer.K8sApi.LensExtensionKubeObject<
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.sh/v1/nodepools";
 
-  static readonly crd = {
+  static readonly crd: KarpenterKubeObjectCRD = {
     apiVersions: ["karpenter.sh/v1"],
     plural: "nodepools",
     singular: "nodepool",
+    title: "Node Pools",
   };
 
   static getTemplateSpec(nodePool: NodePool): NodeClaimTemplateSpec | undefined {
