@@ -51,9 +51,19 @@ const karpenterGroups = ["karpenter.sh", "karpenter.k8s.aws", "karpenter.azure.c
 // (`sanitizeExtensionName` in Freelens's `lens-extension.ts`).
 const sanitizedExtensionId = extensionName.replace("@", "").replace("/", "--");
 
-// The link inside the sidebar item of the dashboard: the `clusterPageMenus`
-// id, after the sanitized package name. Only the link navigates.
-const pageLinkTestId = `link-for-sidebar-item-${sanitizedExtensionId}-dashboard`;
+/**
+ * The link inside the sidebar item of a `clusterPageMenus` entry: its id,
+ * after the sanitized package name. Only the link navigates, or opens and
+ * closes the entries of a parent.
+ */
+export function sidebarLinkTestId(menuId: string): string {
+  return `link-for-sidebar-item-${sanitizedExtensionId}-${menuId}`;
+}
+
+// "Karpenter", the parent of the entries of the extension, and its first
+// entry, "Overview", the dashboard.
+const parentLinkTestId = sidebarLinkTestId("karpenter");
+const pageLinkTestId = sidebarLinkTestId("dashboard");
 
 const viewTimeout = { timeout: 60 * 1000 };
 
@@ -655,10 +665,25 @@ async function expectNoErrorPage(locator: Locator, where: string) {
 }
 
 /**
+ * Opens "Karpenter" in the sidebar, unless it is open already, and waits for
+ * the link of one of its entries. The sidebar keeps a parent closed until it is
+ * clicked, and remembers it open.
+ */
+export async function expandSidebar(frame: Frame, linkTestId: string) {
+  await frame.waitForSelector(`[data-testid="${parentLinkTestId}"]`, viewTimeout);
+
+  if (!(await frame.locator(`[data-testid="${pageLinkTestId}"]`).count())) {
+    await clickSidebarItem(frame, parentLinkTestId);
+  }
+
+  await frame.waitForSelector(`[data-testid="${linkTestId}"]`, viewTimeout);
+}
+
+/**
  * Opens the dashboard from the sidebar and waits for its tab bar.
  */
 export async function openDashboard(frame: Frame) {
-  await frame.waitForSelector(`[data-testid="${pageLinkTestId}"]`, viewTimeout);
+  await expandSidebar(frame, pageLinkTestId);
   await clickSidebarItem(frame, pageLinkTestId);
   await frame.getByRole("button", { name: "Overview", exact: true }).waitFor(viewTimeout);
 }

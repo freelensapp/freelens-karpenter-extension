@@ -9,6 +9,7 @@ import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 // must be `?raw` as we need SVG element
 import svgIconLogo from "./icons/karpenter.svg?raw";
 import { KarpenterDashboard } from "./pages/dashboard";
+import { pageId } from "./pages/routes";
 
 const {
   Component: { Icon },
@@ -23,7 +24,7 @@ export function KarpenterIcon(props: Renderer.Component.IconProps) {
 export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
   clusterPages: Renderer.LensExtension["clusterPages"] = [
     {
-      id: "dashboard",
+      id: pageId.overview,
       components: {
         Page: () => <KarpenterDashboard extension={this} />,
       },
@@ -35,14 +36,22 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
     Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, { Details: NodeKarpenterDetails }),
   ].map((registration) => withDetailsErrorBoundary(this, registration));
 
-  clusterPageMenus = [
+  // "Karpenter" has no page of its own: it opens and closes its entries, one level, with no group. The Overview is
+  // always there, also to say that Karpenter is not installed.
+  clusterPageMenus: Renderer.LensExtension["clusterPageMenus"] = [
     {
-      id: "dashboard",
+      id: "karpenter",
       title: "Karpenter",
-      target: { pageId: "dashboard" },
       components: {
         Icon: KarpenterIcon,
       },
+    },
+    {
+      id: pageId.overview,
+      parentId: "karpenter",
+      title: "Overview",
+      target: { pageId: pageId.overview },
+      components: {},
     },
   ];
 }
