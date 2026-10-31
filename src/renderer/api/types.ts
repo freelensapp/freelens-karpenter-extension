@@ -16,6 +16,12 @@ export type ResourceList = Record<string, string>;
 /** `corev1.NodeSelectorOperator`. */
 export type NodeSelectorOperator = "In" | "NotIn" | "Exists" | "DoesNotExist" | "Gt" | "Lt";
 
+/**
+ * The operators of a requirement of karpenter.sh, `v1` and `v1alpha1`: those of `corev1.NodeSelectorOperator`, with
+ * `Gte` and `Lte` (the `+kubebuilder:validation:Enum` of their `operator`).
+ */
+export type KarpenterNodeSelectorOperator = NodeSelectorOperator | "Gte" | "Lte";
+
 /** `corev1.NodeSelectorRequirement`. */
 export interface NodeSelectorRequirement {
   key: string;
