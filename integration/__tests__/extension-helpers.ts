@@ -56,7 +56,7 @@ const sanitizedExtensionId = extensionName.replace("@", "").replace("/", "--");
  * after the sanitized package name. Only the link navigates, or opens and
  * closes the entries of a parent.
  */
-export function sidebarLinkTestId(menuId: string): string {
+function sidebarLinkTestId(menuId: string): string {
   return `link-for-sidebar-item-${sanitizedExtensionId}-${menuId}`;
 }
 
@@ -669,7 +669,7 @@ async function expectNoErrorPage(locator: Locator, where: string) {
  * the link of one of its entries. The sidebar keeps a parent closed until it is
  * clicked, and remembers it open.
  */
-export async function expandSidebar(frame: Frame, linkTestId: string) {
+async function expandSidebar(frame: Frame, linkTestId: string) {
   await frame.waitForSelector(`[data-testid="${parentLinkTestId}"]`, viewTimeout);
 
   if (!(await frame.locator(`[data-testid="${pageLinkTestId}"]`).count())) {
@@ -701,10 +701,103 @@ export async function openTab(frame: Frame, tab: string, texts: (string | RegExp
   await frame.getByRole("button", { name: tab, exact: true }).click(viewTimeout);
 
   for (const text of texts) {
-    await frame.getByText(text, { exact: true }).first().waitFor(viewTimeout);
+    await frame.locator("main").getByText(text, { exact: true }).first().waitFor(viewTimeout);
   }
 
   await expectNoErrorPage(frame.locator("main"), `The ${tab} tab`);
+}
+
+/**
+ * Opens a page of a kind from its entry under "Karpenter" in the sidebar, and
+ * waits for its title, then checks that the page rendered no error page.
+ */
+export async function openKindPage(frame: Frame, menuId: string, title: string) {
+  const linkTestId = sidebarLinkTestId(menuId);
+
+  await expandSidebar(frame, linkTestId);
+  await clickSidebarItem(frame, linkTestId);
+  await frame.locator(".ItemListLayout").getByText(title, { exact: true }).first().waitFor(viewTimeout);
+  await expectNoErrorPage(frame.locator("main"), `The ${title} page`);
+}
+
+/** The columns of `kubectl get nodepools -o wide`, which the Node Pools page has. */
+export const nodePoolColumns = ["Name", "NodeClass", "Nodes", "Ready", "Age", "Weight", "CPU", "Memory"];
+
+/** An age as the host shows it, such as `42s` or `3m`. */
+export const agePattern = /^\d+[smhdy]/;
+
+/**
+ * Waits for each text in the details drawer, the whole text of an element or
+ * a pattern.
+ */
+export async function expectInDetails(frame: Frame, texts: (string | RegExp)[]) {
+  for (const text of texts) {
+    await frame.locator(".Drawer").getByText(text, { exact: true }).first().waitFor(viewTimeout);
+  }
+}
+
+/**
+ * Whether the texts have the expected ones in their order, each the whole
+ * text or matching a pattern, with other texts between them: the cells of the
+ * checkbox and the menu of a row.
+ */
+function inOrder(texts: string[], expected: (string | RegExp)[]): boolean {
+  let next = 0;
+
+  for (const text of texts) {
+    const want = expected[next];
+
+    if (want !== undefined && (typeof want === "string" ? text === want : want.test(text))) {
+      next++;
+    }
+  }
+
+  return next === expected.length;
+}
+
+/**
+ * The texts of the cells of a table row or head, without the sort icon of a
+ * head cell, whose ligature is text.
+ */
+async function cellTexts(locator: Locator): Promise<string[]> {
+  const texts = await locator.locator(".TableCell").allInnerTexts();
+
+  return texts.map((text) => text.replace(/arrow_drop_(down|up)$/, "").trim());
+}
+
+/**
+ * Waits until the head of the list has the columns, in their order, and the
+ * row whose first expected cell is the name of its object has the cells, in
+ * their order. Returns the row.
+ */
+export async function expectListRow(frame: Frame, columns: string[], cells: [string, ...(string | RegExp)[]]) {
+  const [name] = cells;
+  const head = frame.locator(".TableHead").first();
+  const row = frame
+    .locator(".TableRow")
+    .filter({ has: frame.getByText(name, { exact: true }) })
+    .first();
+  const deadline = Date.now() + viewTimeout.timeout;
+
+  await row.waitFor(viewTimeout);
+
+  for (;;) {
+    const headTexts = await cellTexts(head);
+    const rowTexts = await cellTexts(row);
+
+    if (inOrder(headTexts, columns) && inOrder(rowTexts, cells)) {
+      return row;
+    }
+
+    if (Date.now() > deadline) {
+      throw new Error(
+        `The list has the columns ${JSON.stringify(headTexts)} and the row ${JSON.stringify(rowTexts)}, ` +
+          `not ${JSON.stringify(columns)} and ${cells.map(String).join(", ")}`,
+      );
+    }
+
+    await frame.waitForTimeout(500);
+  }
 }
 
 /**

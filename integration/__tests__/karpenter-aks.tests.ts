@@ -12,15 +12,20 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
+  agePattern,
   appReady,
   clickAndExpectDetails,
   connectApp,
   disconnectKindCluster,
+  expectInDetails,
+  expectListRow,
   hostMetricsRequestPattern,
   installExtension,
   kindClusterName,
+  nodePoolColumns,
   openDashboard,
   openKindCluster,
+  openKindPage,
   openNodeDetails,
   openTab,
   setUpCluster,
@@ -124,6 +129,28 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
     await clickAndExpectDetails(frame, frame.getByTitle("Open NodePool azure").first(), /^NodePool: azure/);
     await openTab(frame, "Overview", ["azure-pend1"]);
     await clickAndExpectDetails(frame, frame.getByTitle("Open AKSNodeClass default").first(), /^AKSNodeClass: default/);
+  });
+
+  it("lists the NodePools on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get nodepools -o
+    // wide: azure has 2 nodes, a weight of 10, and 12 CPUs in use. Its
+    // requirement on the SKU family, and its CPUs in use against its limit,
+    // are in the details only.
+    await openKindPage(frame, "nodepools", "Node Pools");
+
+    const row = await expectListRow(frame, nodePoolColumns, [
+      "azure",
+      "default",
+      "2",
+      "True",
+      agePattern,
+      "10",
+      "12",
+      "49284200Ki",
+    ]);
+
+    await clickAndExpectDetails(frame, row.getByText("azure", { exact: true }).first(), /^NodePool: azure/);
+    await expectInDetails(frame, ["karpenter.azure.com/sku-family In [D]", "12 / 48"]);
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {
