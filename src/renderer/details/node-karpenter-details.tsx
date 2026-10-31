@@ -22,8 +22,8 @@ export function NodeKarpenterDetails({
   return (
     <>
       <DrawerTitle>Karpenter</DrawerTitle>
-      {/* In place of the node's details, over the same page, as the host's own links in a drawer: the NodePool in
-          the extension's details. */}
+      {/* In place of the node's details, over the same page, as the host's own links in a drawer: the NodePool and
+          the NodeClaim in the extension's details. */}
       <DrawerItem name="NodePool" hidden={!info.nodePool}>
         <DetailsLink selfLink={nodePoolSelfLink(info.nodePool)}>{info.nodePool}</DetailsLink>
       </DrawerItem>
