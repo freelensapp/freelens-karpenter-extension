@@ -16,6 +16,19 @@ const build = (overrides: Partial<ConstructorParameters<typeof NodeClaim>[0]> = 
   });
 
 describe("NodeClaim (karpenter.sh/v1)", () => {
+  it("has the metadata of karpenter.sh/v1", () => {
+    expect(NodeClaim.kind).toBe("NodeClaim");
+    expect(NodeClaim.namespaced).toBe(false);
+    expect(NodeClaim.apiBase).toBe("/apis/karpenter.sh/v1/nodeclaims");
+    expect(NodeClaim.crd.apiVersions).toEqual(["karpenter.sh/v1"]);
+    expect(NodeClaim.crd.plural).toBe("nodeclaims");
+    expect(NodeClaim.crd.singular).toBe("nodeclaim");
+  });
+
+  it("has the title of its sidebar entry and its list page", () => {
+    expect(NodeClaim.crd.title).toBe("Node Claims");
+  });
+
   describe("isClaiming", () => {
     it("is claiming while it has no node", () => {
       expect(NodeClaim.isClaiming(build({ status: {} }))).toBe(true);
