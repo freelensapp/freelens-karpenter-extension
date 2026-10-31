@@ -4,11 +4,15 @@
  */
 
 import { Renderer } from "@freelensapp/extensions";
+import { computed } from "mobx";
+import { NodePool } from "./api/nodepool/nodepool-v1";
 import { withDetailsErrorBoundary, withPageErrorBoundary } from "./components/error-boundary";
+import { getNodePoolStore } from "./data/stores";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 // must be `?raw` as we need SVG element
 import svgIconLogo from "./icons/karpenter.svg?raw";
 import { KarpenterDashboard } from "./pages/dashboard";
+import { NodePoolsPage } from "./pages/nodepools/nodepools-page";
 import { pageId } from "./pages/routes";
 
 const {
@@ -19,7 +23,7 @@ export function KarpenterIcon(props: Renderer.Component.IconProps) {
   return <Icon {...props} svg={svgIconLogo} />;
 }
 
-// The page renders inside an error boundary, so that an error it throws stays in the page instead of replacing the
+// The pages render inside an error boundary, so that an error they throw stays in the page instead of replacing the
 // main area of the cluster with the host's error.
 export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
   clusterPages: Renderer.LensExtension["clusterPages"] = [
@@ -27,6 +31,12 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       id: pageId.overview,
       components: {
         Page: () => <KarpenterDashboard extension={this} />,
+      },
+    },
+    {
+      id: pageId.nodePools,
+      components: {
+        Page: () => <NodePoolsPage extension={this} />,
       },
     },
   ].map((registration) => withPageErrorBoundary(this, registration));
@@ -37,7 +47,8 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
   ].map((registration) => withDetailsErrorBoundary(this, registration));
 
   // "Karpenter" has no page of its own: it opens and closes its entries, one level, with no group. The Overview is
-  // always there, also to say that Karpenter is not installed.
+  // always there, also to say that Karpenter is not installed; the page of a kind only while the cluster serves it.
+  // `getServedStore` reads the host's observable API registry, so an entry comes and goes with its CRD.
   clusterPageMenus: Renderer.LensExtension["clusterPageMenus"] = [
     {
       id: "karpenter",
@@ -51,6 +62,14 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       parentId: "karpenter",
       title: "Overview",
       target: { pageId: pageId.overview },
+      components: {},
+    },
+    {
+      id: pageId.nodePools,
+      parentId: "karpenter",
+      title: NodePool.crd.title,
+      target: { pageId: pageId.nodePools },
+      visible: computed(() => getNodePoolStore() !== undefined),
       components: {},
     },
   ];

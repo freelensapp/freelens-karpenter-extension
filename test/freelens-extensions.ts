@@ -57,11 +57,58 @@ function Icon() {
   return createElement("i");
 }
 
+// A text with its tooltip, and the age of an object, as plain elements.
+function WithTooltip({ children }: { children?: ReactNode }) {
+  return createElement("span", null, children);
+}
+
+function KubeObjectAge() {
+  return createElement("span", null, "age");
+}
+
+// The list of a store as a plain table: the title, the header cells and the cells of every item of the store.
+function KubeObjectListLayout<I>({
+  renderHeaderTitle,
+  renderTableHeader,
+  renderTableContents,
+  store,
+}: {
+  renderHeaderTitle?: ReactNode;
+  renderTableHeader?: { title?: ReactNode }[];
+  renderTableContents: (item: I) => ReactNode[];
+  store: { items: I[] };
+}) {
+  return createElement(
+    "div",
+    null,
+    createElement("h2", null, renderHeaderTitle),
+    createElement(
+      "table",
+      null,
+      createElement(
+        "thead",
+        null,
+        createElement("tr", null, ...(renderTableHeader ?? []).map((cell) => createElement("th", null, cell.title))),
+      ),
+      createElement(
+        "tbody",
+        null,
+        ...store.items.map((item) =>
+          createElement("tr", null, ...renderTableContents(item).map((cell) => createElement("td", null, cell))),
+        ),
+      ),
+    ),
+  );
+}
+
 export const Renderer = {
   Component: {
     DrawerItem,
     DrawerTitle,
     Icon,
+    KubeObjectAge,
+    KubeObjectListLayout,
+    WithTooltip,
   },
   K8sApi: {
     LensExtensionKubeObject,
