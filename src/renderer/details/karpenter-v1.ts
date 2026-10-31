@@ -38,6 +38,16 @@ function byResource(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
+/** The names of the resources of the lists, each once, the well-known ones first. */
+export function resourceNames(...lists: (ResourceList | undefined)[]): string[] {
+  return [...new Set(lists.flatMap((list) => Object.keys(list ?? {})))].sort(byResource);
+}
+
+/** A quantity of a resource list as text, a string or a number as it was written; `undefined` without one. */
+export function resourceText(list: ResourceList | undefined, name: string): string | undefined {
+  return list?.[name] === undefined ? undefined : String(list[name]);
+}
+
 export interface ResourceRow {
   name: string;
   /** What the NodePool's nodes have of the resource, `status.resources`. */
@@ -48,11 +58,10 @@ export interface ResourceRow {
 
 /** The resources of a NodePool: those in use and those it limits, one row each, the well-known ones first. */
 export function resourceRows(inUse: ResourceList | undefined, limits: ResourceList | undefined): ResourceRow[] {
-  const names = [...new Set([...Object.keys(inUse ?? {}), ...Object.keys(limits ?? {})])].sort(byResource);
-  return names.map((name) => ({
+  return resourceNames(inUse, limits).map((name) => ({
     name,
-    inUse: inUse?.[name] === undefined ? undefined : String(inUse[name]),
-    limit: limits?.[name] === undefined ? undefined : String(limits[name]),
+    inUse: resourceText(inUse, name),
+    limit: resourceText(limits, name),
   }));
 }
 

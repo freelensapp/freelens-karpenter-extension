@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { formatBudget, formatRequirement, formatTaint, notTrueReason, resourceRows } from "./karpenter-v1";
+import {
+  formatBudget,
+  formatRequirement,
+  formatTaint,
+  notTrueReason,
+  resourceNames,
+  resourceRows,
+  resourceText,
+} from "./karpenter-v1";
 
 describe("formatRequirement", () => {
   it("writes each operator of karpenter.sh/v1, with minValues", () => {
@@ -65,6 +73,24 @@ describe("resourceRows", () => {
     ]);
     expect(resourceRows(undefined, { cpu: "16" })).toEqual([{ name: "cpu", inUse: undefined, limit: "16" }]);
     expect(resourceRows(undefined, undefined)).toEqual([]);
+  });
+});
+
+describe("resourceNames", () => {
+  it("names each resource of the lists once, the well-known ones first, the others by name", () => {
+    expect(
+      resourceNames({ "nvidia.com/gpu": "1", memory: "1Gi" }, undefined, { "ephemeral-storage": "20Gi", cpu: 4 }, {}),
+    ).toEqual(["cpu", "memory", "ephemeral-storage", "nvidia.com/gpu"]);
+    expect(resourceNames()).toEqual([]);
+  });
+});
+
+describe("resourceText", () => {
+  it("is a quantity as it was written, a string or a number, and nothing without one", () => {
+    expect(resourceText({ cpu: "3920m", pods: 58 }, "cpu")).toBe("3920m");
+    expect(resourceText({ cpu: "3920m", pods: 58 }, "pods")).toBe("58");
+    expect(resourceText({ cpu: "3920m" }, "memory")).toBeUndefined();
+    expect(resourceText(undefined, "cpu")).toBeUndefined();
   });
 });
 
