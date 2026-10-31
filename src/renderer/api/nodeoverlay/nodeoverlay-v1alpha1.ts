@@ -3,18 +3,59 @@ import { Renderer } from "@freelensapp/extensions";
 import type { NodePool } from "../nodepool/nodepool-v1";
 import type { NodeOverlaySpec, NodeOverlayStatus, NodeSelectorRequirement } from "./nodeoverlay-v1alpha1-types";
 
-/** What a NodePool tells of a label of its nodes: its values, the values it excludes, or that it has none. */
+/**
+ * What a NodePool tells of a label of its nodes: its values, the values it excludes, the integers it is bounded to,
+ * that it exists, or that it has none.
+ */
 type PoolConstraint =
   | { kind: "in"; values: Set<string> }
   | { kind: "notIn"; values: Set<string> }
+  | { kind: "range"; range: IntegerRange }
   | { kind: "exists" }
   | { kind: "doesNotExist" };
 
-const NUMERIC: Record<string, (value: number, bound: number) => boolean> = {
-  Gt: (value, bound) => value > bound,
-  Lt: (value, bound) => value < bound,
-  Gte: (value, bound) => value >= bound,
-  Lte: (value, bound) => value <= bound,
+/** The integers from `min` to `max`, both included; empty when `min` is above `max`. */
+interface IntegerRange {
+  min: number;
+  max: number;
+}
+
+type NumericOperator = "Gt" | "Lt" | "Gte" | "Lte";
+
+const isNumeric = (operator: string): operator is NumericOperator =>
+  operator === "Gt" || operator === "Lt" || operator === "Gte" || operator === "Lte";
+
+/**
+ * The integers a numeric requirement allows. Its single value is an integer, which `Gt` and `Lt` exclude and `Gte`
+ * and `Lte` include; `undefined` when the value is not a number.
+ */
+function numericRange(operator: NumericOperator, values: string[] | undefined): IntegerRange | undefined {
+  const value = values?.[0]?.trim();
+  const bound = Number(value);
+  if (!value || Number.isNaN(bound)) return undefined;
+  switch (operator) {
+    case "Gt":
+      return { min: Math.floor(bound) + 1, max: Infinity };
+    case "Gte":
+      return { min: Math.ceil(bound), max: Infinity };
+    case "Lt":
+      return { min: -Infinity, max: Math.ceil(bound) - 1 };
+    case "Lte":
+      return { min: -Infinity, max: Math.floor(bound) };
+  }
+}
+
+const intersect = (a: IntegerRange, b: IntegerRange): IntegerRange => ({
+  min: Math.max(a.min, b.min),
+  max: Math.min(a.max, b.max),
+});
+
+const isEmpty = (range: IntegerRange) => range.min > range.max;
+
+/** Whether a label value is an integer of the range. */
+const contains = (range: IntegerRange, value: string) => {
+  const number = Number(value);
+  return value.trim() !== "" && Number.isInteger(number) && number >= range.min && number <= range.max;
 };
 
 export class NodeOverlay extends Renderer.K8sApi.LensExtensionKubeObject<
@@ -73,7 +114,10 @@ export class NodeOverlay extends Renderer.K8sApi.LensExtensionKubeObject<
     if (key === "karpenter.sh/nodepool") return { kind: "in", values: new Set([nodePool.getName()]) };
     const label = nodePool.spec?.template?.metadata?.labels?.[key];
     if (label !== undefined) return { kind: "in", values: new Set([label]) };
-    const requirement = nodePool.spec?.template?.spec?.requirements?.find((r) => r.key === key);
+    const requirements = (nodePool.spec?.template?.spec?.requirements ?? []).filter((r) => r.key === key);
+    // A requirement on the values first; the numeric requirements of a key bound it together, as `Gte` and `Lte`
+    // give a range.
+    const requirement = requirements.find((r) => !isNumeric(r.operator)) ?? requirements[0];
     switch (requirement?.operator) {
       case "In":
         return { kind: "in", values: new Set(requirement.values ?? []) };
@@ -83,6 +127,17 @@ export class NodeOverlay extends Renderer.K8sApi.LensExtensionKubeObject<
         return { kind: "exists" };
       case "DoesNotExist":
         return { kind: "doesNotExist" };
+      case "Gt":
+      case "Lt":
+      case "Gte":
+      case "Lte": {
+        let range: IntegerRange = { min: -Infinity, max: Infinity };
+        for (const { operator, values } of requirements) {
+          const bound = isNumeric(operator) ? numericRange(operator, values) : undefined;
+          if (bound) range = intersect(range, bound);
+        }
+        return { kind: "range", range };
+      }
       default:
         return undefined;
     }
@@ -92,6 +147,9 @@ export class NodeOverlay extends Renderer.K8sApi.LensExtensionKubeObject<
     const values = requirement.values ?? [];
     const { operator } = requirement;
     if (!pool) return true;
+    // A numeric requirement whose value is not a number matches no label.
+    const range = isNumeric(operator) ? numericRange(operator, values) : undefined;
+    if (isNumeric(operator) && !range) return false;
     switch (pool.kind) {
       case "in": {
         const poolValues = [...pool.values];
@@ -99,11 +157,17 @@ export class NodeOverlay extends Renderer.K8sApi.LensExtensionKubeObject<
         if (operator === "NotIn") return poolValues.some((value) => !values.includes(value));
         if (operator === "Exists") return true;
         if (operator === "DoesNotExist") return false;
-        const bound = Number(values[0]);
-        return poolValues.some((value) => NUMERIC[operator]!(Number(value), bound));
+        return poolValues.some((value) => contains(range!, value));
       }
       case "notIn":
         return operator !== "In" || values.some((value) => !pool.values.has(value));
+      case "range":
+        // A label bounded to no integer: the NodePool launches no node at all.
+        if (isEmpty(pool.range)) return false;
+        if (operator === "In") return values.some((value) => contains(pool.range, value));
+        if (operator === "NotIn" || operator === "Exists") return true;
+        if (operator === "DoesNotExist") return false;
+        return !isEmpty(intersect(pool.range, range!));
       case "exists":
         return operator !== "DoesNotExist";
       case "doesNotExist":

@@ -45,7 +45,9 @@ const gpu = nodePool(
   { team: "ml" },
 );
 
-const req = (key: string, operator: NodeOverlaySpec["requirements"][number]["operator"], values?: string[]) => ({
+type NodeSelectorOperatorOfOverlay = NodeOverlaySpec["requirements"][number]["operator"];
+
+const req = (key: string, operator: NodeSelectorOperatorOfOverlay, values?: string[]) => ({
   key,
   operator,
   values,
@@ -114,6 +116,56 @@ describe("NodeOverlay (karpenter.sh/v1alpha1)", () => {
       true,
       false,
     ]);
+  });
+
+  it("tests a requirement against the integers the numeric requirements of a NodePool allow", () => {
+    // From 4 to 16 CPUs, with Gte and Lte of karpenter.sh/v1; generation above 5.
+    const bounded = nodePool("bounded", [
+      { key: "karpenter.k8s.aws/instance-cpu", operator: "Gte", values: ["4"] },
+      { key: "karpenter.k8s.aws/instance-cpu", operator: "Lte", values: ["16"] },
+      { key: "karpenter.k8s.aws/instance-generation", operator: "Gt", values: ["5"] },
+    ]);
+    const cpu = (operator: NodeOverlaySpec["requirements"][number]["operator"], values?: string[]) =>
+      NodeOverlay.appliesTo(
+        overlay("o", { requirements: [req("karpenter.k8s.aws/instance-cpu", operator, values)] }),
+        bounded,
+      );
+
+    expect(cpu("In", ["2", "8"])).toBe(true);
+    expect(cpu("In", ["2", "32"])).toBe(false);
+    expect(cpu("In", ["4"])).toBe(true);
+    expect(cpu("In", ["16"])).toBe(true);
+    expect(cpu("NotIn", ["8"])).toBe(true);
+    expect(cpu("Exists")).toBe(true);
+    expect(cpu("DoesNotExist")).toBe(false);
+    expect(cpu("Gt", ["15"])).toBe(true);
+    expect(cpu("Gt", ["16"])).toBe(false);
+    expect(cpu("Gte", ["16"])).toBe(true);
+    expect(cpu("Lt", ["4"])).toBe(false);
+    expect(cpu("Lt", ["5"])).toBe(true);
+    expect(cpu("Lte", ["4"])).toBe(true);
+    expect(cpu("Lte", ["3"])).toBe(false);
+    expect(cpu("Gt", ["many"])).toBe(false);
+
+    const generation = (operator: NodeSelectorOperatorOfOverlay, value: string) =>
+      NodeOverlay.appliesTo(
+        overlay("o", { requirements: [req("karpenter.k8s.aws/instance-generation", operator, [value])] }),
+        bounded,
+      );
+    expect(generation("Lte", "5")).toBe(false);
+    expect(generation("Lte", "6")).toBe(true);
+    expect(generation("In", "5")).toBe(false);
+    expect(generation("In", "7")).toBe(true);
+  });
+
+  it("applies to no NodePool whose numeric requirements allow no integer", () => {
+    const none = nodePool("none", [
+      { key: "karpenter.k8s.aws/instance-cpu", operator: "Gt", values: ["8"] },
+      { key: "karpenter.k8s.aws/instance-cpu", operator: "Lt", values: ["9"] },
+    ]);
+    expect(
+      NodeOverlay.appliesTo(overlay("o", { requirements: [req("karpenter.k8s.aws/instance-cpu", "Exists")] }), none),
+    ).toBe(false);
   });
 
   it("lists the NodeOverlays of a NodePool by weight, then by name", () => {
