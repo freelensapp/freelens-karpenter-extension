@@ -11,15 +11,20 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
+  agePattern,
   appReady,
   clickAndExpectDetails,
   connectApp,
   disconnectKindCluster,
+  expectInDetails,
+  expectListRow,
   hostMetricsRequestPattern,
   installExtension,
   kindClusterName,
+  nodePoolColumns,
   openDashboard,
   openKindCluster,
+  openKindPage,
   openNodeDetails,
   openTab,
   setUpCluster,
@@ -135,6 +140,32 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     await clickAndExpectDetails(frame, frame.getByTitle("Open NodePool general").first(), /^NodePool: general/);
     await openTab(frame, "Overview", ["general-pend1"]);
     await clickAndExpectDetails(frame, frame.getByTitle("Open EC2NodeClass default").first(), /^EC2NodeClass: default/);
+  });
+
+  it("lists the NodePools on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get nodepools -o
+    // wide. gpu is the one NodePool with a weight, and it is not Ready: its
+    // EC2NodeClass is not. Its requirement, its taint and why it is not Ready
+    // are in the details only.
+    await openKindPage(frame, "nodepools", "Node Pools");
+
+    const row = await expectListRow(frame, nodePoolColumns, [
+      "gpu",
+      "gpu",
+      "1",
+      "False",
+      agePattern,
+      "50",
+      "4",
+      "16202400Ki",
+    ]);
+
+    await clickAndExpectDetails(frame, row.getByText("gpu", { exact: true }).first(), /^NodePool: gpu/);
+    await expectInDetails(frame, [
+      "False, NodeClassNotReady",
+      "karpenter.k8s.aws/instance-family In [g5]",
+      "nvidia.com/gpu:NoSchedule",
+    ]);
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {
