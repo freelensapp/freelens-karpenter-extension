@@ -225,6 +225,11 @@ status:
       reason: Ready
       message: ""
       lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Drifted
+      status: "True"
+      reason: NodePoolDrifted
+      message: ""
+      lastTransitionTime: "2026-10-01T09:00:00Z"
 ---
 apiVersion: karpenter.sh/v1
 kind: NodeClaim
