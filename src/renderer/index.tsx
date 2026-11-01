@@ -5,13 +5,20 @@
 
 import { Renderer } from "@freelensapp/extensions";
 import { computed } from "mobx";
+import { AKSNodeClass as AKSNodeClassV1beta1 } from "./api/aksnodeclass/aksnodeclass-v1beta1";
 import { EC2NodeClass } from "./api/ec2nodeclass/ec2nodeclass-v1";
 import { NodeClaim } from "./api/nodeclaim/nodeclaim-v1";
 import { NodeOverlay } from "./api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "./api/nodepool/nodepool-v1";
 import { withDetailsErrorBoundary, withPageErrorBoundary } from "./components/error-boundary";
 import { customResources } from "./custom-resources";
-import { getEC2NodeClassStore, getNodeClaimStore, getNodeOverlayStore, getNodePoolStore } from "./data/stores";
+import {
+  getAKSNodeClassStore,
+  getEC2NodeClassStore,
+  getNodeClaimStore,
+  getNodeOverlayStore,
+  getNodePoolStore,
+} from "./data/stores";
 import { EC2NodeClassDetails } from "./details/ec2nodeclass-details";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 import { NodeClaimDetails } from "./details/nodeclaim-details";
@@ -19,6 +26,7 @@ import { NodeOverlayDetails } from "./details/nodeoverlay-details";
 import { NodePoolDetails } from "./details/nodepool-details";
 // must be `?raw` as we need SVG element
 import svgIconLogo from "./icons/karpenter.svg?raw";
+import { AKSNodeClassesPage } from "./pages/aksnodeclasses/aksnodeclasses-page";
 import { KarpenterDashboard } from "./pages/dashboard";
 import { EC2NodeClassesPage } from "./pages/ec2nodeclasses/ec2nodeclasses-page";
 import { NodeClaimsPage } from "./pages/nodeclaims/nodeclaims-page";
@@ -68,6 +76,12 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       id: pageId.ec2NodeClasses,
       components: {
         Page: () => <EC2NodeClassesPage extension={this} />,
+      },
+    },
+    {
+      id: pageId.aksNodeClasses,
+      components: {
+        Page: () => <AKSNodeClassesPage extension={this} />,
       },
     },
   ].map((registration) => withPageErrorBoundary(this, registration));
@@ -130,6 +144,15 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       title: EC2NodeClass.crd.title,
       target: { pageId: pageId.ec2NodeClasses },
       visible: computed(() => getEC2NodeClassStore() !== undefined),
+      components: {},
+    },
+    {
+      id: pageId.aksNodeClasses,
+      parentId: "karpenter",
+      title: AKSNodeClassV1beta1.crd.title,
+      target: { pageId: pageId.aksNodeClasses },
+      // v1beta1 or v1alpha2: one entry for both.
+      visible: computed(() => getAKSNodeClassStore() !== undefined),
       components: {},
     },
   ];
