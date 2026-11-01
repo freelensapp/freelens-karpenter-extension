@@ -1,0 +1,20 @@
+.collapsed {
+  summary {
+    cursor: pointer;
+    color: var(--textColorSecondary);
+  }
+}
+
+.text {
+  margin: 4px 0 0;
+  padding: 8px;
+  overflow-x: auto;
+  max-height: 400px;
+  white-space: pre;
+  font-family: var(--font-monospace, monospace);
+  font-size: 12px;
+  color: var(--textColorPrimary);
+  background: color-mix(in srgb, var(--textColorAccent) 8%, var(--contentColor));
+  border: 1px solid var(--borderFaintColor);
+  border-radius: 4px;
+}
