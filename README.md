@@ -10,8 +10,9 @@ Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robert
 
 The extension adds **Karpenter** to the cluster sidebar, with its pages as
 entries: **Overview**, a dashboard with four tabs, **Node Pools**, **Node
-Claims** and **Node Overlays**, the lists of the NodePools, the NodeClaims and
-the NodeOverlays with their details. It also adds a Karpenter section to the
+Claims**, **Node Overlays** and, on AWS, **EC2 Node Classes**, the lists of
+the NodePools, the NodeClaims, the NodeOverlays and the EC2NodeClasses with
+their details. It also adds a Karpenter section to the
 details of a node. It follows the Freelens theme, light or dark, and
 updates while it is open, as Karpenter launches and removes nodes.
 
@@ -101,9 +102,29 @@ with another overlay of the same weight, its weight, requirements, price or
 price adjustment, and the capacity it adds, and the NodePools it applies to,
 as links. Freelens shows its conditions and events with them.
 
-While the extension is enabled, NodePools, NodeClaims and NodeOverlays are no
-longer listed under Custom Resources in the sidebar. The other Karpenter kinds stay there,
-and their links open them there, until they get pages of their own.
+### EC2 Node Classes
+
+The EC2NodeClasses with the columns of `kubectl get ec2nodeclasses -o wide`:
+Ready, Age and Role, sortable, searchable, and with the columns you choose.
+The entry is in the sidebar while the cluster serves EC2NodeClasses, which
+only Karpenter on AWS does.
+
+A click on an EC2NodeClass, here, in the Node Classes tab, on a NodePool card
+or in the NodeClass column of the Node Pools and Node Claims pages, opens its
+details: why it is not ready or not validated; the selector terms of its AMIs,
+subnets, security groups, capacity reservations and placement group, each next
+to what Karpenter resolved them to and to why they did not resolve, with the
+state and end time of a capacity block; its role and its instance profile; its
+block device mappings and instance store policy, network interfaces,
+connection tracking, public IP address and IP prefix count, metadata, enclave
+and CPU options, detailed monitoring, kubelet settings, tags and context; its
+user data, collapsed; and the NodePools that use it, as links. Freelens shows
+its conditions and events with them.
+
+While the extension is enabled, NodePools, NodeClaims, NodeOverlays and
+EC2NodeClasses are no longer listed under Custom Resources in the sidebar. The
+other Karpenter kinds stay there, and their links open them there, until they
+get pages of their own.
 
 ### Node details
 
@@ -130,7 +151,7 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 | `karpenter.sh`        | v1                | `NodePool`     | every tab, Node Pools                              |
 | `karpenter.sh`        | v1                | `NodeClaim`    | Overview, Topology, Scaling Decisions, Node Claims |
 | `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards), Node Overlays           |
-| `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes                             |
+| `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes, EC2 Node Classes           |
 | `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass` | Overview, Node Classes                             |
 | `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass` | Overview, Node Classes                             |
 
