@@ -13,6 +13,7 @@ import { customResources } from "./custom-resources";
 import { getNodeClaimStore, getNodeOverlayStore, getNodePoolStore } from "./data/stores";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 import { NodeClaimDetails } from "./details/nodeclaim-details";
+import { NodeOverlayDetails } from "./details/nodeoverlay-details";
 import { NodePoolDetails } from "./details/nodepool-details";
 // must be `?raw` as we need SVG element
 import svgIconLogo from "./icons/karpenter.svg?raw";
@@ -67,6 +68,7 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
   kubeObjectDetailItems: Renderer.LensExtension["kubeObjectDetailItems"] = [
     Renderer.K8sApi.detailsFor(NodePool, { priority: 10, Details: NodePoolDetails }),
     Renderer.K8sApi.detailsFor(NodeClaim, { priority: 10, Details: NodeClaimDetails }),
+    Renderer.K8sApi.detailsFor(NodeOverlay, { priority: 10, Details: NodeOverlayDetails }),
     Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, { Details: NodeKarpenterDetails }),
   ].map((registration) => withDetailsErrorBoundary(this, registration));
 
