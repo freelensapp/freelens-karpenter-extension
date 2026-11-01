@@ -67,15 +67,21 @@ function guessFromStores(): NodeClassProvider {
  * `undefined` while the node class has no page of the extension.
  */
 export function nodeClassPage(provider: NodeClassProvider): string | undefined {
-  return provider === "aws" ? pageUrl(pageId.ec2NodeClasses) : undefined;
+  switch (provider) {
+    case "aws":
+      return pageUrl(pageId.ec2NodeClasses);
+    case "azure":
+      return pageUrl(pageId.aksNodeClasses);
+    default:
+      return undefined;
+  }
 }
 
 /**
  * The host's list page of the CRD of the node classes that have no page of the extension yet.
  * The route is /crd/:group/:name (plural resource name).
  */
-const NODE_CLASS_CRD_PATH: Record<Exclude<NodeClassProvider, "aws">, string> = {
-  azure: "/crd/karpenter.azure.com/aksnodeclasses",
+const NODE_CLASS_CRD_PATH: Record<Exclude<NodeClassProvider, "aws" | "azure">, string> = {
   gcp: "/crd/karpenter.k8s.gcp/gcenodeclasses",
   unknown: "/crd/definitions",
 };
@@ -105,6 +111,6 @@ export function nodeClassSelfLink(name: string, provider: NodeClassProvider): st
  * has none.
  */
 export function openNodeClassDetail(name: string, provider: NodeClassProvider): void {
-  const page = provider === "aws" ? nodeClassPage(provider) : NODE_CLASS_CRD_PATH[provider];
+  const page = provider === "aws" || provider === "azure" ? nodeClassPage(provider) : NODE_CLASS_CRD_PATH[provider];
   if (page) navigateToDetail(page, nodeClassSelfLink(name, provider));
 }

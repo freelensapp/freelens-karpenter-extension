@@ -1,5 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { AKSNodeClass as AKSNodeClassV1alpha2 } from "../api/aksnodeclass/aksnodeclass-v1alpha2";
 import { EC2NodeClass } from "../api/ec2nodeclass/ec2nodeclass-v1";
 import { GCENodeClass } from "../api/gcenodeclass/gcenodeclass-v1alpha1";
 import {
@@ -63,9 +64,9 @@ describe("nodeClassSelfLink", () => {
 });
 
 describe("nodeClassPage", () => {
-  it("is the EC2 Node Classes page for AWS, and none for a node class without a page of the extension", () => {
+  it("is the page of the node class of AWS and of Azure, and none for one without a page of the extension", () => {
     expect(nodeClassPage("aws")).toBe("/extension/freelensapp--karpenter-extension/ec2nodeclasses");
-    expect(nodeClassPage("azure")).toBeUndefined();
+    expect(nodeClassPage("azure")).toBe("/extension/freelensapp--karpenter-extension/aksnodeclasses");
     expect(nodeClassPage("gcp")).toBeUndefined();
     expect(nodeClassPage("unknown")).toBeUndefined();
   });
@@ -79,12 +80,20 @@ describe("openNodeClassDetail", () => {
     );
   });
 
-  it("opens the node classes of the other providers on the host's page of their CRD", () => {
+  it("opens an AKSNodeClass on the AKS Node Classes page with its details, in the version the cluster serves", () => {
     openNodeClassDetail("default", "azure");
     expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
-      "/crd/karpenter.azure.com/aksnodeclasses?kube-details=%2Fapis%2Fkarpenter.azure.com%2Fv1beta1%2Faksnodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.azure.com%2Fv1beta1%2Faksnodeclasses%2Fdefault",
+      "/extension/freelensapp--karpenter-extension/aksnodeclasses?kube-details=%2Fapis%2Fkarpenter.azure.com%2Fv1beta1%2Faksnodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.azure.com%2Fv1beta1%2Faksnodeclasses%2Fdefault",
     );
 
+    vi.spyOn(AKSNodeClassV1alpha2, "getStore").mockReturnValue(served(AKSNodeClassV1alpha2.apiBase));
+    openNodeClassDetail("default", "azure");
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/aksnodeclasses?kube-details=%2Fapis%2Fkarpenter.azure.com%2Fv1alpha2%2Faksnodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.azure.com%2Fv1alpha2%2Faksnodeclasses%2Fdefault",
+    );
+  });
+
+  it("opens the node class of GCP on the host's page of its CRD", () => {
     openNodeClassDetail("default", "gcp");
     expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
       "/crd/karpenter.k8s.gcp/gcenodeclasses?kube-details=%2Fapis%2Fkarpenter.k8s.gcp%2Fv1alpha1%2Fgcenodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.k8s.gcp%2Fv1alpha1%2Fgcenodeclasses%2Fdefault",
