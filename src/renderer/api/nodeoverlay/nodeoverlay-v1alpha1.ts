@@ -1,6 +1,7 @@
 import { Renderer } from "@freelensapp/extensions";
 
 import type { NodePool } from "../nodepool/nodepool-v1";
+import type { KarpenterKubeObjectCRD } from "../types";
 import type { NodeOverlaySpec, NodeOverlayStatus, NodeSelectorRequirement } from "./nodeoverlay-v1alpha1-types";
 
 /**
@@ -70,10 +71,11 @@ export class NodeOverlay extends Renderer.K8sApi.LensExtensionKubeObject<
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.sh/v1alpha1/nodeoverlays";
 
-  static readonly crd = {
+  static readonly crd: KarpenterKubeObjectCRD = {
     apiVersions: ["karpenter.sh/v1alpha1"],
     plural: "nodeoverlays",
     singular: "nodeoverlay",
+    title: "Node Overlays",
   };
 
   /** The weight of a NodeOverlay; none is 0. A higher weight takes precedence. */
