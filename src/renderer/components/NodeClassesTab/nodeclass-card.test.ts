@@ -199,6 +199,13 @@ describe("nodePoolRowValues", () => {
     });
   });
 
+  it("reads the limits written as numbers, as the API server returns them", () => {
+    const nodePool = pool("general", awsRef("default"), {
+      spec: { limits: { cpu: 100, memory: 17179869184 } },
+    });
+    expect(nodePoolRowValues(nodePool)).toMatchObject({ limitCpu: "100", limitMemory: "17179869184" });
+  });
+
   it("does not read the v1beta1 spec.disruption.expireAfter, and shows a dash for what is not set", () => {
     const nodePool = pool("p", awsRef("default"), { spec: { disruption: { expireAfter: "24h" } } });
     expect(nodePoolRowValues(nodePool)).toEqual({

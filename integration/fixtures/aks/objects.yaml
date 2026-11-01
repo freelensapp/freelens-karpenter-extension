@@ -16,6 +16,7 @@ kind: NodePool
 metadata:
   name: azure
 spec:
+  weight: 10
   template:
     spec:
       nodeClassRef:

@@ -128,6 +128,13 @@ export const STATUS_BORDER_COLOR: Record<CondStatus, string> = {
   Unknown: "#555",
 };
 
+/** The colour of the `status` of a condition, as the list pages show it; another status keeps the text colour. */
+export const CONDITION_STATUS_COLOR: Record<string, string> = {
+  True: COLOR.success,
+  False: COLOR.danger,
+  Unknown: COLOR.warning,
+};
+
 // ── Icons (text/emoji — easy to swap to SVG keys later) ──────────────────────
 
 export const ICON = {

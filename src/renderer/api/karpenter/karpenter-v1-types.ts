@@ -1,7 +1,7 @@
 // The spec and status types of karpenter.sh/v1 (NodePool, NodeClaim), after the Go types of
 // kubernetes-sigs/karpenter v1.15.0 (pkg/apis/v1) and the optional fields of its generated CRDs.
 
-import type { Condition, NillableDuration, NodeSelectorOperator, ResourceList, Taint } from "../types";
+import type { Condition, KarpenterNodeSelectorOperator, NillableDuration, ResourceList, Taint } from "../types";
 
 export interface ObjectMeta {
   labels?: Record<string, string>;
@@ -10,7 +10,7 @@ export interface ObjectMeta {
 
 export interface NodeSelectorRequirementWithMinValues {
   key: string;
-  operator: NodeSelectorOperator;
+  operator: KarpenterNodeSelectorOperator;
   values?: string[];
   minValues?: number;
 }
