@@ -8,7 +8,6 @@ import { getNodePoolStore } from "../data/stores";
 import { useSubscribedStores } from "../data/use-subscribed-stores";
 import { nodePoolSelfLink } from "../utils/kube-helpers";
 import {
-  fieldTexts,
   formatAMI,
   formatBlockDeviceMapping,
   formatCapacityReservation,
@@ -18,6 +17,7 @@ import {
   formatSubnet,
   linesSummary,
 } from "./ec2nodeclass-fields";
+import { fieldTexts } from "./fields";
 import { notTrueReason } from "./karpenter-v1";
 
 import type { EC2NodeClass } from "../api/ec2nodeclass/ec2nodeclass-v1";

@@ -1,6 +1,7 @@
 // What the details of an EC2NodeClass of karpenter.k8s.aws/v1 show of its fields, as text: the selector terms of the
 // spec, what they resolved to in the status, the block devices, the network interfaces and the option structs.
 
+import { fieldTexts } from "./fields";
 import { formatRequirement } from "./karpenter-v1";
 
 import type {
@@ -11,27 +12,6 @@ import type {
   SecurityGroup,
   Subnet,
 } from "../api/ec2nodeclass/ec2nodeclass-v1-types";
-
-/** A value of a field as text: a list joined by commas, a map as `key=value` pairs, anything else as it is. */
-export function formatValue(value: unknown): string {
-  if (Array.isArray(value)) return value.map(formatValue).join(", ");
-  if (value !== null && typeof value === "object") {
-    return Object.entries(value)
-      .map(([key, inner]) => `${key}=${formatValue(inner)}`)
-      .join(", ");
-  }
-  return String(value);
-}
-
-/**
- * The fields of a struct or a map that are set, one text each, `field: value`, in the order of the object: the
- * metadata options, the connection tracking, the CPU options, the kubelet settings.
- */
-export function fieldTexts(fields: object | undefined): string[] {
-  return Object.entries(fields ?? {})
-    .filter(([, value]) => value !== undefined && value !== null)
-    .map(([key, value]) => `${key}: ${formatValue(value)}`);
-}
 
 /**
  * A selector term, its fields that are set in the order of the term, `field: value`, separated by semicolons: all of
