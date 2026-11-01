@@ -9,7 +9,7 @@ import {
 } from "../../components/KindListPage/KindListPage";
 import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { DetailsLink } from "../../components/shared/DetailsLink";
-import { detectProvider, nodeClassSelfLink } from "../../data/nodeclass";
+import { detectProvider, nodeClassPage, nodeClassSelfLink } from "../../data/nodeclass";
 import { getNodePoolStore } from "../../data/stores";
 import { nodePoolColumnValues, nodePoolSortValues } from "./nodepool-columns";
 
@@ -19,13 +19,19 @@ export interface NodePoolsPageProps {
   extension: Renderer.LensExtension;
 }
 
-// An observer: the link reads which node class stores the cluster serves.
+// The node class of a NodePool, on the page of its kind when it has one, else over the page. An observer: the link
+// reads which node class stores the cluster serves.
 const NodeClassLink = observer(function NodeClassLink({ nodePool }: { nodePool: NodePool }) {
   const ref = NodePool.getTemplateSpec(nodePool)?.nodeClassRef;
   const name = nodePoolColumnValues(nodePool).nodeClass;
   if (!ref || name === undefined) return null;
+  const provider = detectProvider(ref);
   return (
-    <DetailsLink selfLink={nodeClassSelfLink(name, detectProvider(ref))} title={`Open ${ref.kind} ${name}`}>
+    <DetailsLink
+      selfLink={nodeClassSelfLink(name, provider)}
+      page={nodeClassPage(provider)}
+      title={`Open ${ref.kind} ${name}`}
+    >
       {name}
     </DetailsLink>
   );

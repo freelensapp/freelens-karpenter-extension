@@ -5,6 +5,7 @@
  *  - GCP: GCENodeClass (karpenter.k8s.gcp/v1alpha1)
  */
 
+import { pageId, pageUrl } from "../pages/routes";
 import { navigateToDetail } from "../utils/kube-helpers";
 import { getAKSNodeClassStore, getEC2NodeClassStore, getGCENodeClassStore } from "./stores";
 
@@ -62,11 +63,18 @@ function guessFromStores(): NodeClassProvider {
 }
 
 /**
- * Freelens custom-resources list path per provider.
+ * The list page of the extension for the node class of a provider, such as the EC2 Node Classes page for AWS, or
+ * `undefined` while the node class has no page of the extension.
+ */
+export function nodeClassPage(provider: NodeClassProvider): string | undefined {
+  return provider === "aws" ? pageUrl(pageId.ec2NodeClasses) : undefined;
+}
+
+/**
+ * The host's list page of the CRD of the node classes that have no page of the extension yet.
  * The route is /crd/:group/:name (plural resource name).
  */
-const NODE_CLASS_LIST_PATH: Record<NodeClassProvider, string> = {
-  aws: "/crd/karpenter.k8s.aws/ec2nodeclasses",
+const NODE_CLASS_CRD_PATH: Record<Exclude<NodeClassProvider, "aws">, string> = {
   azure: "/crd/karpenter.azure.com/aksnodeclasses",
   gcp: "/crd/karpenter.k8s.gcp/gcenodeclasses",
   unknown: "/crd/definitions",
@@ -92,7 +100,11 @@ export function nodeClassSelfLink(name: string, provider: NodeClassProvider): st
   return `${nodeClassApiBase(provider)}/${name}`;
 }
 
-/** Navigate to the NodeClass detail panel in Freelens */
+/**
+ * Opens the details of a node class on the extension's page of its kind, or on the host's page of its CRD while it
+ * has none.
+ */
 export function openNodeClassDetail(name: string, provider: NodeClassProvider): void {
-  navigateToDetail(NODE_CLASS_LIST_PATH[provider], nodeClassSelfLink(name, provider));
+  const page = provider === "aws" ? nodeClassPage(provider) : NODE_CLASS_CRD_PATH[provider];
+  if (page) navigateToDetail(page, nodeClassSelfLink(name, provider));
 }
