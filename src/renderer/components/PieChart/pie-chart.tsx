@@ -1,6 +1,7 @@
 import { Renderer } from "@freelensapp/extensions";
-import React, { useMemo } from "react";
+import React from "react";
 import { COLOR } from "../../config/theme";
+import { computeOverviewSlices, nodePoolDotColor, overviewChartData } from "./overview-slices";
 import { computeOverviewStats } from "./overview-stats";
 import style from "./pie-chart.module.scss";
 
@@ -11,7 +12,7 @@ export interface PieChartProps {
   nodes: Node[];
   /** Every NodePool, for the NodePool figures. */
   nodePools: NodePool[];
-  /** The NodePools with nodes, one slice each. */
+  /** The NodePools with nodes, one entry each in the breakdown. */
   objects: {
     nodePool: NodePool;
     nodes: Node[];
@@ -70,39 +71,9 @@ export function PieChart(props: PieChartProps): React.ReactElement {
     claimingByPool = {},
   } = props;
 
-  // ── aggregate stats: every NodePool counts, the chart has a slice per NodePool with nodes ──
+  // ── aggregate stats: every NodePool counts; the slices of the chart are the nodes by status ──
   const stats = computeOverviewStats(nodes, nodePools);
-
-  // ── pie chart data ────────────────────────────────────────────────────────
-  const { chartData, backgroundColor } = useMemo(() => {
-    const others = stats.nonKarpenter;
-    const goldenAngle = 137.508;
-
-    const bgColors = [...objects.map((_, i) => `hsl(${(i * goldenAngle) % 360}, 70%, 50%)`), COLOR.neutral];
-
-    const lbls = [
-      ...objects.map((np) => `${np.nodePool.metadata?.name ?? "?"}: ${np.nodes.length}`),
-      ...(others > 0 ? [`Non-Karpenter: ${others}`] : []),
-    ];
-
-    const data = [...objects.map((npC) => npC.nodes.length || 0), ...(others > 0 ? [others] : [])];
-
-    const tooltipLabels = [
-      ...objects.map((np) => (percent: string) => `${np.nodePool.metadata?.name}: ${percent}`),
-      ...(others > 0 ? [(percent: string) => `Non-Karpenter: ${percent}`] : []),
-    ];
-
-    const cd: Renderer.Component.PieChartData = {
-      datasets: [{ data, backgroundColor: bgColors, tooltipLabels }],
-      labels: lbls,
-    };
-
-    const maxPerColumn = 6;
-    const cols = Math.ceil(lbls.length / maxPerColumn);
-    const legCols = Array.from({ length: cols }, (_, ci) => lbls.slice(ci * maxPerColumn, (ci + 1) * maxPerColumn));
-
-    return { chartData: cd, backgroundColor: bgColors, labels: lbls, legendColumns: legCols };
-  }, [objects, stats.nonKarpenter]);
+  const chartData = overviewChartData(computeOverviewSlices(stats));
 
   return (
     <>
@@ -123,7 +94,7 @@ export function PieChart(props: PieChartProps): React.ReactElement {
           {/* stat boxes row */}
           <div className={style.statsRow}>
             <StatBox value={stats.total} label="Total nodes" color={COLOR.textPrimary} />
-            <StatBox value={stats.karpenter} label="Karpenter" color="#00a7e1" />
+            <StatBox value={stats.karpenter} label="Karpenter" color={COLOR.info} />
             {stats.nonKarpenter > 0 && (
               <StatBox value={stats.nonKarpenter} label="Non-Karpenter" color={COLOR.textSecondary} />
             )}
@@ -140,23 +111,27 @@ export function PieChart(props: PieChartProps): React.ReactElement {
                 onClick={() => onFilterChange?.(activeFilter === "poolstatus:notready" ? "" : "poolstatus:notready")}
                 title="Show only NodePools that are not Ready"
               >
-                <span className={style.statValue} style={{ color: "#f14668" }}>
+                <span className={style.statValue} style={{ color: COLOR.danger }}>
                   {stats.poolsNotReady}
                 </span>
                 <span className={style.statLabel}>Not Ready pools</span>
               </button>
             )}
             <div className={style.statDivider} />
-            <StatBox value={stats.ready} label="Ready nodes" color="#48c78e" />
-            {stats.terminating > 0 && <StatBox value={stats.terminating} label="Terminating" color="#ff7043" />}
-            {stats.notReady > 0 && <StatBox value={stats.notReady} label="Not Ready" color="#f14668" />}
-            {stats.provisioning > 0 && <StatBox value={stats.provisioning} label="Provisioning" color="#ffc107" />}
-            {claimingCount > 0 && <StatBox value={claimingCount} label="Claiming" color="#5ad1fc" />}
+            <StatBox value={stats.ready} label="Ready nodes" color={COLOR.success} />
+            {stats.terminating > 0 && (
+              <StatBox value={stats.terminating} label="Terminating" color={COLOR.terminating} />
+            )}
+            {stats.notReady > 0 && <StatBox value={stats.notReady} label="Not Ready" color={COLOR.danger} />}
+            {stats.provisioning > 0 && (
+              <StatBox value={stats.provisioning} label="Provisioning" color={COLOR.warning} />
+            )}
+            {claimingCount > 0 && <StatBox value={claimingCount} label="Claiming" color={COLOR.claiming} />}
           </div>
 
           {/* per-pool breakdown grid — scrollable if many pools */}
           <div className={style.poolBreakdown}>
-            {objects.map((np, i) => {
+            {objects.map((np) => {
               const name = np.nodePool.metadata?.name ?? "?";
               const isActive = activePool === name;
               const claiming = claimingByPool[name] ?? 0;
@@ -167,15 +142,15 @@ export function PieChart(props: PieChartProps): React.ReactElement {
                   onClick={() => onPoolClick?.(isActive ? "" : name)}
                   title={claiming > 0 ? `${name} — ${claiming} claiming` : name}
                 >
-                  <span className={style.poolBreakdownDot} style={{ background: backgroundColor[i] }} />
+                  <span className={style.poolBreakdownDot} style={{ background: nodePoolDotColor(np.nodePool) }} />
                   <span className={style.poolBreakdownName}>{name}</span>
                   <span className={style.poolBreakdownCount}>{np.nodes.length}</span>
                   {claiming > 0 && (
                     <span
                       className={style.poolBreakdownCount}
                       style={{
-                        color: "#5ad1fc",
-                        background: "rgba(90, 209, 252, 0.15)",
+                        color: COLOR.claiming,
+                        background: COLOR.claimingBg,
                         marginLeft: 4,
                       }}
                       title={`${claiming} NodeClaim${claiming !== 1 ? "s" : ""} pending (no Node yet)`}
@@ -198,11 +173,11 @@ export function PieChart(props: PieChartProps): React.ReactElement {
                   className={style.poolBreakdownItem}
                   title={`${poolName} — ${count} claiming, no ready nodes yet`}
                 >
-                  <span className={style.poolBreakdownDot} style={{ background: "#5ad1fc" }} />
+                  <span className={style.poolBreakdownDot} style={{ background: COLOR.claiming }} />
                   <span className={style.poolBreakdownName}>{poolName}</span>
                   <span
                     className={style.poolBreakdownCount}
-                    style={{ color: "#5ad1fc", background: "rgba(90, 209, 252, 0.15)" }}
+                    style={{ color: COLOR.claiming, background: COLOR.claimingBg }}
                   >
                     ◌ {count}
                   </span>
@@ -214,11 +189,11 @@ export function PieChart(props: PieChartProps): React.ReactElement {
                 className={style.poolBreakdownItem}
                 title={`${claimingByPool["__unknown__"]} claiming NodeClaim(s) without a NodePool label`}
               >
-                <span className={style.poolBreakdownDot} style={{ background: "#5ad1fc" }} />
+                <span className={style.poolBreakdownDot} style={{ background: COLOR.claiming }} />
                 <span className={style.poolBreakdownName}>(no pool label)</span>
                 <span
                   className={style.poolBreakdownCount}
-                  style={{ color: "#5ad1fc", background: "rgba(90, 209, 252, 0.15)" }}
+                  style={{ color: COLOR.claiming, background: COLOR.claimingBg }}
                 >
                   ◌ {claimingByPool["__unknown__"]}
                 </span>

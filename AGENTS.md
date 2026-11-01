@@ -181,6 +181,7 @@ Karpenter not installed (the cluster does not serve `nodepools.karpenter.sh`),
 and the tabs. The tabs read the stores while they render; what they compute
 from the objects is in pure modules next to them, which the unit tests cover:
 `pages/overview-filter.ts`, `components/PieChart/overview-stats.ts`,
+`components/PieChart/overview-slices.ts`,
 `components/Topology/topology-utils.ts`,
 `components/NodeClassesTab/nodeclass-card.ts`,
 `components/KarpenterCard/card-utils.ts`, `utils/karpenter-events.ts`,

@@ -11,6 +11,7 @@
  */
 
 import { NodePool } from "../../api/nodepool/nodepool-v1";
+import { COLOR } from "../../config/theme";
 import {
   type CondStatus,
   getInstanceType,
@@ -43,13 +44,14 @@ export const GROUP_PALETTE = [
 ];
 export const OTHER_GROUP_COLOR = "#607d8b";
 
+/** Fixed colours, which the SVG of the treemap takes in its attributes. */
 export const STATUS_COLOR: Record<CondStatus, string> = {
-  Ready: "#48c78e",
-  Provisioning: "#ffc107",
-  Claiming: "#5ad1fc",
-  Terminating: "#ff7043",
-  NotReady: "#f14668",
-  Unknown: "#9e9e9e",
+  Ready: COLOR.success,
+  Provisioning: COLOR.warning,
+  Claiming: COLOR.claiming,
+  Terminating: COLOR.terminating,
+  NotReady: COLOR.danger,
+  Unknown: COLOR.neutral,
 };
 
 // ── Types ────────────────────────────────────────────────────────────────────
