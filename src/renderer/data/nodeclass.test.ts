@@ -1,7 +1,14 @@
+import { Renderer } from "@freelensapp/extensions";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EC2NodeClass } from "../api/ec2nodeclass/ec2nodeclass-v1";
 import { GCENodeClass } from "../api/gcenodeclass/gcenodeclass-v1alpha1";
-import { detectProvider, nodeClassSelfLink, servedNodeClassProviders } from "./nodeclass";
+import {
+  detectProvider,
+  nodeClassPage,
+  nodeClassSelfLink,
+  openNodeClassDetail,
+  servedNodeClassProviders,
+} from "./nodeclass";
 
 // A store the host would return for a served API: only what the helpers read.
 const served = (apiBase: string, items: unknown[] = []) => ({ items, api: { apiBase } }) as never;
@@ -52,5 +59,35 @@ describe("nodeClassSelfLink", () => {
     expect(nodeClassSelfLink("default", "azure")).toBe("/apis/karpenter.azure.com/v1beta1/aksnodeclasses/default");
     expect(nodeClassSelfLink("default", "gcp")).toBe("/apis/karpenter.k8s.gcp/v1alpha1/gcenodeclasses/default");
     expect(nodeClassSelfLink("default", "unknown")).toBe("");
+  });
+});
+
+describe("nodeClassPage", () => {
+  it("is the EC2 Node Classes page for AWS, and none for a node class without a page of the extension", () => {
+    expect(nodeClassPage("aws")).toBe("/extension/freelensapp--karpenter-extension/ec2nodeclasses");
+    expect(nodeClassPage("azure")).toBeUndefined();
+    expect(nodeClassPage("gcp")).toBeUndefined();
+    expect(nodeClassPage("unknown")).toBeUndefined();
+  });
+});
+
+describe("openNodeClassDetail", () => {
+  it("opens an EC2NodeClass on the EC2 Node Classes page with its details", () => {
+    openNodeClassDetail("default", "aws");
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/ec2nodeclasses?kube-details=%2Fapis%2Fkarpenter.k8s.aws%2Fv1%2Fec2nodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.k8s.aws%2Fv1%2Fec2nodeclasses%2Fdefault",
+    );
+  });
+
+  it("opens the node classes of the other providers on the host's page of their CRD", () => {
+    openNodeClassDetail("default", "azure");
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/crd/karpenter.azure.com/aksnodeclasses?kube-details=%2Fapis%2Fkarpenter.azure.com%2Fv1beta1%2Faksnodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.azure.com%2Fv1beta1%2Faksnodeclasses%2Fdefault",
+    );
+
+    openNodeClassDetail("default", "gcp");
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/crd/karpenter.k8s.gcp/gcenodeclasses?kube-details=%2Fapis%2Fkarpenter.k8s.gcp%2Fv1alpha1%2Fgcenodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.k8s.gcp%2Fv1alpha1%2Fgcenodeclasses%2Fdefault",
+    );
   });
 });

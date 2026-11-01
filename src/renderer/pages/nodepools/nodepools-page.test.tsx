@@ -76,14 +76,15 @@ describe("NodePoolsPage", () => {
     ]);
   });
 
-  it("opens the node class of a NodePool in the drawer", () => {
+  it("opens the EC2NodeClass of a NodePool on the EC2 Node Classes page", () => {
     render(<NodePoolsPage extension={extension} />);
 
     fireEvent.click(screen.getByText("default"));
 
-    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith(
-      "/apis/karpenter.k8s.aws/v1/ec2nodeclasses/default",
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/ec2nodeclasses?kube-details=%2Fapis%2Fkarpenter.k8s.aws%2Fv1%2Fec2nodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.k8s.aws%2Fv1%2Fec2nodeclasses%2Fdefault",
     );
+    expect(Renderer.Navigation.showDetails).not.toHaveBeenCalled();
   });
 
   it("follows the CRD as the host registers it and removes it", () => {

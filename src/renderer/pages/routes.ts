@@ -13,6 +13,7 @@ export const pageId = {
   nodePools: "nodepools",
   nodeClaims: "nodeclaims",
   nodeOverlays: "nodeoverlays",
+  ec2NodeClasses: "ec2nodeclasses",
 } as const;
 
 export type PageId = (typeof pageId)[keyof typeof pageId];

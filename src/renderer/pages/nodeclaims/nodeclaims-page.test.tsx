@@ -94,15 +94,15 @@ describe("NodeClaimsPage", () => {
     ]);
   });
 
-  it("opens the node and the node class over the page, and the NodePool on the Node Pools page", () => {
+  it("opens the node over the page, and the NodePool and the EC2NodeClass on their pages", () => {
     render(<NodeClaimsPage extension={extension} />);
 
     fireEvent.click(screen.getByText("ip-10-0-2-12"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/api/v1/nodes/ip-10-0-2-12");
 
     fireEvent.click(screen.getByText("default"));
-    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith(
-      "/apis/karpenter.k8s.aws/v1/ec2nodeclasses/default",
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/ec2nodeclasses?kube-details=%2Fapis%2Fkarpenter.k8s.aws%2Fv1%2Fec2nodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.k8s.aws%2Fv1%2Fec2nodeclasses%2Fdefault",
     );
 
     fireEvent.click(screen.getByText("general"));

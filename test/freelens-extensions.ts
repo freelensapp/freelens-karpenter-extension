@@ -57,6 +57,11 @@ function Badge({ label }: { label?: ReactNode }) {
   return createElement("span", null, label);
 }
 
+// A flag as the text of the host's `getBooleanText`.
+function BadgeBoolean({ value }: { value: boolean }) {
+  return createElement(Badge, { label: value ? "True" : "False" });
+}
+
 function DrawerItemLabels({ name, labels }: { name: ReactNode; labels: Record<string, string> | string[] }) {
   const texts = Array.isArray(labels) ? labels : Object.entries(labels).map(([key, value]) => `${key}=${value}`);
   return texts.length === 0
@@ -121,6 +126,7 @@ function KubeObjectListLayout<I>({
 export const Renderer = {
   Component: {
     Badge,
+    BadgeBoolean,
     DrawerItem,
     DrawerItemLabels,
     DrawerTitle,

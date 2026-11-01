@@ -1,5 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 
+import type { KarpenterKubeObjectCRD } from "../types";
 import type { EC2NodeClassSpec, EC2NodeClassStatus } from "./ec2nodeclass-v1-types";
 
 export class EC2NodeClass extends Renderer.K8sApi.LensExtensionKubeObject<
@@ -14,10 +15,11 @@ export class EC2NodeClass extends Renderer.K8sApi.LensExtensionKubeObject<
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.k8s.aws/v1/ec2nodeclasses";
 
-  static readonly crd = {
+  static readonly crd: KarpenterKubeObjectCRD = {
     apiVersions: ["karpenter.k8s.aws/v1"],
     plural: "ec2nodeclasses",
     singular: "ec2nodeclass",
+    title: "EC2 Node Classes",
   };
 }
 

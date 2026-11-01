@@ -811,6 +811,22 @@ export async function openKindPage(frame: Frame, menuId: string, title: string) 
   await expectNoErrorPage(frame.locator("main"), `The ${title} page`);
 }
 
+/**
+ * Checks that the sidebar has no entry for a page of a kind, which the
+ * cluster does not serve, once it shows the entry of a kind it serves: the
+ * host registers the APIs of the CRDs together, so both entries have decided
+ * by then whether they are visible.
+ */
+export async function expectNoKindPageEntry(frame: Frame, menuId: string, servedMenuId: string) {
+  await expandSidebar(frame, sidebarLinkTestId(servedMenuId));
+
+  const count = await frame.locator(`[data-testid="${sidebarLinkTestId(menuId)}"]`).count();
+
+  if (count !== 0) {
+    throw new Error(`The sidebar has an entry for ${menuId}, which the cluster does not serve`);
+  }
+}
+
 /** The columns of `kubectl get nodepools -o wide`, which the Node Pools page has. */
 export const nodePoolColumns = ["Name", "NodeClass", "Nodes", "Ready", "Age", "Weight", "CPU", "Memory"];
 
@@ -832,6 +848,9 @@ export const nodeClaimColumns = [
 
 /** The columns of `kubectl get nodeoverlays -o wide`, which the Node Overlays page has. */
 export const nodeOverlayColumns = ["Name", "Ready", "Age", "Weight"];
+
+/** The columns of `kubectl get ec2nodeclasses -o wide`, which the EC2 Node Classes page has. */
+export const ec2NodeClassColumns = ["Name", "Ready", "Age", "Role"];
 
 /** An age as the host shows it, such as `42s` or `3m`. */
 export const agePattern = /^\d+[smhdy]/;
