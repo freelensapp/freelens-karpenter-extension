@@ -5,6 +5,7 @@
 
 import { Renderer } from "@freelensapp/extensions";
 import { computed } from "mobx";
+import { AKSNodeClass as AKSNodeClassV1alpha2 } from "./api/aksnodeclass/aksnodeclass-v1alpha2";
 import { AKSNodeClass as AKSNodeClassV1beta1 } from "./api/aksnodeclass/aksnodeclass-v1beta1";
 import { EC2NodeClass } from "./api/ec2nodeclass/ec2nodeclass-v1";
 import { NodeClaim } from "./api/nodeclaim/nodeclaim-v1";
@@ -19,6 +20,7 @@ import {
   getNodeOverlayStore,
   getNodePoolStore,
 } from "./data/stores";
+import { AKSNodeClassDetails } from "./details/aksnodeclass-details";
 import { EC2NodeClassDetails } from "./details/ec2nodeclass-details";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 import { NodeClaimDetails } from "./details/nodeclaim-details";
@@ -93,6 +95,8 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
     Renderer.K8sApi.detailsFor(NodeClaim, { priority: 10, Details: NodeClaimDetails }),
     Renderer.K8sApi.detailsFor(NodeOverlay, { priority: 10, Details: NodeOverlayDetails }),
     Renderer.K8sApi.detailsFor(EC2NodeClass, { priority: 10, Details: EC2NodeClassDetails }),
+    Renderer.K8sApi.detailsFor(AKSNodeClassV1beta1, { priority: 10, Details: AKSNodeClassDetails }),
+    Renderer.K8sApi.detailsFor(AKSNodeClassV1alpha2, { priority: 10, Details: AKSNodeClassDetails }),
     Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, { Details: NodeKarpenterDetails }),
   ].map((registration) => withDetailsErrorBoundary(this, registration));
 
