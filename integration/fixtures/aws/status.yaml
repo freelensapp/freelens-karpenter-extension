@@ -367,3 +367,37 @@ status:
       reason: NotLaunched
       message: Waiting for an instance
       lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
+  name: spot-discount
+status:
+  conditions:
+    - type: ValidationSucceeded
+      status: "True"
+      reason: ValidationSucceeded
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
+  name: gpu-fpga
+status:
+  conditions:
+    - type: ValidationSucceeded
+      status: "True"
+      reason: ValidationSucceeded
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"

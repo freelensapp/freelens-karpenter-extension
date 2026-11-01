@@ -23,6 +23,7 @@ import {
   installExtension,
   kindClusterName,
   nodeClaimColumns,
+  nodeOverlayColumns,
   nodePoolColumns,
   openDashboard,
   openKindCluster,
@@ -142,6 +143,13 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     await clickAndExpectDetails(frame, frame.getByTitle("Open NodePool general").first(), /^NodePool: general/);
     await openTab(frame, "Overview", ["general-pend1"]);
     await clickAndExpectDetails(frame, frame.getByTitle("Open EC2NodeClass default").first(), /^EC2NodeClass: default/);
+    // The NodeOverlay of the card of general opens on the Node Overlays page.
+    await openTab(frame, "Overview", ["general-pend1"]);
+    await clickAndExpectDetails(
+      frame,
+      frame.getByTitle("Open NodeOverlay spot-discount (weight 10)").first(),
+      /^NodeOverlay: spot-discount/,
+    );
   });
 
   it("lists the NodePools on their page, and shows the details of one", async () => {
@@ -211,6 +219,20 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "Unknown, NotLaunched: Waiting for an instance",
       "karpenter.sh/nodepool In [general]",
     ]);
+  });
+
+  it("lists the NodeOverlays on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get nodeoverlays
+    // -o wide. gpu-fpga applies to the NodePool gpu only, by its name; the
+    // NodePool, its requirement and the capacity it adds, as a resource list,
+    // are in the details only.
+    await openKindPage(frame, "nodeoverlays", "Node Overlays");
+
+    await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
+    const row = await expectListRow(frame, nodeOverlayColumns, ["gpu-fpga", "True", agePattern, "50"]);
+
+    await clickAndExpectDetails(frame, row.getByText("gpu-fpga", { exact: true }).first(), /^NodeOverlay: gpu-fpga/);
+    await expectInDetails(frame, ["Applies To", "gpu", "karpenter.sh/nodepool In [gpu]", "example.com/fpga 1"]);
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {

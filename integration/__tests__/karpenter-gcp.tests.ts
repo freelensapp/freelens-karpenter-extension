@@ -25,6 +25,7 @@ import {
   installExtension,
   kindClusterName,
   nodeClaimColumns,
+  nodeOverlayColumns,
   nodePoolColumns,
   openDashboard,
   openKindCluster,
@@ -193,6 +194,22 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
 
     await clickAndExpectDetails(frame, row.getByText("gke-d3e4f", { exact: true }).first(), /^NodeClaim: gke-d3e4f/);
     await expectInDetails(frame, ["8 / 7910m", "node.kubernetes.io/instance-type In [n2-standard-8]"]);
+  });
+
+  it("lists the NodeOverlays on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get nodeoverlays
+    // -o wide. The NodePool spot-discount applies to, gke, which allows spot,
+    // and its requirement are in the details only.
+    await openKindPage(frame, "nodeoverlays", "Node Overlays");
+
+    const row = await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
+
+    await clickAndExpectDetails(
+      frame,
+      row.getByText("spot-discount", { exact: true }).first(),
+      /^NodeOverlay: spot-discount/,
+    );
+    await expectInDetails(frame, ["Applies To", "gke", "karpenter.sh/capacity-type In [spot]"]);
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {

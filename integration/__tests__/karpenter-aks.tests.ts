@@ -24,6 +24,7 @@ import {
   installExtension,
   kindClusterName,
   nodeClaimColumns,
+  nodeOverlayColumns,
   nodePoolColumns,
   openDashboard,
   openKindCluster,
@@ -193,6 +194,22 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
       /^NodeClaim: azure-d3e4f/,
     );
     await expectInDetails(frame, ["8 / 7920m", "node.kubernetes.io/instance-type In [Standard_D8s_v5]"]);
+  });
+
+  it("lists the NodeOverlays on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get nodeoverlays
+    // -o wide. The NodePool spot-discount applies to, azure, which allows
+    // spot, and its requirement are in the details only.
+    await openKindPage(frame, "nodeoverlays", "Node Overlays");
+
+    const row = await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
+
+    await clickAndExpectDetails(
+      frame,
+      row.getByText("spot-discount", { exact: true }).first(),
+      /^NodeOverlay: spot-discount/,
+    );
+    await expectInDetails(frame, ["Applies To", "azure", "karpenter.sh/capacity-type In [spot]"]);
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {

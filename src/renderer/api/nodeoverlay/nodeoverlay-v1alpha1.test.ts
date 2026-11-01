@@ -59,6 +59,12 @@ describe("NodeOverlay (karpenter.sh/v1alpha1)", () => {
     expect(NodeOverlay.namespaced).toBe(false);
     expect(NodeOverlay.apiBase).toBe("/apis/karpenter.sh/v1alpha1/nodeoverlays");
     expect(NodeOverlay.crd.apiVersions).toEqual(["karpenter.sh/v1alpha1"]);
+    expect(NodeOverlay.crd.plural).toBe("nodeoverlays");
+    expect(NodeOverlay.crd.singular).toBe("nodeoverlay");
+  });
+
+  it("has the title of its sidebar entry and its list page", () => {
+    expect(NodeOverlay.crd.title).toBe("Node Overlays");
   });
 
   it("describes its weight and its changes", () => {

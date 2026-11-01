@@ -10,8 +10,8 @@ This repository is the Freelens extension for [Karpenter](https://karpenter.sh/)
 It adds "Karpenter" to the cluster sidebar, with its pages as entries: the
 dashboard, "Overview", with four tabs (Overview, Topology, Node Classes,
 Scaling Decisions), and a list page with details for each Karpenter kind that
-has its page so far, "Node Pools" and "Node Claims". It also adds a Karpenter section to the
-host's Node details. It reads the Karpenter objects, the nodes, the pods and
+has its page so far, "Node Pools", "Node Claims" and "Node Overlays". It also
+adds a Karpenter section to the host's Node details. It reads the Karpenter objects, the nodes, the pods and
 the events of the cluster, and writes nothing to it.
 
 The build, type-check, test and release setup is the one of
@@ -185,22 +185,23 @@ from the objects is in pure modules next to them, which the unit tests cover:
 `components/KarpenterCard/card-utils.ts`, `utils/karpenter-events.ts`,
 `utils/kube-helpers.ts`, `utils/printer-columns.ts`,
 `pages/nodepools/nodepool-columns.ts`, `pages/nodeclaims/nodeclaim-columns.ts`,
-`details/node-karpenter.ts`, `details/karpenter-v1.ts`,
-`details/nodepool-relations.ts` and `details/nodeclaim-status.ts`. Keep it
+`pages/nodeoverlays/nodeoverlay-columns.ts`, `details/node-karpenter.ts`,
+`details/karpenter-v1.ts`, `details/nodepool-relations.ts`,
+`details/nodeclaim-status.ts` and `details/nodeoverlay-relations.ts`. Keep it
 that way: logic that needs the host or a store goes into `data/`, logic on
 objects into a pure module with a test, and the component only renders.
 
-A kind with a page of the extension (NodePool, NodeClaim) has an entry under
-"Karpenter" in the sidebar, a list page and details; see "Pages and Details of
-a Kind". A click on such an object in a tab opens its page with its details
-(`openNodePoolDetail` and `openNodeClaimDetail` of `utils/kube-helpers.ts`),
-and a link inside a details drawer opens the other object's details over the
-page (`DetailsLink` of `components/shared/`). A link in a list page to an
-object of another kind with a page opens it on that kind's page
-(`DetailsLink` with `page`, as the NodePool column of the Node Claims page).
-A kind without a page yet opens the host's details
-drawer on the host's page of its CRD (`detailUrl` and the other `open*Detail`
-helpers of `utils/kube-helpers.ts`, `openNodeClassDetail` of
+A kind with a page of the extension (NodePool, NodeClaim, NodeOverlay) has an
+entry under "Karpenter" in the sidebar, a list page and details; see "Pages
+and Details of a Kind". A click on such an object in a tab opens its page with
+its details (`openNodePoolDetail`, `openNodeClaimDetail` and
+`openNodeOverlayDetail` of `utils/kube-helpers.ts`), and a link inside a
+details drawer opens the other object's details over the page (`DetailsLink`
+of `components/shared/`). A link in a list page to an object of another kind
+with a page opens it on that kind's page (`DetailsLink` with `page`, as the
+NodePool column of the Node Claims page). A kind without a page yet, a node
+class, opens the host's details drawer on the host's page of its CRD
+(`detailUrl` of `utils/kube-helpers.ts`, `openNodeClassDetail` of
 `data/nodeclass.ts`).
 
 ## Data Layer
@@ -246,7 +247,8 @@ helpers of `utils/kube-helpers.ts`, `openNodeClassDetail` of
   Silently").
 - **The stores of details**: details open over any page, also one that has
   not loaded the stores of the objects they relate to, such as the NodeClaims
-  and NodeOverlays of a NodePool. `useSubscribedStores` of
+  and NodeOverlays of a NodePool, or the NodePools of a NodeOverlay.
+  `useSubscribedStores` of
   `data/use-subscribed-stores.ts` loads them when they are not loaded, and
   subscribes to them while the details are open.
 
@@ -384,7 +386,7 @@ every variant.
 ### Pages and Details of a Kind
 
 A kind gets its page and its details together, built from the parts the
-kinds share, as Node Pools and Node Claims have them:
+kinds share, as Node Pools, Node Claims and Node Overlays have them:
 
 1. **The title**: `crd.title` of each of its models, with their tests.
 2. **The sidebar entry**: a `clusterPageMenus` entry under `parentId:
@@ -417,8 +419,11 @@ kinds share, as Node Pools and Node Claims have them:
    lists of texts as `Badges` of `components/shared/`.
    What they compute is in pure modules with tests (`details/karpenter-v1.ts`
    for what the kinds of `karpenter.sh/v1` share: requirements, taints,
-   resource lists, conditions that are not `True`). The stores of the objects
-   around it are loaded with `useSubscribedStores`.
+   resource lists, conditions that are not `True`). A condition that is not as
+   it should be gets a line of its own with its reason and message, which the
+   host shows only in a tooltip ("Not Ready", "Not Validated" of a
+   NodeOverlay). The stores of the objects around it are loaded with
+   `useSubscribedStores`.
 5. **The links**: the `open*Detail` helper of the kind opens its page with its
    details (`navigateToDetail(pageUrl(pageId.x), selfLink)`).
 6. **`customResources`**: its model classes, every version, in
@@ -454,7 +459,7 @@ kinds share, as Node Pools and Node Claims have them:
   sections, so it renders nothing for a node Karpenter does not manage.
 - The pages are entries under "Karpenter" in the sidebar, which has no page of its own. The host renders a page whose
   entry has a parent inside a tab layout with a tab for each entry of the parent ("Overview", "Node Pools", "Node
-  Claims"), above the page; the dashboard has its own tabs below them.
+  Claims", "Node Overlays"), above the page; the dashboard has its own tabs below them.
 - The host renders a cluster page with `params` only. The page gets the extension from the registration
   (`Page: () => <KarpenterDashboard extension={this} />`).
 - Components import their CSS module for the class names only, with no `?inline` import and no `<style>` tag; the
@@ -1160,7 +1165,8 @@ The API server drops events an hour after they are created; apply
 - Every cluster renders in a cross-origin `<clusterId>.renderer.freelens.app`
   iframe. The pages and the details live in that frame, not in the main page.
 - The URL of a page is `/extension/freelensapp--karpenter-extension/<page id>`,
-  with the ids of `pages/routes.ts`: `dashboard` for the Overview, `nodepools`, `nodeclaims`.
+  with the ids of `pages/routes.ts`: `dashboard` for the Overview, `nodepools`, `nodeclaims`,
+  `nodeoverlays`.
   The sidebar entries navigate in `onClick`; their `href` is not the page URL.
   "Karpenter" opens and closes its entries, and is closed until it is clicked.
   A click on `[data-testid="sidebar-item-…"]` does not navigate; a DOM

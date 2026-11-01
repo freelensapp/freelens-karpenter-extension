@@ -6,17 +6,20 @@
 import { Renderer } from "@freelensapp/extensions";
 import { computed } from "mobx";
 import { NodeClaim } from "./api/nodeclaim/nodeclaim-v1";
+import { NodeOverlay } from "./api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "./api/nodepool/nodepool-v1";
 import { withDetailsErrorBoundary, withPageErrorBoundary } from "./components/error-boundary";
 import { customResources } from "./custom-resources";
-import { getNodeClaimStore, getNodePoolStore } from "./data/stores";
+import { getNodeClaimStore, getNodeOverlayStore, getNodePoolStore } from "./data/stores";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 import { NodeClaimDetails } from "./details/nodeclaim-details";
+import { NodeOverlayDetails } from "./details/nodeoverlay-details";
 import { NodePoolDetails } from "./details/nodepool-details";
 // must be `?raw` as we need SVG element
 import svgIconLogo from "./icons/karpenter.svg?raw";
 import { KarpenterDashboard } from "./pages/dashboard";
 import { NodeClaimsPage } from "./pages/nodeclaims/nodeclaims-page";
+import { NodeOverlaysPage } from "./pages/nodeoverlays/nodeoverlays-page";
 import { NodePoolsPage } from "./pages/nodepools/nodepools-page";
 import { pageId } from "./pages/routes";
 
@@ -52,6 +55,12 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
         Page: () => <NodeClaimsPage extension={this} />,
       },
     },
+    {
+      id: pageId.nodeOverlays,
+      components: {
+        Page: () => <NodeOverlaysPage extension={this} />,
+      },
+    },
   ].map((registration) => withPageErrorBoundary(this, registration));
 
   // The details of the kinds, one registration for every modeled version, and the Karpenter section of the host's
@@ -59,6 +68,7 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
   kubeObjectDetailItems: Renderer.LensExtension["kubeObjectDetailItems"] = [
     Renderer.K8sApi.detailsFor(NodePool, { priority: 10, Details: NodePoolDetails }),
     Renderer.K8sApi.detailsFor(NodeClaim, { priority: 10, Details: NodeClaimDetails }),
+    Renderer.K8sApi.detailsFor(NodeOverlay, { priority: 10, Details: NodeOverlayDetails }),
     Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, { Details: NodeKarpenterDetails }),
   ].map((registration) => withDetailsErrorBoundary(this, registration));
 
@@ -94,6 +104,14 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       title: NodeClaim.crd.title,
       target: { pageId: pageId.nodeClaims },
       visible: computed(() => getNodeClaimStore() !== undefined),
+      components: {},
+    },
+    {
+      id: pageId.nodeOverlays,
+      parentId: "karpenter",
+      title: NodeOverlay.crd.title,
+      target: { pageId: pageId.nodeOverlays },
+      visible: computed(() => getNodeOverlayStore() !== undefined),
       components: {},
     },
   ];

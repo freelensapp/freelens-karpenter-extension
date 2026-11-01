@@ -12,6 +12,7 @@ export const pageId = {
   overview: "dashboard",
   nodePools: "nodepools",
   nodeClaims: "nodeclaims",
+  nodeOverlays: "nodeoverlays",
 } as const;
 
 export type PageId = (typeof pageId)[keyof typeof pageId];
