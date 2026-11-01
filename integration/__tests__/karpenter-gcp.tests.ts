@@ -218,13 +218,15 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     // The entry of the sidebar, and the columns of kubectl get gcenodeclasses
     // -o wide. The image selector term of default with the image it resolved,
     // its boot disk and its kubelet configuration are in the details only.
+    // The API server returns the fields of a custom resource with their keys
+    // sorted, so the term has its channel first.
     await openKindPage(frame, "gcenodeclasses", "GCE Node Classes");
 
     const row = await expectListRow(frame, gceNodeClassColumns, ["default", "True", agePattern]);
 
     await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^GCENodeClass: default/);
     await expectInDetails(frame, [
-      "family: ContainerOptimizedOS; channel: stable",
+      "channel: stable; family: ContainerOptimizedOS",
       "projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre: kubernetes.io/arch In [amd64]",
       "boot disk: 100 GiB, pd-balanced",
       "maxPods: 64",
