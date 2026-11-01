@@ -858,6 +858,11 @@ tests included, which no build reaches, and a type error shows as its own
 failed check rather than as a failed build. `check.yaml` builds without the
 type check for the same reason, so it does not run twice.
 
+The workflows that check a pull request filter its base branch with `"**"`, not
+`"*"`, which matches no `/`. A stacked pull request targets the branch of the one
+below it, such as `claude/issue-<number>-<slug>`, and with `"*"` no check runs on
+it, without any error. This differs from the template.
+
 ### Integration tests
 
 The integration tests run in this repository, under its own Vitest
