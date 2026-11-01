@@ -24,6 +24,7 @@ import {
 } from "./data/stores";
 import { AKSNodeClassDetails } from "./details/aksnodeclass-details";
 import { EC2NodeClassDetails } from "./details/ec2nodeclass-details";
+import { GCENodeClassDetails } from "./details/gcenodeclass-details";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 import { NodeClaimDetails } from "./details/nodeclaim-details";
 import { NodeOverlayDetails } from "./details/nodeoverlay-details";
@@ -106,6 +107,7 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
     Renderer.K8sApi.detailsFor(EC2NodeClass, { priority: 10, Details: EC2NodeClassDetails }),
     Renderer.K8sApi.detailsFor(AKSNodeClassV1beta1, { priority: 10, Details: AKSNodeClassDetails }),
     Renderer.K8sApi.detailsFor(AKSNodeClassV1alpha2, { priority: 10, Details: AKSNodeClassDetails }),
+    Renderer.K8sApi.detailsFor(GCENodeClass, { priority: 10, Details: GCENodeClassDetails }),
     Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, { Details: NodeKarpenterDetails }),
   ].map((registration) => withDetailsErrorBoundary(this, registration));
 
