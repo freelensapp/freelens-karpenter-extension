@@ -852,6 +852,9 @@ export const nodeOverlayColumns = ["Name", "Ready", "Age", "Weight"];
 /** The columns of `kubectl get ec2nodeclasses -o wide`, which the EC2 Node Classes page has. */
 export const ec2NodeClassColumns = ["Name", "Ready", "Age", "Role"];
 
+/** The columns of `kubectl get aksnodeclasses -o wide`, which the AKS Node Classes page has. */
+export const aksNodeClassColumns = ["Name", "Ready", "Age", "ImageFamily"];
+
 /** An age as the host shows it, such as `42s` or `3m`. */
 export const agePattern = /^\d+[smhdy]/;
 

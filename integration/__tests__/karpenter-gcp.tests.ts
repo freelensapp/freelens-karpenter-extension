@@ -213,9 +213,10 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     await expectInDetails(frame, ["Applies To", "gke", "karpenter.sh/capacity-type In [spot]"]);
   });
 
-  it("has no entry for the node classes of AWS", async () => {
+  it("has no entry for the node classes of AWS and Azure", async () => {
     // The cluster serves GCENodeClasses only.
     await expectNoKindPageEntry(frame, "ec2nodeclasses", "nodepools");
+    await expectNoKindPageEntry(frame, "aksnodeclasses", "nodepools");
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {

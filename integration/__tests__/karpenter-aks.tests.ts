@@ -13,6 +13,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   agePattern,
+  aksNodeClassColumns,
   appReady,
   clickAndExpectDetails,
   connectApp,
@@ -211,6 +212,41 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
       /^NodeOverlay: spot-discount/,
     );
     await expectInDetails(frame, ["Applies To", "azure", "karpenter.sh/capacity-type In [spot]"]);
+  });
+
+  it("lists the AKSNodeClasses on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get aksnodeclasses
+    // -o wide. The image and the Kubernetes version that default resolved,
+    // its OS disk size and the NodePool that uses it are in the details
+    // only.
+    await openKindPage(frame, "aksnodeclasses", "AKS Node Classes");
+
+    const row = await expectListRow(frame, aksNodeClassColumns, ["default", "True", agePattern, "AzureLinux"]);
+
+    await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^AKSNodeClass: default/);
+    await expectInDetails(frame, [
+      "/CommunityGalleries/AKSAzureLinux-f7c7cda5-1c9a-4bdc-a222-9614c968580b/images/V3gen2/versions/202610.01.0: kubernetes.io/arch In [amd64]",
+      "1.33.2",
+      "128 GB",
+      "Used By",
+      "azure",
+    ]);
+  });
+
+  it("opens the AKSNodeClass of a NodePool on the AKS Node Classes page", async () => {
+    await openKindPage(frame, "nodepools", "Node Pools");
+
+    const row = await expectListRow(frame, nodePoolColumns, ["azure", "default"]);
+
+    await clickAndExpectDetails(frame, row.getByTitle("Open AKSNodeClass default"), /^AKSNodeClass: default/);
+    // Its max pods are in its details only.
+    await expectInDetails(frame, ["Max Pods", "50"]);
+    // Under the details, the AKS Node Classes page.
+    await frame
+      .locator(".ItemListLayout")
+      .getByText("AKS Node Classes", { exact: true })
+      .first()
+      .waitFor({ timeout: 60 * 1000 });
   });
 
   it("has no entry for the node classes of AWS", async () => {
