@@ -64,7 +64,7 @@ function guessFromStores(): NodeClassProvider {
 
 /**
  * The list page of the extension for the node class of a provider, such as the EC2 Node Classes page for AWS, or
- * `undefined` while the node class has no page of the extension.
+ * `undefined` for a node class the extension does not model.
  */
 export function nodeClassPage(provider: NodeClassProvider): string | undefined {
   switch (provider) {
@@ -72,19 +72,12 @@ export function nodeClassPage(provider: NodeClassProvider): string | undefined {
       return pageUrl(pageId.ec2NodeClasses);
     case "azure":
       return pageUrl(pageId.aksNodeClasses);
+    case "gcp":
+      return pageUrl(pageId.gceNodeClasses);
     default:
       return undefined;
   }
 }
-
-/**
- * The host's list page of the CRD of the node classes that have no page of the extension yet.
- * The route is /crd/:group/:name (plural resource name).
- */
-const NODE_CLASS_CRD_PATH: Record<Exclude<NodeClassProvider, "aws" | "azure">, string> = {
-  gcp: "/crd/karpenter.k8s.gcp/gcenodeclasses",
-  unknown: "/crd/definitions",
-};
 
 /** The API base of the node classes per provider, in the version the cluster serves. */
 function nodeClassApiBase(provider: NodeClassProvider): string {
@@ -107,10 +100,10 @@ export function nodeClassSelfLink(name: string, provider: NodeClassProvider): st
 }
 
 /**
- * Opens the details of a node class on the extension's page of its kind, or on the host's page of its CRD while it
- * has none.
+ * Opens the details of a node class on the extension's page of its kind; nothing for a node class the extension does
+ * not model, which has no self-link either.
  */
 export function openNodeClassDetail(name: string, provider: NodeClassProvider): void {
-  const page = provider === "aws" || provider === "azure" ? nodeClassPage(provider) : NODE_CLASS_CRD_PATH[provider];
+  const page = nodeClassPage(provider);
   if (page) navigateToDetail(page, nodeClassSelfLink(name, provider));
 }
