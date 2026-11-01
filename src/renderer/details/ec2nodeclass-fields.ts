@@ -1,7 +1,6 @@
-// What the details of an EC2NodeClass of karpenter.k8s.aws/v1 show of its fields, as text: the selector terms of the
-// spec, what they resolved to in the status, the block devices, the network interfaces and the option structs.
+// What the details of an EC2NodeClass of karpenter.k8s.aws/v1 show of its fields, as text: what the selector terms of
+// the spec resolved to in the status, the block devices and the network interfaces.
 
-import { fieldTexts } from "./fields";
 import { formatRequirement } from "./karpenter-v1";
 
 import type {
@@ -12,14 +11,6 @@ import type {
   SecurityGroup,
   Subnet,
 } from "../api/ec2nodeclass/ec2nodeclass-v1-types";
-
-/**
- * A selector term, its fields that are set in the order of the term, `field: value`, separated by semicolons: all of
- * them select together. The tags are `key=value` pairs, `*` for any value.
- */
-export function formatSelectorTerm(term: object): string {
-  return fieldTexts(term).join("; ");
-}
 
 /** A subnet a selector resolved to: its id, then its zone and zone id. */
 export function formatSubnet(subnet: Subnet): string {
