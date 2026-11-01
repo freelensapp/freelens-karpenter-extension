@@ -1,5 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 
+import type { KarpenterKubeObjectCRD } from "../types";
 import type { GCENodeClassSpec, GCENodeClassStatus } from "./gcenodeclass-v1alpha1-types";
 
 export class GCENodeClass extends Renderer.K8sApi.LensExtensionKubeObject<
@@ -14,10 +15,11 @@ export class GCENodeClass extends Renderer.K8sApi.LensExtensionKubeObject<
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.k8s.gcp/v1alpha1/gcenodeclasses";
 
-  static readonly crd = {
+  static readonly crd: KarpenterKubeObjectCRD = {
     apiVersions: ["karpenter.k8s.gcp/v1alpha1"],
     plural: "gcenodeclasses",
     singular: "gcenodeclass",
+    title: "GCE Node Classes",
   };
 
   /**
