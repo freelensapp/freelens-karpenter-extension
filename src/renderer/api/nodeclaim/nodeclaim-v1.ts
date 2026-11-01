@@ -1,6 +1,7 @@
 import { Renderer } from "@freelensapp/extensions";
 
 import type { NodeClaimSpec, NodeClaimStatus } from "../karpenter/karpenter-v1-types";
+import type { KarpenterKubeObjectCRD } from "../types";
 
 export class NodeClaim extends Renderer.K8sApi.LensExtensionKubeObject<
   Renderer.K8sApi.ClusterScopedMetadata,
@@ -14,10 +15,11 @@ export class NodeClaim extends Renderer.K8sApi.LensExtensionKubeObject<
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.sh/v1/nodeclaims";
 
-  static readonly crd = {
+  static readonly crd: KarpenterKubeObjectCRD = {
     apiVersions: ["karpenter.sh/v1"],
     plural: "nodeclaims",
     singular: "nodeclaim",
+    title: "Node Claims",
   };
 
   /**

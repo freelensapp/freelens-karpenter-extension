@@ -1,5 +1,5 @@
 import { Renderer } from "@freelensapp/extensions";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildPodCountMap,
   detailUrl,
@@ -12,6 +12,7 @@ import {
   getNodeMaxPods,
   getNodeMemory,
   getNodeStatus,
+  openNodeClaimDetail,
   openNodePoolDetail,
   parseCpuCores,
   parseMemGi,
@@ -176,6 +177,21 @@ describe("openNodePoolDetail", () => {
     expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
       "/extension/freelensapp--karpenter-extension/nodepools?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral",
     );
+  });
+});
+
+describe("openNodeClaimDetail", () => {
+  it("opens the extension's Node Claims page with the details of the NodeClaim", () => {
+    openNodeClaimDetail("general-pend1");
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/nodeclaims?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodeclaims%2Fgeneral-pend1&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodeclaims%2Fgeneral-pend1",
+    );
+  });
+
+  it("opens nothing without a name", () => {
+    vi.mocked(Renderer.Navigation.navigate).mockClear();
+    openNodeClaimDetail("");
+    expect(Renderer.Navigation.navigate).not.toHaveBeenCalled();
   });
 });
 

@@ -814,6 +814,22 @@ export async function openKindPage(frame: Frame, menuId: string, title: string) 
 /** The columns of `kubectl get nodepools -o wide`, which the Node Pools page has. */
 export const nodePoolColumns = ["Name", "NodeClass", "Nodes", "Ready", "Age", "Weight", "CPU", "Memory"];
 
+/** The columns of `kubectl get nodeclaims -o wide`, which the Node Claims page has. */
+export const nodeClaimColumns = [
+  "Name",
+  "Type",
+  "Capacity",
+  "Zone",
+  "Node",
+  "Ready",
+  "Age",
+  "ImageID",
+  "ID",
+  "NodePool",
+  "NodeClass",
+  "Drifted",
+];
+
 /** An age as the host shows it, such as `42s` or `3m`. */
 export const agePattern = /^\d+[smhdy]/;
 
@@ -888,6 +904,27 @@ export async function expectListRow(frame: Frame, columns: string[], cells: [str
     }
 
     await frame.waitForTimeout(500);
+  }
+}
+
+/**
+ * Checks that the cells of a row under the columns are empty: the head and
+ * the row have the same cells, the checkbox and the menu included, so a
+ * column's cell is at the index of its head cell.
+ */
+export async function expectEmptyCells(frame: Frame, row: Locator, columns: string[]) {
+  const headTexts = await cellTexts(frame.locator(".TableHead").first());
+  const rowTexts = await cellTexts(row);
+
+  for (const column of columns) {
+    const index = headTexts.indexOf(column);
+
+    if (index === -1 || rowTexts[index] !== "") {
+      throw new Error(
+        `The cell of ${column} is not empty: the list has the columns ${JSON.stringify(headTexts)} ` +
+          `and the row ${JSON.stringify(rowTexts)}`,
+      );
+    }
   }
 }
 

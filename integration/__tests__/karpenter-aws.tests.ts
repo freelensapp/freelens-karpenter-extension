@@ -16,11 +16,13 @@ import {
   clickAndExpectDetails,
   connectApp,
   disconnectKindCluster,
+  expectEmptyCells,
   expectInDetails,
   expectListRow,
   hostMetricsRequestPattern,
   installExtension,
   kindClusterName,
+  nodeClaimColumns,
   nodePoolColumns,
   openDashboard,
   openKindCluster,
@@ -165,6 +167,49 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "False, NodeClassNotReady",
       "karpenter.k8s.aws/instance-family In [g5]",
       "nvidia.com/gpu:NoSchedule",
+    ]);
+  });
+
+  it("lists the NodeClaims on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get nodeclaims -o
+    // wide. general-9qwmt is the one NodeClaim that drifted; general-pend1
+    // has no node yet, so its Node, ImageID and ID are empty. Why it has
+    // none, the reason and message of its Launched condition, is in the
+    // details only, as its capacity type and its requirement.
+    await openKindPage(frame, "nodeclaims", "Node Claims");
+
+    await expectListRow(frame, nodeClaimColumns, [
+      "general-9qwmt",
+      "m5.2xlarge",
+      "on-demand",
+      "eu-west-1b",
+      "ip-10-0-2-12.eu-west-1.compute.internal",
+      "True",
+      agePattern,
+      "ami-0a1b2c3d4e5f60001",
+      "aws:///eu-west-1b/i-0b79059e1a64a764c",
+      "general",
+      "default",
+      "True",
+    ]);
+
+    const pending = await expectListRow(frame, nodeClaimColumns, [
+      "general-pend1",
+      "on-demand",
+      agePattern,
+      "general",
+      "default",
+    ]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Ready", "ImageID", "ID", "Drifted"]);
+
+    await clickAndExpectDetails(
+      frame,
+      pending.getByText("general-pend1", { exact: true }).first(),
+      /^NodeClaim: general-pend1/,
+    );
+    await expectInDetails(frame, [
+      "Unknown, NotLaunched: Waiting for an instance",
+      "karpenter.sh/nodepool In [general]",
     ]);
   });
 

@@ -1,6 +1,7 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import { NodePool } from "../api/nodepool/nodepool-v1";
+import { Badges } from "../components/shared/Badges";
 import { DetailsLink } from "../components/shared/DetailsLink";
 import { detectProvider, nodeClassSelfLink } from "../data/nodeclass";
 import { getNodeClaimStore, getNodeOverlayStore } from "../data/stores";
@@ -10,19 +11,8 @@ import { formatBudget, formatRequirement, formatTaint, notTrueReason, resourceRo
 import { nodeClaimsOfNodePool, overlaysOfNodePool } from "./nodepool-relations";
 
 const {
-  Component: { Badge, DrawerItem, DrawerItemLabels, DrawerTitle },
+  Component: { DrawerItem, DrawerItemLabels, DrawerTitle },
 } = Renderer;
-
-/** Texts as badges, one per line of the drawer item; nothing without any. */
-function Badges({ name, texts }: { name: string; texts: string[] }) {
-  return (
-    <DrawerItem name={name} labelsOnly hidden={texts.length === 0}>
-      {texts.map((text) => (
-        <Badge key={text} label={text} />
-      ))}
-    </DrawerItem>
-  );
-}
 
 /**
  * The details of a NodePool of karpenter.sh/v1, after the host's own: the metadata, the printer columns and the

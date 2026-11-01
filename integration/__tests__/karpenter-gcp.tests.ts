@@ -18,11 +18,13 @@ import {
   clickAndExpectDetails,
   connectApp,
   disconnectKindCluster,
+  expectEmptyCells,
   expectInDetails,
   expectListRow,
   hostMetricsRequestPattern,
   installExtension,
   kindClusterName,
+  nodeClaimColumns,
   nodePoolColumns,
   openDashboard,
   openKindCluster,
@@ -161,6 +163,36 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
 
     await clickAndExpectDetails(frame, row.getByText("gke", { exact: true }).first(), /^NodePool: gke/);
     await expectInDetails(frame, ["karpenter.k8s.gcp/instance-family In [e2 n2]", "12 / 64"]);
+  });
+
+  it("lists the NodeClaims on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get nodeclaims -o
+    // wide. gke-d3e4f is the one NodeClaim that drifted; gke-pend1 has no
+    // node yet, so its Node, ImageID and ID are empty. The capacity and
+    // allocatable CPUs of gke-d3e4f, and its requirement, are in the details
+    // only.
+    await openKindPage(frame, "nodeclaims", "Node Claims");
+
+    const row = await expectListRow(frame, nodeClaimColumns, [
+      "gke-d3e4f",
+      "n2-standard-8",
+      "spot",
+      "us-central1-b",
+      "karpenter-gke-d3e4f",
+      "True",
+      agePattern,
+      "projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre",
+      "gce://lab/us-central1-b/karpenter-gke-d3e4f",
+      "gke",
+      "default",
+      "True",
+    ]);
+
+    const pending = await expectListRow(frame, nodeClaimColumns, ["gke-pend1", "spot", agePattern, "gke", "default"]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Ready", "ImageID", "ID", "Drifted"]);
+
+    await clickAndExpectDetails(frame, row.getByText("gke-d3e4f", { exact: true }).first(), /^NodeClaim: gke-d3e4f/);
+    await expectInDetails(frame, ["8 / 7910m", "node.kubernetes.io/instance-type In [n2-standard-8]"]);
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {

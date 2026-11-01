@@ -9,8 +9,9 @@ Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robert
 ## What it shows
 
 The extension adds **Karpenter** to the cluster sidebar, with its pages as
-entries: **Overview**, a dashboard with four tabs, and **Node Pools**, the
-list of the NodePools with their details. It also adds a Karpenter section to
+entries: **Overview**, a dashboard with four tabs, **Node Pools** and **Node
+Claims**, the lists of the NodePools and the NodeClaims with their details.
+It also adds a Karpenter section to
 the details of a node. It follows the Freelens theme, light or dark, and
 updates while it is open, as Karpenter launches and removes nodes.
 
@@ -70,9 +71,27 @@ its disruption settings and budgets, and its NodeClaims and the NodeOverlays
 that apply to it, as links. Freelens shows its conditions and events with
 them.
 
-While the extension is enabled, NodePools are no longer listed under Custom
-Resources in the sidebar. The other Karpenter kinds stay there, and their
-links open them there, until they get pages of their own.
+### Node Claims
+
+The NodeClaims with the columns of `kubectl get nodeclaims -o wide`: Type,
+Capacity, Zone, Node, Ready, Age, ImageID, ID, NodePool, NodeClass and
+Drifted, sortable, searchable, and with the columns you choose. A NodeClaim
+still waiting for its node has no Node. The node, the NodePool and the node
+class are links. The entry is in the sidebar while the cluster serves
+NodeClaims.
+
+A click on a NodeClaim, here or in the tabs, opens its details: why it is not
+ready, the first of launched, registered and initialized it has not reached
+and why, also when its launch failed, whether it drifted, its node, NodePool
+and node class as links, its instance type, capacity type, zone, provider ID
+and image ID, the time of its last pod event, the capacity and allocatable of
+its node, and its spec: resource requests, requirements, taints, startup
+taints, expiry and termination grace period. Freelens shows its conditions
+and events with them.
+
+While the extension is enabled, NodePools and NodeClaims are no longer listed
+under Custom Resources in the sidebar. The other Karpenter kinds stay there,
+and their links open them there, until they get pages of their own.
 
 ### Node details
 
@@ -94,14 +113,14 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 
 ## Supported APIs
 
-| Group                 | API Version       | Kind           | Shown in                              |
-| --------------------- | ----------------- | -------------- | ------------------------------------- |
-| `karpenter.sh`        | v1                | `NodePool`     | every tab, Node Pools                 |
-| `karpenter.sh`        | v1                | `NodeClaim`    | Overview, Topology, Scaling Decisions |
-| `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards)             |
-| `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes                |
-| `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass` | Overview, Node Classes                |
-| `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass` | Overview, Node Classes                |
+| Group                 | API Version       | Kind           | Shown in                                           |
+| --------------------- | ----------------- | -------------- | -------------------------------------------------- |
+| `karpenter.sh`        | v1                | `NodePool`     | every tab, Node Pools                              |
+| `karpenter.sh`        | v1                | `NodeClaim`    | Overview, Topology, Scaling Decisions, Node Claims |
+| `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards)                          |
+| `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes                             |
+| `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass` | Overview, Node Classes                             |
+| `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass` | Overview, Node Classes                             |
 
 
 A kind that the cluster does not serve is left out; the Overview says so when the

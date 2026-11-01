@@ -221,9 +221,10 @@ export function openNodeDetail(node: Node): void {
   const name = node.metadata?.name;
   if (!name) return;
 
-  navigateToDetail("/nodes", `/api/v1/nodes/${name}`);
+  navigateToDetail("/nodes", nodeSelfLink(name));
 }
 
+export const nodeSelfLink = (name: string) => `/api/v1/nodes/${name}`;
 export const nodePoolSelfLink = (name: string) => `/apis/karpenter.sh/v1/nodepools/${name}`;
 export const nodeClaimSelfLink = (name: string) => `/apis/karpenter.sh/v1/nodeclaims/${name}`;
 export const nodeOverlaySelfLink = (name: string) => `/apis/karpenter.sh/v1alpha1/nodeoverlays/${name}`;
@@ -235,14 +236,15 @@ export function openNodePoolDetail(nodePool: NodePool): void {
   navigateToDetail(pageUrl(pageId.nodePools), nodePoolSelfLink(name));
 }
 
+/** Opens the extension's Node Claims page with the details of a NodeClaim. */
+export function openNodeClaimDetail(name: string): void {
+  if (!name) return;
+  navigateToDetail(pageUrl(pageId.nodeClaims), nodeClaimSelfLink(name));
+}
+
 // The kinds the extension has no page for yet open on the host's page of their CRD.
 
 export function openNodeOverlayDetail(name: string): void {
   if (!name) return;
   navigateToDetail("/crd/karpenter.sh/nodeoverlays", nodeOverlaySelfLink(name));
-}
-
-export function openNodeClaimDetail(name: string): void {
-  if (!name) return;
-  navigateToDetail("/crd/karpenter.sh/nodeclaims", nodeClaimSelfLink(name));
 }

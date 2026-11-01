@@ -17,11 +17,13 @@ import {
   clickAndExpectDetails,
   connectApp,
   disconnectKindCluster,
+  expectEmptyCells,
   expectInDetails,
   expectListRow,
   hostMetricsRequestPattern,
   installExtension,
   kindClusterName,
+  nodeClaimColumns,
   nodePoolColumns,
   openDashboard,
   openKindCluster,
@@ -151,6 +153,46 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
 
     await clickAndExpectDetails(frame, row.getByText("azure", { exact: true }).first(), /^NodePool: azure/);
     await expectInDetails(frame, ["karpenter.azure.com/sku-family In [D]", "12 / 48"]);
+  });
+
+  it("lists the NodeClaims on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get nodeclaims -o
+    // wide. azure-d3e4f is the one NodeClaim that drifted; azure-pend1 has
+    // no node yet, so its Node, ImageID and ID are empty. The capacity and
+    // allocatable CPUs of azure-d3e4f, and its requirement, are in the
+    // details only.
+    await openKindPage(frame, "nodeclaims", "Node Claims");
+
+    const row = await expectListRow(frame, nodeClaimColumns, [
+      "azure-d3e4f",
+      "Standard_D8s_v5",
+      "spot",
+      "westeurope-2",
+      "aks-azure-d3e4f-12345678-vmss000001",
+      "True",
+      agePattern,
+      "AKSAzureLinux-V3gen2-202610.01.0",
+      "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mc_lab/providers/Microsoft.Compute/virtualMachines/azure-d3e4f",
+      "azure",
+      "default",
+      "True",
+    ]);
+
+    const pending = await expectListRow(frame, nodeClaimColumns, [
+      "azure-pend1",
+      "spot",
+      agePattern,
+      "azure",
+      "default",
+    ]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Ready", "ImageID", "ID", "Drifted"]);
+
+    await clickAndExpectDetails(
+      frame,
+      row.getByText("azure-d3e4f", { exact: true }).first(),
+      /^NodeClaim: azure-d3e4f/,
+    );
+    await expectInDetails(frame, ["8 / 7920m", "node.kubernetes.io/instance-type In [Standard_D8s_v5]"]);
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {
