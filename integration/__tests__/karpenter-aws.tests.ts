@@ -16,6 +16,7 @@ import {
   clickAndExpectDetails,
   connectApp,
   disconnectKindCluster,
+  ec2NodeClassColumns,
   expectEmptyCells,
   expectInDetails,
   expectListRow,
@@ -233,6 +234,54 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
 
     await clickAndExpectDetails(frame, row.getByText("gpu-fpga", { exact: true }).first(), /^NodeOverlay: gpu-fpga/);
     await expectInDetails(frame, ["Applies To", "gpu", "karpenter.sh/nodepool In [gpu]", "example.com/fpga 1"]);
+  });
+
+  it("lists the EC2NodeClasses on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get ec2nodeclasses
+    // -o wide. gpu found no AMI, so it is not Ready. The subnets, the
+    // security group and the instance profile that the selectors of default
+    // resolved to, its kubelet setting and the NodePools that use it are in
+    // the details only.
+    await openKindPage(frame, "ec2nodeclasses", "EC2 Node Classes");
+
+    await expectListRow(frame, ec2NodeClassColumns, ["gpu", "False", agePattern, "KarpenterNodeRole-lab"]);
+    const row = await expectListRow(frame, ec2NodeClassColumns, [
+      "default",
+      "True",
+      agePattern,
+      "KarpenterNodeRole-lab",
+    ]);
+
+    await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^EC2NodeClass: default/);
+    await expectInDetails(frame, [
+      "tags: karpenter.sh/discovery=lab",
+      "subnet-0a1b2c3d4e5f60002 (eu-west-1b, euw1-az2)",
+      "sg-0a1b2c3d4e5f60001 (lab-node)",
+      "lab_1234567890",
+      "maxPods: 58",
+      "Used By",
+      "empty",
+      "general",
+    ]);
+  });
+
+  it("opens the EC2NodeClass of a NodePool on the EC2 Node Classes page", async () => {
+    await openKindPage(frame, "nodepools", "Node Pools");
+
+    const row = await expectListRow(frame, nodePoolColumns, ["gpu", "gpu"]);
+
+    await clickAndExpectDetails(frame, row.getByTitle("Open EC2NodeClass gpu"), /^EC2NodeClass: gpu/);
+    // Why gpu is not Ready, and its subnet selector, are in its details only.
+    await expectInDetails(frame, [
+      "False, AMIsNotFound: AMISelector did not match any AMIs",
+      "id: subnet-0a1b2c3d4e5f60001",
+    ]);
+    // Under the details, the EC2 Node Classes page.
+    await frame
+      .locator(".ItemListLayout")
+      .getByText("EC2 Node Classes", { exact: true })
+      .first()
+      .waitFor({ timeout: 60 * 1000 });
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {

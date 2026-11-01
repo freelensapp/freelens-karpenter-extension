@@ -21,6 +21,7 @@ import {
   expectEmptyCells,
   expectInDetails,
   expectListRow,
+  expectNoKindPageEntry,
   hostMetricsRequestPattern,
   installExtension,
   kindClusterName,
@@ -210,6 +211,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       /^NodeOverlay: spot-discount/,
     );
     await expectInDetails(frame, ["Applies To", "gke", "karpenter.sh/capacity-type In [spot]"]);
+  });
+
+  it("has no entry for the node classes of AWS", async () => {
+    // The cluster serves GCENodeClasses only.
+    await expectNoKindPageEntry(frame, "ec2nodeclasses", "nodepools");
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {
