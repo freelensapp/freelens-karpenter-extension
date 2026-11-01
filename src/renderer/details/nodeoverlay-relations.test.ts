@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { NodeOverlay } from "../api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "../api/nodepool/nodepool-v1";
-import { isRejected, nodePoolsOfOverlay } from "./nodeoverlay-relations";
+import { nodePoolsOfOverlay } from "./nodeoverlay-relations";
 
 import type { NodeSelectorRequirementWithMinValues } from "../api/karpenter/karpenter-v1-types";
-import type { NodeOverlaySpec, NodeOverlayStatus } from "../api/nodeoverlay/nodeoverlay-v1alpha1-types";
+import type { NodeOverlaySpec } from "../api/nodeoverlay/nodeoverlay-v1alpha1-types";
 
 const nodePool = (name: string, requirements: NodeSelectorRequirementWithMinValues[]) =>
   new NodePool({
@@ -18,13 +18,12 @@ const nodePool = (name: string, requirements: NodeSelectorRequirementWithMinValu
     },
   });
 
-const overlay = (spec: Partial<NodeOverlaySpec>, status?: NodeOverlayStatus) =>
+const overlay = (spec: Partial<NodeOverlaySpec>) =>
   new NodeOverlay({
     apiVersion: "karpenter.sh/v1alpha1",
     kind: "NodeOverlay",
     metadata: { name: "o", uid: "o", resourceVersion: "1", selfLink: "" },
     spec: { requirements: [], ...spec },
-    status,
   });
 
 // The NodePools of the AWS fixtures of the integration tests: general allows spot, gpu and empty on-demand only.
@@ -60,25 +59,5 @@ describe("nodePoolsOfOverlay", () => {
     const byName = overlay({ requirements: [{ key: "karpenter.sh/nodepool", operator: "In", values: ["gpu"] }] });
     expect(nodePoolsOfOverlay(byName, [general, gpu, empty])).toEqual(["gpu"]);
     expect(nodePoolsOfOverlay(byName, [])).toEqual([]);
-  });
-});
-
-describe("isRejected", () => {
-  const condition = (type: string, status: string, reason = "") => ({
-    type,
-    status,
-    reason,
-    message: "",
-    lastTransitionTime: "2026-10-01T08:00:00Z",
-  });
-
-  it("is rejected when its validation failed", () => {
-    expect(isRejected(overlay({}, { conditions: [condition("ValidationSucceeded", "False", "Conflict")] }))).toBe(true);
-  });
-
-  it("is not rejected when it is valid, or not validated yet", () => {
-    expect(isRejected(overlay({}, { conditions: [condition("ValidationSucceeded", "True")] }))).toBe(false);
-    expect(isRejected(overlay({}, { conditions: [condition("ValidationSucceeded", "Unknown")] }))).toBe(false);
-    expect(isRejected(overlay({}))).toBe(false);
   });
 });

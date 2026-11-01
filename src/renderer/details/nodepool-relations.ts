@@ -20,11 +20,29 @@ export interface OverlayOfNodePool {
   changes: string;
 }
 
-/** The NodeOverlays that can apply to the nodes of a NodePool, the one that takes precedence first. */
+/** The NodeOverlays that apply to the nodes of a NodePool, the one that takes precedence first. */
 export function overlaysOfNodePool(nodePool: NodePool, overlays: readonly NodeOverlay[]): OverlayOfNodePool[] {
   return NodeOverlay.forNodePool([...overlays], nodePool).map((overlay) => ({
     name: overlay.getName(),
     weight: NodeOverlay.getWeight(overlay),
     changes: NodeOverlay.describe(overlay).join(", "),
+  }));
+}
+
+export interface RejectedOverlayOfNodePool extends OverlayOfNodePool {
+  /** Why Karpenter rejected it, such as `Conflict: conflict with another overlay`. */
+  reason: string;
+}
+
+/** The NodeOverlays that could apply to the nodes of a NodePool but that Karpenter rejected, as the card lists them. */
+export function rejectedOverlaysOfNodePool(
+  nodePool: NodePool,
+  overlays: readonly NodeOverlay[],
+): RejectedOverlayOfNodePool[] {
+  return NodeOverlay.rejectedForNodePool([...overlays], nodePool).map((overlay) => ({
+    name: overlay.getName(),
+    weight: NodeOverlay.getWeight(overlay),
+    changes: NodeOverlay.describe(overlay).join(", "),
+    reason: NodeOverlay.rejectionReason(overlay) ?? "",
   }));
 }

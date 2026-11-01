@@ -481,33 +481,57 @@ const CardInfoBar = observer(function CardInfoBar({
   );
 });
 
-/** The NodeOverlays that can apply to the NodePool's nodes, the one that takes precedence first. */
+/**
+ * The NodeOverlays that apply to the NodePool's nodes, the one that takes precedence first, and apart from them those
+ * that could apply but that Karpenter rejected.
+ */
 const NodeOverlayMeta = observer(function NodeOverlayMeta({ nodePool }: { nodePool: NodePool }) {
-  const overlays = NodeOverlay.forNodePool(getNodeOverlayStore()?.items ?? [], nodePool);
-  if (overlays.length === 0) return null;
+  const items = getNodeOverlayStore()?.items ?? [];
+  const overlays = NodeOverlay.forNodePool(items, nodePool);
+  const rejected = NodeOverlay.rejectedForNodePool(items, nodePool);
+  if (overlays.length === 0 && rejected.length === 0) return null;
 
   return (
     <div className={style.infoMeta}>
-      <span className={style.infoMetaItem}>
-        <span className={style.infoMetaLabel}>{overlays.length === 1 ? "Overlay:" : "Overlays:"}</span>
-        {overlays.map((overlay) => {
-          const changes = NodeOverlay.describe(overlay).join(", ");
-          return (
-            <span key={overlay.getName()} className={style.overlayItem}>
-              <a
-                onClick={() => openNodeOverlayDetail(overlay.getName())}
-                title={`Open NodeOverlay ${overlay.getName()} (weight ${NodeOverlay.getWeight(overlay)})`}
-              >
-                {overlay.getName()}
-              </a>
-              {changes && ` (${changes})`}
-            </span>
-          );
-        })}
-      </span>
+      {overlays.length > 0 && (
+        <span className={style.infoMetaItem}>
+          <span className={style.infoMetaLabel}>{overlays.length === 1 ? "Overlay:" : "Overlays:"}</span>
+          {overlays.map((overlay) => (
+            <OverlayItem
+              key={overlay.getName()}
+              overlay={overlay}
+              title={`Open NodeOverlay ${overlay.getName()} (weight ${NodeOverlay.getWeight(overlay)})`}
+            />
+          ))}
+        </span>
+      )}
+      {rejected.length > 0 && (
+        <span className={style.infoMetaItem}>
+          <span className={style.infoMetaLabel}>Not applied:</span>
+          {rejected.map((overlay) => (
+            <OverlayItem
+              key={overlay.getName()}
+              overlay={overlay}
+              title={`Open NodeOverlay ${overlay.getName()}, rejected by Karpenter: ${NodeOverlay.rejectionReason(overlay)}`}
+            />
+          ))}
+        </span>
+      )}
     </div>
   );
 });
+
+function OverlayItem({ overlay, title }: { overlay: NodeOverlay; title: string }) {
+  const changes = NodeOverlay.describe(overlay).join(", ");
+  return (
+    <span className={style.overlayItem}>
+      <a onClick={() => openNodeOverlayDetail(overlay.getName())} title={title}>
+        {overlay.getName()}
+      </a>
+      {changes && ` (${changes})`}
+    </span>
+  );
+}
 
 function InfoPill({
   kind,

@@ -388,6 +388,23 @@ status:
 apiVersion: karpenter.sh/v1alpha1
 kind: NodeOverlay
 metadata:
+  name: spot-adjustment
+status:
+  conditions:
+    - type: ValidationSucceeded
+      status: "False"
+      reason: Conflict
+      message: conflict with another overlay
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "False"
+      reason: UnhealthyDependents
+      message: ValidationSucceeded=False
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
   name: gpu-fpga
 status:
   conditions:

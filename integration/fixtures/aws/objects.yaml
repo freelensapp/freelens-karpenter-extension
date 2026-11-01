@@ -128,6 +128,18 @@ spec:
 apiVersion: karpenter.sh/v1alpha1
 kind: NodeOverlay
 metadata:
+  name: spot-adjustment
+spec:
+  weight: 10
+  requirements:
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: [spot]
+  priceAdjustment: +5%
+---
+apiVersion: karpenter.sh/v1alpha1
+kind: NodeOverlay
+metadata:
   name: gpu-fpga
 spec:
   weight: 50

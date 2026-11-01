@@ -89,7 +89,8 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     // The version is the image tag of the controller Deployment. Without nodes,
     // only general has a card, for its NodeClaim still waiting for its node;
     // gpu and empty are folded as empty. general expires its nodes after 720h,
-    // and the NodeOverlay that can apply to it is on its card.
+    // and the NodeOverlay that applies to it is on its card, with
+    // spot-adjustment, which Karpenter rejected for a conflict with it, apart.
     await openTab(frame, "Overview", [
       "Karpenter 1.15.1",
       "general",
@@ -97,6 +98,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "+2 empty",
       /^Expire after:\s*720h$/,
       "spot-discount",
+      "Not applied:",
     ]);
   });
 
@@ -143,6 +145,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     );
     await openTab(frame, "Overview", ["general-pend1"]);
     await clickAndExpectDetails(frame, frame.getByTitle("Open NodePool general").first(), /^NodePool: general/);
+    // The NodeOverlay that Karpenter rejected, apart from the one that applies.
+    await expectInDetails(frame, [
+      "Not Applied",
+      "spot-adjustment (price +5%): Conflict: conflict with another overlay",
+    ]);
     await openTab(frame, "Overview", ["general-pend1"]);
     await clickAndExpectDetails(frame, frame.getByTitle("Open EC2NodeClass default").first(), /^EC2NodeClass: default/);
     // The NodeOverlay of the card of general opens on the Node Overlays page.
@@ -225,12 +232,14 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
 
   it("lists the NodeOverlays on their page, and shows the details of one", async () => {
     // The entry of the sidebar, and the columns of kubectl get nodeoverlays
-    // -o wide. gpu-fpga applies to the NodePool gpu only, by its name; the
-    // NodePool, its requirement and the capacity it adds, as a resource list,
-    // are in the details only.
+    // -o wide. spot-adjustment is not Ready: Karpenter rejected it for a
+    // conflict with spot-discount, which has the same weight. gpu-fpga applies
+    // to the NodePool gpu only, by its name; the NodePool, its requirement and
+    // the capacity it adds, as a resource list, are in the details only.
     await openKindPage(frame, "nodeoverlays", "Node Overlays");
 
     await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
+    await expectListRow(frame, nodeOverlayColumns, ["spot-adjustment", "False", agePattern, "10"]);
     const row = await expectListRow(frame, nodeOverlayColumns, ["gpu-fpga", "True", agePattern, "50"]);
 
     await clickAndExpectDetails(frame, row.getByText("gpu-fpga", { exact: true }).first(), /^NodeOverlay: gpu-fpga/);

@@ -23,8 +23,9 @@ updates while it is open, as Karpenter launches and removes nodes.
 - Total, Karpenter-managed and other nodes, NodePools and their readiness,
   nodes by status, NodeClaims still waiting for a node.
 - One card per NodePool: its node class, status, instance types, limits and
-  usage of CPU and memory, `expireAfter`, the NodeOverlays that can apply to
-  it, its nodes as a table or as cards, and its recent events.
+  usage of CPU and memory, `expireAfter`, the NodeOverlays that apply to it
+  and, apart, those that Karpenter rejected, its nodes as a table or as cards,
+  and its recent events.
 - A filter by name, by node status (`status:ready`), by instance type
   (`type:m5.large`) and by NodePool status (`poolstatus:notready`).
   NodePools without nodes are behind "+N empty".
@@ -69,8 +70,8 @@ ready, its node class, weight, replicas and nodes, the resources in use
 against its limits, the template of its NodeClaims (labels, annotations,
 requirements, taints, startup taints, expiry and termination grace period),
 its disruption settings and budgets, and its NodeClaims and the NodeOverlays
-that apply to it, as links. Freelens shows its conditions and events with
-them.
+that apply to it, as links, with those that Karpenter rejected and why.
+Freelens shows its conditions and events with them.
 
 ### Node Claims
 

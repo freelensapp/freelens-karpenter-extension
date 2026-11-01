@@ -105,11 +105,51 @@ export class NodeOverlay extends Renderer.K8sApi.LensExtensionKubeObject<
     );
   }
 
-  /** The NodeOverlays that can apply to a NodePool, the one that takes precedence first. */
+  /**
+   * Whether Karpenter rejected the NodeOverlay: its ValidationSucceeded condition is `False`, for a runtime validation
+   * that failed (`RuntimeValidation`) or a conflict with an overlay of the same weight (`Conflict`). Karpenter then
+   * applies it to no instance type. Before Karpenter has validated it, the condition is `Unknown` or missing, and the
+   * overlay is not taken as rejected.
+   */
+  static isRejected(overlay: NodeOverlay): boolean {
+    return NodeOverlay.validation(overlay)?.status === "False";
+  }
+
+  /**
+   * Why Karpenter rejected the NodeOverlay: the reason and the message of its ValidationSucceeded condition, such as
+   * `Conflict: conflict with another overlay`; `undefined` when it did not reject it.
+   */
+  static rejectionReason(overlay: NodeOverlay): string | undefined {
+    if (!NodeOverlay.isRejected(overlay)) return undefined;
+    const condition = NodeOverlay.validation(overlay);
+    return [condition?.reason, condition?.message].filter(Boolean).join(": ") || "rejected";
+  }
+
+  /**
+   * The NodeOverlays that apply to a NodePool, the one that takes precedence first: those that can apply to its nodes,
+   * without the ones Karpenter rejected.
+   */
   static forNodePool(overlays: NodeOverlay[], nodePool: NodePool): NodeOverlay[] {
-    return overlays
-      .filter((overlay) => NodeOverlay.appliesTo(overlay, nodePool))
-      .sort((a, b) => NodeOverlay.getWeight(b) - NodeOverlay.getWeight(a) || a.getName().localeCompare(b.getName()));
+    return NodeOverlay.byPrecedence(
+      overlays.filter((overlay) => !NodeOverlay.isRejected(overlay) && NodeOverlay.appliesTo(overlay, nodePool)),
+    );
+  }
+
+  /** The NodeOverlays that could apply to a NodePool but that Karpenter rejected, in the order of `forNodePool`. */
+  static rejectedForNodePool(overlays: NodeOverlay[], nodePool: NodePool): NodeOverlay[] {
+    return NodeOverlay.byPrecedence(
+      overlays.filter((overlay) => NodeOverlay.isRejected(overlay) && NodeOverlay.appliesTo(overlay, nodePool)),
+    );
+  }
+
+  private static byPrecedence(overlays: NodeOverlay[]): NodeOverlay[] {
+    return overlays.sort(
+      (a, b) => NodeOverlay.getWeight(b) - NodeOverlay.getWeight(a) || a.getName().localeCompare(b.getName()),
+    );
+  }
+
+  private static validation(overlay: NodeOverlay) {
+    return overlay.status?.conditions?.find((condition) => condition.type === "ValidationSucceeded");
   }
 
   private static poolConstraint(nodePool: NodePool, key: string): PoolConstraint | undefined {
