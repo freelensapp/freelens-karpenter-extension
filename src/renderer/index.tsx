@@ -6,10 +6,11 @@
 import { Renderer } from "@freelensapp/extensions";
 import { computed } from "mobx";
 import { NodeClaim } from "./api/nodeclaim/nodeclaim-v1";
+import { NodeOverlay } from "./api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "./api/nodepool/nodepool-v1";
 import { withDetailsErrorBoundary, withPageErrorBoundary } from "./components/error-boundary";
 import { customResources } from "./custom-resources";
-import { getNodeClaimStore, getNodePoolStore } from "./data/stores";
+import { getNodeClaimStore, getNodeOverlayStore, getNodePoolStore } from "./data/stores";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 import { NodeClaimDetails } from "./details/nodeclaim-details";
 import { NodePoolDetails } from "./details/nodepool-details";
@@ -17,6 +18,7 @@ import { NodePoolDetails } from "./details/nodepool-details";
 import svgIconLogo from "./icons/karpenter.svg?raw";
 import { KarpenterDashboard } from "./pages/dashboard";
 import { NodeClaimsPage } from "./pages/nodeclaims/nodeclaims-page";
+import { NodeOverlaysPage } from "./pages/nodeoverlays/nodeoverlays-page";
 import { NodePoolsPage } from "./pages/nodepools/nodepools-page";
 import { pageId } from "./pages/routes";
 
@@ -50,6 +52,12 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       id: pageId.nodeClaims,
       components: {
         Page: () => <NodeClaimsPage extension={this} />,
+      },
+    },
+    {
+      id: pageId.nodeOverlays,
+      components: {
+        Page: () => <NodeOverlaysPage extension={this} />,
       },
     },
   ].map((registration) => withPageErrorBoundary(this, registration));
@@ -94,6 +102,14 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       title: NodeClaim.crd.title,
       target: { pageId: pageId.nodeClaims },
       visible: computed(() => getNodeClaimStore() !== undefined),
+      components: {},
+    },
+    {
+      id: pageId.nodeOverlays,
+      parentId: "karpenter",
+      title: NodeOverlay.crd.title,
+      target: { pageId: pageId.nodeOverlays },
+      visible: computed(() => getNodeOverlayStore() !== undefined),
       components: {},
     },
   ];
