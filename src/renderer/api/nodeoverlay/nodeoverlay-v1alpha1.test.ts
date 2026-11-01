@@ -2,15 +2,20 @@ import { describe, expect, it } from "vitest";
 import { NodePool } from "../nodepool/nodepool-v1";
 import { NodeOverlay } from "./nodeoverlay-v1alpha1";
 
-import type { NodeOverlaySpec } from "./nodeoverlay-v1alpha1-types";
+import type { NodeOverlaySpec, NodeOverlayStatus } from "./nodeoverlay-v1alpha1-types";
 
-const overlay = (name: string, spec: Partial<NodeOverlaySpec>) =>
+const overlay = (name: string, spec: Partial<NodeOverlaySpec>, status?: NodeOverlayStatus) =>
   new NodeOverlay({
     apiVersion: "karpenter.sh/v1alpha1",
     kind: "NodeOverlay",
     metadata: { name, uid: name, resourceVersion: "1", selfLink: "" },
     spec: { requirements: [], ...spec },
+    status,
   });
+
+const validation = (status: string, reason = "", message = "") => ({
+  conditions: [{ type: "ValidationSucceeded", status, reason, message, lastTransitionTime: "2026-10-01T08:00:00Z" }],
+});
 
 const nodePool = (
   name: string,
@@ -187,5 +192,47 @@ describe("NodeOverlay (karpenter.sh/v1alpha1)", () => {
       overlay("other", { requirements: [req("karpenter.sh/nodepool", "In", ["gpu"])], weight: 1000 }),
     ];
     expect(NodeOverlay.forNodePool(overlays, general).map((o) => o.getName())).toEqual(["heavy", "a", "b", "light"]);
+  });
+});
+
+describe("NodeOverlay.isRejected and rejectionReason", () => {
+  it("is rejected when its validation failed, with the reason and the message", () => {
+    const conflict = overlay("o", {}, validation("False", "Conflict", "conflict with another overlay"));
+    expect(NodeOverlay.isRejected(conflict)).toBe(true);
+    expect(NodeOverlay.rejectionReason(conflict)).toBe("Conflict: conflict with another overlay");
+    expect(NodeOverlay.rejectionReason(overlay("o", {}, validation("False")))).toBe("rejected");
+  });
+
+  it("is not rejected when it is valid, or not validated yet", () => {
+    for (const o of [
+      overlay("o", {}, validation("True", "ValidationSucceeded")),
+      overlay("o", {}, validation("Unknown")),
+      overlay("o", {}),
+    ]) {
+      expect(NodeOverlay.isRejected(o)).toBe(false);
+      expect(NodeOverlay.rejectionReason(o)).toBeUndefined();
+    }
+  });
+});
+
+describe("NodeOverlay.forNodePool and rejectedForNodePool", () => {
+  // Karpenter applies an overlay it rejected to no instance type; one it has not validated yet is taken as applying.
+  const overlays = [
+    overlay("spot-discount", { weight: 10 }, validation("True", "ValidationSucceeded")),
+    overlay("spot-adjustment", { weight: 10 }, validation("False", "Conflict", "conflict with another overlay")),
+    overlay("invalid", { weight: 50 }, validation("False", "RuntimeValidation", "bad price")),
+    overlay("new", {}),
+    overlay("other", { requirements: [req("karpenter.sh/nodepool", "In", ["gpu"])] }, validation("False", "Conflict")),
+  ];
+
+  it("leaves the rejected overlays out of those that apply", () => {
+    expect(NodeOverlay.forNodePool(overlays, general).map((o) => o.getName())).toEqual(["spot-discount", "new"]);
+  });
+
+  it("lists the rejected overlays that could apply, by weight, then by name", () => {
+    expect(NodeOverlay.rejectedForNodePool(overlays, general).map((o) => o.getName())).toEqual([
+      "invalid",
+      "spot-adjustment",
+    ]);
   });
 });

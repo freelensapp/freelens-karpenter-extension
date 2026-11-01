@@ -1,5 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
+import { NodeOverlay } from "../api/nodeoverlay/nodeoverlay-v1alpha1";
 import { Badges } from "../components/shared/Badges";
 import { DetailsLink } from "../components/shared/DetailsLink";
 import { getNodePoolStore } from "../data/stores";
@@ -7,9 +8,7 @@ import { useSubscribedStores } from "../data/use-subscribed-stores";
 import { nodePoolSelfLink } from "../utils/kube-helpers";
 import { formatRequirement, notTrueReason } from "./karpenter-v1";
 import { formatResources } from "./nodeclaim-status";
-import { isRejected, nodePoolsOfOverlay } from "./nodeoverlay-relations";
-
-import type { NodeOverlay } from "../api/nodeoverlay/nodeoverlay-v1alpha1";
+import { nodePoolsOfOverlay } from "./nodeoverlay-relations";
 
 const {
   Component: { DrawerItem, DrawerTitle },
@@ -30,7 +29,7 @@ export const NodeOverlayDetails = observer(
     const { spec, status } = overlay;
     const notReady = notTrueReason(status?.conditions, "Ready");
     const notValidated = notTrueReason(status?.conditions, "ValidationSucceeded");
-    const rejected = isRejected(overlay);
+    const rejected = NodeOverlay.isRejected(overlay);
     const nodePools = nodePoolsOfOverlay(overlay, nodePoolStore?.items ?? []);
 
     return (

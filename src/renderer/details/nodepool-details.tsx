@@ -8,7 +8,7 @@ import { getNodeClaimStore, getNodeOverlayStore } from "../data/stores";
 import { useSubscribedStores } from "../data/use-subscribed-stores";
 import { nodeClaimSelfLink, nodeOverlaySelfLink } from "../utils/kube-helpers";
 import { formatBudget, formatRequirement, formatTaint, notTrueReason, resourceRows } from "./karpenter-v1";
-import { nodeClaimsOfNodePool, overlaysOfNodePool } from "./nodepool-relations";
+import { nodeClaimsOfNodePool, overlaysOfNodePool, rejectedOverlaysOfNodePool } from "./nodepool-relations";
 
 const {
   Component: { DrawerItem, DrawerItemLabels, DrawerTitle },
@@ -35,6 +35,7 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
   const resources = resourceRows(status?.resources, spec?.limits);
   const nodeClaims = nodeClaimsOfNodePool(nodePool, nodeClaimStore?.items ?? []);
   const overlays = overlaysOfNodePool(nodePool, nodeOverlayStore?.items ?? []);
+  const rejectedOverlays = rejectedOverlaysOfNodePool(nodePool, nodeOverlayStore?.items ?? []);
 
   const notReady = notTrueReason(status?.conditions, "Ready");
 
@@ -131,6 +132,15 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
               </DrawerItem>
             ))
           )}
+          {rejectedOverlays.map((overlay) => (
+            <DrawerItem key={overlay.name} name="Not Applied">
+              <DetailsLink selfLink={nodeOverlaySelfLink(overlay.name)} title={`Open NodeOverlay ${overlay.name}`}>
+                {overlay.name}
+              </DetailsLink>
+              {overlay.changes ? ` (${overlay.changes})` : ""}
+              {`: ${overlay.reason}`}
+            </DrawerItem>
+          ))}
         </>
       )}
     </>
