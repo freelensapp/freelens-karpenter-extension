@@ -1,17 +1,19 @@
 // The filter of the NodePool list of the Overview: pure, so that it is tested on its own.
 
 import { NodeClaim } from "../api/nodeclaim/nodeclaim-v1";
+import { COLOR } from "../config/theme";
 import { getInstanceType, getNodePoolStatus, getNodeStatus } from "../utils/kube-helpers";
 
 import type { NodePool } from "../api/nodepool/nodepool-v1";
 import type { CondStatus, Node } from "../utils/kube-helpers";
 
+/** The colours are fixed hex values: the chip appends an alpha to them for its background. */
 export const STATUS_QUICK_FILTERS: { status: CondStatus; label: string; color: string }[] = [
-  { status: "Ready", label: "Ready", color: "#48c78e" },
-  { status: "Provisioning", label: "Provisioning", color: "#ffc107" },
-  { status: "Claiming", label: "Claiming", color: "#5ad1fc" },
-  { status: "Terminating", label: "Terminating", color: "#ff7043" },
-  { status: "NotReady", label: "Not Ready", color: "#f14668" },
+  { status: "Ready", label: "Ready", color: COLOR.success },
+  { status: "Provisioning", label: "Provisioning", color: COLOR.warning },
+  { status: "Claiming", label: "Claiming", color: COLOR.claiming },
+  { status: "Terminating", label: "Terminating", color: COLOR.terminating },
+  { status: "NotReady", label: "Not Ready", color: COLOR.danger },
 ];
 
 export interface SearchTokens {
