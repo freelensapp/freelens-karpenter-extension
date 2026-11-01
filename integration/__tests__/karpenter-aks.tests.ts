@@ -249,9 +249,10 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
       .waitFor({ timeout: 60 * 1000 });
   });
 
-  it("has no entry for the node classes of AWS", async () => {
+  it("has no entry for the node classes of AWS and GCP", async () => {
     // The cluster serves AKSNodeClasses only.
     await expectNoKindPageEntry(frame, "ec2nodeclasses", "nodepools");
+    await expectNoKindPageEntry(frame, "gcenodeclasses", "nodepools");
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {

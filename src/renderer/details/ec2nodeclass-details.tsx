@@ -13,11 +13,10 @@ import {
   formatCapacityReservation,
   formatNetworkInterface,
   formatSecurityGroup,
-  formatSelectorTerm,
   formatSubnet,
   linesSummary,
 } from "./ec2nodeclass-fields";
-import { fieldTexts } from "./fields";
+import { fieldTexts, formatSelectorTerm } from "./fields";
 import { notTrueReason } from "./karpenter-v1";
 
 import type { EC2NodeClass } from "../api/ec2nodeclass/ec2nodeclass-v1";

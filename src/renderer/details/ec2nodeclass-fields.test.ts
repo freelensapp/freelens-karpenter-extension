@@ -5,21 +5,9 @@ import {
   formatCapacityReservation,
   formatNetworkInterface,
   formatSecurityGroup,
-  formatSelectorTerm,
   formatSubnet,
   linesSummary,
 } from "./ec2nodeclass-fields";
-
-describe("formatSelectorTerm", () => {
-  it("writes the fields of a term, which select together, and its tags", () => {
-    expect(formatSelectorTerm({ tags: { "karpenter.sh/discovery": "lab" } })).toBe("tags: karpenter.sh/discovery=lab");
-    expect(formatSelectorTerm({ id: "subnet-0a1b2c3d4e5f60001" })).toBe("id: subnet-0a1b2c3d4e5f60001");
-    expect(formatSelectorTerm({ alias: "al2023@latest" })).toBe("alias: al2023@latest");
-    expect(formatSelectorTerm({ name: "lab-*", owner: "self", tags: { team: "platform", env: "*" } })).toBe(
-      "name: lab-*; owner: self; tags: team=platform, env=*",
-    );
-  });
-});
 
 describe("the resolved values", () => {
   it("writes a subnet with its zone and zone id", () => {

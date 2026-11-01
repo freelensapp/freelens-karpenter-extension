@@ -64,10 +64,10 @@ describe("nodeClassSelfLink", () => {
 });
 
 describe("nodeClassPage", () => {
-  it("is the page of the node class of AWS and of Azure, and none for one without a page of the extension", () => {
+  it("is the page of the node class of each provider, and none for a node class the extension does not model", () => {
     expect(nodeClassPage("aws")).toBe("/extension/freelensapp--karpenter-extension/ec2nodeclasses");
     expect(nodeClassPage("azure")).toBe("/extension/freelensapp--karpenter-extension/aksnodeclasses");
-    expect(nodeClassPage("gcp")).toBeUndefined();
+    expect(nodeClassPage("gcp")).toBe("/extension/freelensapp--karpenter-extension/gcenodeclasses");
     expect(nodeClassPage("unknown")).toBeUndefined();
   });
 });
@@ -93,10 +93,16 @@ describe("openNodeClassDetail", () => {
     );
   });
 
-  it("opens the node class of GCP on the host's page of its CRD", () => {
+  it("opens a GCENodeClass on the GCE Node Classes page with its details", () => {
     openNodeClassDetail("default", "gcp");
     expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
-      "/crd/karpenter.k8s.gcp/gcenodeclasses?kube-details=%2Fapis%2Fkarpenter.k8s.gcp%2Fv1alpha1%2Fgcenodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.k8s.gcp%2Fv1alpha1%2Fgcenodeclasses%2Fdefault",
+      "/extension/freelensapp--karpenter-extension/gcenodeclasses?kube-details=%2Fapis%2Fkarpenter.k8s.gcp%2Fv1alpha1%2Fgcenodeclasses%2Fdefault&kube-selected=%2Fapis%2Fkarpenter.k8s.gcp%2Fv1alpha1%2Fgcenodeclasses%2Fdefault",
     );
+  });
+
+  it("opens nothing for a node class the extension does not model", () => {
+    vi.mocked(Renderer.Navigation.navigate).mockClear();
+    openNodeClassDetail("default", "unknown");
+    expect(Renderer.Navigation.navigate).not.toHaveBeenCalled();
   });
 });

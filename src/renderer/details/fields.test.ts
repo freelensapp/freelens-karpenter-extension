@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fieldTexts, formatValue } from "./fields";
+import { fieldTexts, formatSelectorTerm, formatValue } from "./fields";
 
 describe("formatValue", () => {
   it("writes a list joined by commas, a map as key=value pairs, anything else as it is", () => {
@@ -35,5 +35,22 @@ describe("fieldTexts", () => {
 
   it("is nothing without the struct", () => {
     expect(fieldTexts(undefined)).toEqual([]);
+  });
+});
+
+describe("formatSelectorTerm", () => {
+  it("writes the fields of a term, which select together, and its tags", () => {
+    expect(formatSelectorTerm({ tags: { "karpenter.sh/discovery": "lab" } })).toBe("tags: karpenter.sh/discovery=lab");
+    expect(formatSelectorTerm({ id: "subnet-0a1b2c3d4e5f60001" })).toBe("id: subnet-0a1b2c3d4e5f60001");
+    expect(formatSelectorTerm({ alias: "al2023@latest" })).toBe("alias: al2023@latest");
+    expect(formatSelectorTerm({ name: "lab-*", owner: "self", tags: { team: "platform", env: "*" } })).toBe(
+      "name: lab-*; owner: self; tags: team=platform, env=*",
+    );
+  });
+
+  it("writes an image selector term of a GCENodeClass", () => {
+    expect(formatSelectorTerm({ family: "ContainerOptimizedOS", channel: "stable" })).toBe(
+      "family: ContainerOptimizedOS; channel: stable",
+    );
   });
 });

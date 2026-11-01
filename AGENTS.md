@@ -9,11 +9,10 @@ This file provides guidance to coding agents when working with code in this repo
 This repository is the Freelens extension for [Karpenter](https://karpenter.sh/).
 It adds "Karpenter" to the cluster sidebar, with its pages as entries: the
 dashboard, "Overview", with four tabs (Overview, Topology, Node Classes,
-Scaling Decisions), and a list page with details for each Karpenter kind that
-has its page so far, "Node Pools", "Node Claims", "Node Overlays", "EC2 Node
-Classes" and "AKS Node Classes". It also adds a Karpenter section to the
-host's Node details. It
-reads the Karpenter objects, the nodes, the pods and the events of the
+Scaling Decisions), and a list page with details for each Karpenter kind it
+models, "Node Pools", "Node Claims", "Node Overlays", "EC2 Node Classes", "AKS
+Node Classes" and "GCE Node Classes". It also adds a Karpenter section to the
+host's Node details. It reads the Karpenter objects, the nodes, the pods and the events of the
 cluster, and writes nothing to it.
 
 The build, type-check, test and release setup is the one of
@@ -189,27 +188,26 @@ from the objects is in pure modules next to them, which the unit tests cover:
 `pages/nodepools/nodepool-columns.ts`, `pages/nodeclaims/nodeclaim-columns.ts`,
 `pages/nodeoverlays/nodeoverlay-columns.ts`,
 `pages/ec2nodeclasses/ec2nodeclass-columns.ts`,
-`pages/aksnodeclasses/aksnodeclass-columns.ts`, `details/node-karpenter.ts`,
+`pages/aksnodeclasses/aksnodeclass-columns.ts`,
+`pages/gcenodeclasses/gcenodeclass-columns.ts`, `details/node-karpenter.ts`,
 `details/karpenter-v1.ts`, `details/fields.ts`, `details/nodepool-relations.ts`,
 `details/nodeclaim-status.ts`, `details/nodeoverlay-relations.ts`,
-`details/ec2nodeclass-fields.ts` and `details/aksnodeclass-fields.ts`. Keep it
-that way: logic that needs the host or a store goes into `data/`, logic on
-objects into a pure module with a test, and the component only renders.
+`details/ec2nodeclass-fields.ts`, `details/aksnodeclass-fields.ts` and
+`details/gcenodeclass-fields.ts`. Keep it that way: logic that needs the host
+or a store goes into `data/`, logic on objects into a pure module with a test,
+and the component only renders.
 
-A kind with a page of the extension (NodePool, NodeClaim, NodeOverlay,
-EC2NodeClass, AKSNodeClass) has an entry under "Karpenter" in the sidebar, a
-list page and details; see "Pages and Details of a Kind". A click on such an
-object in a tab
-opens its page with its details (`openNodePoolDetail`, `openNodeClaimDetail`
+Every kind the extension models (NodePool, NodeClaim, NodeOverlay,
+EC2NodeClass, AKSNodeClass, GCENodeClass) has an entry under "Karpenter" in
+the sidebar, a list page and details; see "Pages and Details of a Kind". A
+click on such an object in a tab opens its page with its details (`openNodePoolDetail`, `openNodeClaimDetail`
 and `openNodeOverlayDetail` of `utils/kube-helpers.ts`, `openNodeClassDetail`
 of `data/nodeclass.ts`), and a link inside a details drawer opens the other
 object's details over the page (`DetailsLink` of `components/shared/`). A link
 in a list page to an object of another kind with a page opens it on that
 kind's page (`DetailsLink` with `page`, as the NodePool column of the Node
 Claims page, and the NodeClass column with `nodeClassPage` of
-`data/nodeclass.ts`). A kind without a page yet, the node class of GCP, opens
-the host's details drawer on the host's page of its CRD
-(`detailUrl` of `utils/kube-helpers.ts`, `openNodeClassDetail`).
+`data/nodeclass.ts`). No link opens a page of the host's Custom Resources.
 
 ## Data Layer
 
@@ -265,9 +263,10 @@ the host's details drawer on the host's page of its CRD
 `customResources` lists the model classes of the kinds with a page of the
 extension (`custom-resources.ts`, with a test): while the extension is
 enabled, the host leaves them out of the Custom Resources tree of the cluster
-sidebar, where they would be listed a second time next to "Karpenter". A kind
-gets into the list with its page, and not before, so that the tree keeps the
-kinds the extension has no page for.
+sidebar, where they would be listed a second time next to "Karpenter". Every
+kind the extension models is in it. A kind added later gets into the list
+with its page, and not before, so that the tree keeps a kind the extension
+has no page for.
 
 ## CRD KubeObject Pattern
 
@@ -396,8 +395,8 @@ every variant.
 ### Pages and Details of a Kind
 
 A kind gets its page and its details together, built from the parts the
-kinds share, as Node Pools, Node Claims, Node Overlays, EC2 Node Classes and
-AKS Node Classes have them:
+kinds share, as Node Pools, Node Claims, Node Overlays, EC2 Node Classes, AKS
+Node Classes and GCE Node Classes have them:
 
 1. **The title**: `crd.title` of each of its models, with their tests.
 2. **The sidebar entry**: a `clusterPageMenus` entry under `parentId:
@@ -439,18 +438,20 @@ AKS Node Classes have them:
    What they compute is in pure modules with tests (`details/karpenter-v1.ts`
    for what the kinds of `karpenter.sh/v1` share: requirements, taints,
    resource lists, conditions that are not `True`; `details/fields.ts` for a
-   struct of settings as `field: value` texts). A condition that is not as
+   struct of settings as `field: value` texts, and the selector terms of a
+   node class). A condition that is not as
    it should be gets a line of its own with its reason and message, which the
    host shows only in a tooltip ("Not Ready", "Not Validated" of a
    NodeOverlay, the condition of each selector of an EC2NodeClass, such as
-   `SubnetsReady`, next to its terms and what they resolved to, and the
-   condition of each section of an AKSNodeClass, such as `LocalDNSReady`). The
+   `SubnetsReady`, next to its terms and what they resolved to, the condition
+   of each section of an AKSNodeClass, such as `LocalDNSReady`, and
+   `ImagesReady` of a GCENodeClass next to its image selector terms). The
    stores of the objects around it are loaded with `useSubscribedStores`.
 5. **The links**: the `open*Detail` helper of the kind opens its page with its
    details (`navigateToDetail(pageUrl(pageId.x), selfLink)`). A node class
    has one helper for every provider, `openNodeClassDetail`, and
-   `nodeClassPage` of `data/nodeclass.ts` names the page of each provider
-   whose node class has one.
+   `nodeClassPage` of `data/nodeclass.ts` names the page of each provider's
+   node class.
 6. **`customResources`**: its model classes, every version, in
    `custom-resources.ts` and its test.
 7. **The integration tests**: in the session of each variant that serves the
@@ -485,8 +486,8 @@ AKS Node Classes have them:
   sections, so it renders nothing for a node Karpenter does not manage.
 - The pages are entries under "Karpenter" in the sidebar, which has no page of its own. The host renders a page whose
   entry has a parent inside a tab layout with a tab for each entry of the parent ("Overview", "Node Pools", "Node
-  Claims", "Node Overlays", "EC2 Node Classes" or "AKS Node Classes"), above the page; the dashboard has its own tabs
-  below them.
+  Claims", "Node Overlays", and "EC2 Node Classes", "AKS Node Classes" or "GCE Node Classes"), above the page; the
+  dashboard has its own tabs below them.
 - The host renders a cluster page with `params` only. The page gets the extension from the registration
   (`Page: () => <KarpenterDashboard extension={this} />`).
 - Components import their CSS module for the class names only, with no `?inline` import and no `<style>` tag; the
@@ -1193,7 +1194,7 @@ The API server drops events an hour after they are created; apply
   iframe. The pages and the details live in that frame, not in the main page.
 - The URL of a page is `/extension/freelensapp--karpenter-extension/<page id>`,
   with the ids of `pages/routes.ts`: `dashboard` for the Overview, `nodepools`, `nodeclaims`,
-  `nodeoverlays`, `ec2nodeclasses`, `aksnodeclasses`.
+  `nodeoverlays`, `ec2nodeclasses`, `aksnodeclasses`, `gcenodeclasses`.
   The sidebar entries navigate in `onClick`; their `href` is not the page URL.
   "Karpenter" opens and closes its entries, and is closed until it is clicked.
   A click on `[data-testid="sidebar-item-…"]` does not navigate; a DOM

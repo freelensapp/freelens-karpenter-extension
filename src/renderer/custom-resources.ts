@@ -1,6 +1,7 @@
 import { AKSNodeClass as AKSNodeClassV1alpha2 } from "./api/aksnodeclass/aksnodeclass-v1alpha2";
 import { AKSNodeClass as AKSNodeClassV1beta1 } from "./api/aksnodeclass/aksnodeclass-v1beta1";
 import { EC2NodeClass } from "./api/ec2nodeclass/ec2nodeclass-v1";
+import { GCENodeClass } from "./api/gcenodeclass/gcenodeclass-v1alpha1";
 import { NodeClaim } from "./api/nodeclaim/nodeclaim-v1";
 import { NodeOverlay } from "./api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "./api/nodepool/nodepool-v1";
@@ -20,4 +21,5 @@ export const customResources: Common.Types.CustomResourceRegistration[] = [
   EC2NodeClass,
   AKSNodeClassV1beta1,
   AKSNodeClassV1alpha2,
+  GCENodeClass,
 ];

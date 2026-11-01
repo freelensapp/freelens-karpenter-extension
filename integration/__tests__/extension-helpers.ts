@@ -855,6 +855,9 @@ export const ec2NodeClassColumns = ["Name", "Ready", "Age", "Role"];
 /** The columns of `kubectl get aksnodeclasses -o wide`, which the AKS Node Classes page has. */
 export const aksNodeClassColumns = ["Name", "Ready", "Age", "ImageFamily"];
 
+/** The columns of `kubectl get gcenodeclasses -o wide`, which the GCE Node Classes page has. */
+export const gceNodeClassColumns = ["Name", "Ready", "Age"];
+
 /** An age as the host shows it, such as `42s` or `3m`. */
 export const agePattern = /^\d+[smhdy]/;
 

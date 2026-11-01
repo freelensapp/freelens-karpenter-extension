@@ -18,6 +18,11 @@ describe("GCENodeClass (karpenter.k8s.gcp/v1alpha1)", () => {
     expect(GCENodeClass.apiBase).toBe("/apis/karpenter.k8s.gcp/v1alpha1/gcenodeclasses");
     expect(GCENodeClass.crd.apiVersions).toEqual(["karpenter.k8s.gcp/v1alpha1"]);
     expect(GCENodeClass.crd.plural).toBe("gcenodeclasses");
+    expect(GCENodeClass.crd.singular).toBe("gcenodeclass");
+  });
+
+  it("has the title of its sidebar entry and its list page", () => {
+    expect(GCENodeClass.crd.title).toBe("GCE Node Classes");
   });
 
   it("takes the image family from spec.imageFamily first", () => {
