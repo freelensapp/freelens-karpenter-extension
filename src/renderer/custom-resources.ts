@@ -1,3 +1,4 @@
+import { EC2NodeClass } from "./api/ec2nodeclass/ec2nodeclass-v1";
 import { NodeClaim } from "./api/nodeclaim/nodeclaim-v1";
 import { NodeOverlay } from "./api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "./api/nodepool/nodepool-v1";
@@ -10,4 +11,9 @@ import type { Common } from "@freelensapp/extensions";
  * "Karpenter"; a group of the tree left without kinds goes with them. Every modeled version of a kind is listed. A
  * kind without a page of its own stays out, so that the tree keeps it.
  */
-export const customResources: Common.Types.CustomResourceRegistration[] = [NodePool, NodeClaim, NodeOverlay];
+export const customResources: Common.Types.CustomResourceRegistration[] = [
+  NodePool,
+  NodeClaim,
+  NodeOverlay,
+  EC2NodeClass,
+];
