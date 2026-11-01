@@ -880,11 +880,14 @@ port that script opens (see "Checking the Extension in Freelens"), so they need
 no package of Freelens and no file of its checkout. `playwright` is a
 devDependency at the version of Freelens's catalog. The workflow builds the
 extension, checks out Freelens at each release tag of its matrix (`v2.0.0`),
-starts `pnpm dev` there in the background under `xvfb-run`, with its output in
-a file and a fresh profile in `FREELENS_INTEGRATION_TESTING_DIR`, which it seeds
+starts `pnpm dev` there in the background under `xvfb-run`, with its output in a
+file and a fresh profile in `FREELENS_INTEGRATION_TESTING_DIR`, which it seeds
 with a kubeconfig sync of the kind cluster alone, and runs
-`pnpm test:integration` here. Every test file is a session of its own on the
-one app, and fails on any error logged by either process:
+`pnpm test:integration` here. The job `integration tests` waits for every job of
+the matrix and fails when one of them did not succeed; the branch rules require
+it rather than the jobs of the matrix, whose names change with the matrix. Every
+test file is a session of its own on the one app, and fails on any error logged
+by either process:
 
 - `extensions.tests.ts` uninstalls whatever installation of the extension the
   app has and installs this checkout in place. It needs no cluster.
@@ -969,7 +972,27 @@ cluster (`kind` by default, `freelens` in the workflow); every kubectl call
 names its context, `kind-<name>`, so a run never acts on the current context.
 Outside CI a session skips with a warning when Freelens dev does not answer or
 the cluster is not reachable; in CI (`CI` set) the run fails instead. The tests
-are deterministic, so nothing retries them.
+are deterministic, so nothing retries them. The one exception is the cluster
+frame, which `openKindCluster` loads a second time when it did not render and
+the dev file route of Freelens failed a request meanwhile (see below); that
+failure is of Freelens dev, not of a test.
+
+The dev file route of Freelens dev, which serves the renderer's modules from
+the Vite dev server, logs a request that fails as a warning
+(`[DEV-FILE-ROUTE]: request for … failed`): its keep-alive agent at times
+reuses a socket that the dev server is closing, and the request fails with
+`ECONNRESET`. The route answers such a request with a 502, and Chromium logs
+`Failed to load resource: the server responded with a status of 502`; that
+error is left out when the main log has the failed request for its URL. When
+the module belongs to Monaco's editor worker, which a YAML view starts, the
+worker does not load, and Monaco rethrows its `error` event, an `Event` with
+no name, which is left out when the main log has a failed request. An uncaught
+value that is not an `Error` reaches the session as a page error with an empty
+stack, and is described by its name and message, with its time. When the
+module belongs to the cluster frame, such as one of Freelens's own
+stylesheets, the frame does not render its sidebar, and `openKindCluster`,
+after its timeout, loads the frame again once, only if the main log has a
+failed request since the cluster was opened.
 
 Run locally, the tests act on the profile of Freelens dev, which lists the
 kind cluster only once its kubeconfig is in "Kubeconfig Syncs". They leave this
