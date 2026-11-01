@@ -1,5 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 
+import type { KarpenterKubeObjectCRD } from "../types";
 import type { AKSNodeClassSpec, AKSNodeClassStatus } from "./aksnodeclass-v1alpha2-types";
 
 export class AKSNodeClass extends Renderer.K8sApi.LensExtensionKubeObject<
@@ -14,10 +15,11 @@ export class AKSNodeClass extends Renderer.K8sApi.LensExtensionKubeObject<
   static readonly namespaced = false;
   static readonly apiBase = "/apis/karpenter.azure.com/v1alpha2/aksnodeclasses";
 
-  static readonly crd = {
+  static readonly crd: KarpenterKubeObjectCRD = {
     apiVersions: ["karpenter.azure.com/v1alpha2"],
     plural: "aksnodeclasses",
     singular: "aksnodeclass",
+    title: "AKS Node Classes",
   };
 }
 
