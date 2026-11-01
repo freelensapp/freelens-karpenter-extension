@@ -9,10 +9,10 @@ Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robert
 ## What it shows
 
 The extension adds **Karpenter** to the cluster sidebar, with its pages as
-entries: **Overview**, a dashboard with four tabs, **Node Pools** and **Node
-Claims**, the lists of the NodePools and the NodeClaims with their details.
-It also adds a Karpenter section to
-the details of a node. It follows the Freelens theme, light or dark, and
+entries: **Overview**, a dashboard with four tabs, **Node Pools**, **Node
+Claims** and **Node Overlays**, the lists of the NodePools, the NodeClaims and
+the NodeOverlays with their details. It also adds a Karpenter section to the
+details of a node. It follows the Freelens theme, light or dark, and
 updates while it is open, as Karpenter launches and removes nodes.
 
 ### Overview
@@ -89,8 +89,20 @@ its node, and its spec: resource requests, requirements, taints, startup
 taints, expiry and termination grace period. Freelens shows its conditions
 and events with them.
 
-While the extension is enabled, NodePools and NodeClaims are no longer listed
-under Custom Resources in the sidebar. The other Karpenter kinds stay there,
+### Node Overlays
+
+The NodeOverlays with the columns of `kubectl get nodeoverlays -o wide`:
+Ready, Age and Weight, sortable, searchable, and with the columns you choose.
+The entry is in the sidebar while the cluster serves NodeOverlays.
+
+A click on a NodeOverlay, here or on a NodePool card, opens its details: why
+it is not ready, and why Karpenter has not validated it, such as a conflict
+with another overlay of the same weight, its weight, requirements, price or
+price adjustment, and the capacity it adds, and the NodePools it applies to,
+as links. Freelens shows its conditions and events with them.
+
+While the extension is enabled, NodePools, NodeClaims and NodeOverlays are no
+longer listed under Custom Resources in the sidebar. The other Karpenter kinds stay there,
 and their links open them there, until they get pages of their own.
 
 ### Node details
@@ -117,7 +129,7 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 | --------------------- | ----------------- | -------------- | -------------------------------------------------- |
 | `karpenter.sh`        | v1                | `NodePool`     | every tab, Node Pools                              |
 | `karpenter.sh`        | v1                | `NodeClaim`    | Overview, Topology, Scaling Decisions, Node Claims |
-| `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards)                          |
+| `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards), Node Overlays           |
 | `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes                             |
 | `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass` | Overview, Node Classes                             |
 | `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass` | Overview, Node Classes                             |
