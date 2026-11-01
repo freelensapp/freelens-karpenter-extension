@@ -20,6 +20,7 @@ import {
   expectEmptyCells,
   expectInDetails,
   expectListRow,
+  expectNoKindPageEntry,
   hostMetricsRequestPattern,
   installExtension,
   kindClusterName,
@@ -282,6 +283,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       .getByText("EC2 Node Classes", { exact: true })
       .first()
       .waitFor({ timeout: 60 * 1000 });
+  });
+
+  it("has no entry for the node classes of Azure", async () => {
+    // The cluster serves EC2NodeClasses only.
+    await expectNoKindPageEntry(frame, "aksnodeclasses", "nodepools");
   });
 
   it("renders the details of a node Karpenter does not manage", async () => {
