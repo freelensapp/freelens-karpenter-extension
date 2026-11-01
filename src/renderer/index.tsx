@@ -12,6 +12,7 @@ import { NodePool } from "./api/nodepool/nodepool-v1";
 import { withDetailsErrorBoundary, withPageErrorBoundary } from "./components/error-boundary";
 import { customResources } from "./custom-resources";
 import { getEC2NodeClassStore, getNodeClaimStore, getNodeOverlayStore, getNodePoolStore } from "./data/stores";
+import { EC2NodeClassDetails } from "./details/ec2nodeclass-details";
 import { NodeKarpenterDetails } from "./details/node-karpenter-details";
 import { NodeClaimDetails } from "./details/nodeclaim-details";
 import { NodeOverlayDetails } from "./details/nodeoverlay-details";
@@ -77,6 +78,7 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
     Renderer.K8sApi.detailsFor(NodePool, { priority: 10, Details: NodePoolDetails }),
     Renderer.K8sApi.detailsFor(NodeClaim, { priority: 10, Details: NodeClaimDetails }),
     Renderer.K8sApi.detailsFor(NodeOverlay, { priority: 10, Details: NodeOverlayDetails }),
+    Renderer.K8sApi.detailsFor(EC2NodeClass, { priority: 10, Details: EC2NodeClassDetails }),
     Renderer.K8sApi.detailsFor(Renderer.K8sApi.Node, { Details: NodeKarpenterDetails }),
   ].map((registration) => withDetailsErrorBoundary(this, registration));
 
