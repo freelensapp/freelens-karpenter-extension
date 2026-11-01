@@ -22,6 +22,7 @@ import {
   expectInDetails,
   expectListRow,
   expectNoKindPageEntry,
+  gceNodeClassColumns,
   hostMetricsRequestPattern,
   installExtension,
   kindClusterName,
@@ -211,6 +212,41 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       /^NodeOverlay: spot-discount/,
     );
     await expectInDetails(frame, ["Applies To", "gke", "karpenter.sh/capacity-type In [spot]"]);
+  });
+
+  it("lists the GCENodeClasses on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get gcenodeclasses
+    // -o wide. The image selector term of default with the image it resolved,
+    // its boot disk and its kubelet configuration are in the details only.
+    await openKindPage(frame, "gcenodeclasses", "GCE Node Classes");
+
+    const row = await expectListRow(frame, gceNodeClassColumns, ["default", "True", agePattern]);
+
+    await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^GCENodeClass: default/);
+    await expectInDetails(frame, [
+      "family: ContainerOptimizedOS; channel: stable",
+      "projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre: kubernetes.io/arch In [amd64]",
+      "boot disk: 100 GiB, pd-balanced",
+      "maxPods: 64",
+      "Used By",
+      "gke",
+    ]);
+  });
+
+  it("opens the GCENodeClass of a NodePool on the GCE Node Classes page", async () => {
+    await openKindPage(frame, "nodepools", "Node Pools");
+
+    const row = await expectListRow(frame, nodePoolColumns, ["gke", "default"]);
+
+    await clickAndExpectDetails(frame, row.getByTitle("Open GCENodeClass default"), /^GCENodeClass: default/);
+    // Its network tag is in its details only.
+    await expectInDetails(frame, ["Network Tags", "karpenter"]);
+    // Under the details, the GCE Node Classes page.
+    await frame
+      .locator(".ItemListLayout")
+      .getByText("GCE Node Classes", { exact: true })
+      .first()
+      .waitFor({ timeout: 60 * 1000 });
   });
 
   it("has no entry for the node classes of AWS and Azure", async () => {
