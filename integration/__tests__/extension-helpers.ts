@@ -830,6 +830,9 @@ export const nodeClaimColumns = [
   "Drifted",
 ];
 
+/** The columns of `kubectl get nodeoverlays -o wide`, which the Node Overlays page has. */
+export const nodeOverlayColumns = ["Name", "Ready", "Age", "Weight"];
+
 /** An age as the host shows it, such as `42s` or `3m`. */
 export const agePattern = /^\d+[smhdy]/;
 
