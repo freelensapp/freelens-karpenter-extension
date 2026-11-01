@@ -8,6 +8,7 @@ import { computed } from "mobx";
 import { AKSNodeClass as AKSNodeClassV1alpha2 } from "./api/aksnodeclass/aksnodeclass-v1alpha2";
 import { AKSNodeClass as AKSNodeClassV1beta1 } from "./api/aksnodeclass/aksnodeclass-v1beta1";
 import { EC2NodeClass } from "./api/ec2nodeclass/ec2nodeclass-v1";
+import { GCENodeClass } from "./api/gcenodeclass/gcenodeclass-v1alpha1";
 import { NodeClaim } from "./api/nodeclaim/nodeclaim-v1";
 import { NodeOverlay } from "./api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "./api/nodepool/nodepool-v1";
@@ -16,6 +17,7 @@ import { customResources } from "./custom-resources";
 import {
   getAKSNodeClassStore,
   getEC2NodeClassStore,
+  getGCENodeClassStore,
   getNodeClaimStore,
   getNodeOverlayStore,
   getNodePoolStore,
@@ -31,6 +33,7 @@ import svgIconLogo from "./icons/karpenter.svg?raw";
 import { AKSNodeClassesPage } from "./pages/aksnodeclasses/aksnodeclasses-page";
 import { KarpenterDashboard } from "./pages/dashboard";
 import { EC2NodeClassesPage } from "./pages/ec2nodeclasses/ec2nodeclasses-page";
+import { GCENodeClassesPage } from "./pages/gcenodeclasses/gcenodeclasses-page";
 import { NodeClaimsPage } from "./pages/nodeclaims/nodeclaims-page";
 import { NodeOverlaysPage } from "./pages/nodeoverlays/nodeoverlays-page";
 import { NodePoolsPage } from "./pages/nodepools/nodepools-page";
@@ -84,6 +87,12 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       id: pageId.aksNodeClasses,
       components: {
         Page: () => <AKSNodeClassesPage extension={this} />,
+      },
+    },
+    {
+      id: pageId.gceNodeClasses,
+      components: {
+        Page: () => <GCENodeClassesPage extension={this} />,
       },
     },
   ].map((registration) => withPageErrorBoundary(this, registration));
@@ -157,6 +166,14 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       target: { pageId: pageId.aksNodeClasses },
       // v1beta1 or v1alpha2: one entry for both.
       visible: computed(() => getAKSNodeClassStore() !== undefined),
+      components: {},
+    },
+    {
+      id: pageId.gceNodeClasses,
+      parentId: "karpenter",
+      title: GCENodeClass.crd.title,
+      target: { pageId: pageId.gceNodeClasses },
+      visible: computed(() => getGCENodeClassStore() !== undefined),
       components: {},
     },
   ];
