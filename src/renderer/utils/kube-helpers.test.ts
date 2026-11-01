@@ -13,6 +13,7 @@ import {
   getNodeMemory,
   getNodeStatus,
   openNodeClaimDetail,
+  openNodeOverlayDetail,
   openNodePoolDetail,
   parseCpuCores,
   parseMemGi,
@@ -191,6 +192,21 @@ describe("openNodeClaimDetail", () => {
   it("opens nothing without a name", () => {
     vi.mocked(Renderer.Navigation.navigate).mockClear();
     openNodeClaimDetail("");
+    expect(Renderer.Navigation.navigate).not.toHaveBeenCalled();
+  });
+});
+
+describe("openNodeOverlayDetail", () => {
+  it("opens the extension's Node Overlays page with the details of the NodeOverlay", () => {
+    openNodeOverlayDetail("spot-discount");
+    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
+      "/extension/freelensapp--karpenter-extension/nodeoverlays?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1alpha1%2Fnodeoverlays%2Fspot-discount&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1alpha1%2Fnodeoverlays%2Fspot-discount",
+    );
+  });
+
+  it("opens nothing without a name", () => {
+    vi.mocked(Renderer.Navigation.navigate).mockClear();
+    openNodeOverlayDetail("");
     expect(Renderer.Navigation.navigate).not.toHaveBeenCalled();
   });
 });

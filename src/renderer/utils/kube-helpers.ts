@@ -242,9 +242,8 @@ export function openNodeClaimDetail(name: string): void {
   navigateToDetail(pageUrl(pageId.nodeClaims), nodeClaimSelfLink(name));
 }
 
-// The kinds the extension has no page for yet open on the host's page of their CRD.
-
+/** Opens the extension's Node Overlays page with the details of a NodeOverlay. */
 export function openNodeOverlayDetail(name: string): void {
   if (!name) return;
-  navigateToDetail("/crd/karpenter.sh/nodeoverlays", nodeOverlaySelfLink(name));
+  navigateToDetail(pageUrl(pageId.nodeOverlays), nodeOverlaySelfLink(name));
 }
