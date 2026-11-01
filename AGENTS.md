@@ -846,6 +846,7 @@ The workflows of the template:
 | `trunk-check.yaml`       | `trunk check --all`                                                           |
 | `integration-tests.yaml` | the integration tests in `integration/`, against Freelens dev                 |
 | `mise-lock-check.yaml`   | on a change to `mise.lock`: no checksum changed for an unchanged tool version |
+| `cleanup-cache.yaml`     | on a closed pull request: deletes the caches of its merge ref                 |
 
 The release workflows (`npm-version.yaml`, `tag.yaml`, `release.yaml`) are
 described in `RELEASE.md`, the Claude Code workflows (`claude.yaml`,
