@@ -39,6 +39,17 @@ export class GCENodeClass extends Renderer.K8sApi.LensExtensionKubeObject<
     if (family) return family;
     return terms.length > 0 ? "Custom" : undefined;
   }
+
+  /**
+   * The pod secondary ranges the node class names, as the provider takes them (`GCENodeClass.PodSubnetRangeNames()`):
+   * `spec.subnetRangeNames`, else `spec.subnetRangeName`, which the provider deprecates, as one name. None means the
+   * cluster's default and additional pod ranges.
+   */
+  static getSubnetRangeNames(nodeClass: GCENodeClass): string[] {
+    const spec = nodeClass.spec;
+    if (spec?.subnetRangeNames?.length) return [...spec.subnetRangeNames];
+    return spec?.subnetRangeName ? [spec.subnetRangeName] : [];
+  }
 }
 
 export class GCENodeClassApi extends Renderer.K8sApi.KubeApi<GCENodeClass> {}
