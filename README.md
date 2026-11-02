@@ -69,8 +69,9 @@ A click on a NodePool, here or in the tabs, opens its details: why it is not
 ready, its node class, weight, replicas and nodes, the resources in use
 against its limits, the template of its NodeClaims (labels, annotations,
 requirements, taints, startup taints, expiry and termination grace period),
-its disruption settings and budgets, and its NodeClaims and the NodeOverlays
-that apply to it, as links, with those that Karpenter rejected and why.
+its disruption settings and budgets, and its NodeClaims with their nodes and
+the NodeOverlays that apply to it, as links, with those that Karpenter
+rejected and why.
 Freelens shows its conditions and events with them.
 
 ### Node Claims

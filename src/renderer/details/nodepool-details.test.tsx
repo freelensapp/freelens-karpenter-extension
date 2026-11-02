@@ -117,12 +117,13 @@ describe("NodePoolDetails", () => {
       expect(screen.getByText(title)).toBeTruthy();
     }
     expect(screen.getByText("(price 1.5)", { exact: false })).toBeTruthy();
-    expect(screen.getByText("(ip-10-0-0-1)", { exact: false })).toBeTruthy();
 
     fireEvent.click(screen.getByText("EC2NodeClass gpu"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/apis/karpenter.k8s.aws/v1/ec2nodeclasses/gpu");
     fireEvent.click(screen.getByText("gpu-x1"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/apis/karpenter.sh/v1/nodeclaims/gpu-x1");
+    fireEvent.click(screen.getByText("ip-10-0-0-1"));
+    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/api/v1/nodes/ip-10-0-0-1");
     fireEvent.click(screen.getByText("gpu-price"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith(
       "/apis/karpenter.sh/v1alpha1/nodeoverlays/gpu-price",

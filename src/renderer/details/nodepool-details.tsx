@@ -6,7 +6,7 @@ import { DetailsLink } from "../components/shared/DetailsLink";
 import { detectProvider, nodeClassSelfLink } from "../data/nodeclass";
 import { getNodeClaimStore, getNodeOverlayStore } from "../data/stores";
 import { useSubscribedStores } from "../data/use-subscribed-stores";
-import { nodeClaimSelfLink, nodeOverlaySelfLink } from "../utils/kube-helpers";
+import { nodeClaimSelfLink, nodeOverlaySelfLink, nodeSelfLink } from "../utils/kube-helpers";
 import { formatBudget, formatRequirement, formatTaint, notTrueReason, resourceRows } from "./karpenter-v1";
 import { nodeClaimsOfNodePool, overlaysOfNodePool, rejectedOverlaysOfNodePool } from "./nodepool-relations";
 
@@ -112,7 +112,18 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
             >
               {nodeClaim.getName()}
             </DetailsLink>
-            {nodeClaim.status?.nodeName ? ` (${nodeClaim.status.nodeName})` : ""}
+            {nodeClaim.status?.nodeName && (
+              <>
+                {" ("}
+                <DetailsLink
+                  selfLink={nodeSelfLink(nodeClaim.status.nodeName)}
+                  title={`Open Node ${nodeClaim.status.nodeName}`}
+                >
+                  {nodeClaim.status.nodeName}
+                </DetailsLink>
+                {")"}
+              </>
+            )}
           </DrawerItem>
         ))
       )}
