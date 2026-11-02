@@ -3,6 +3,7 @@ import { type KarpenterData, loadKarpenterData } from "./load";
 import {
   getAKSNodeClassStore,
   getEC2NodeClassStore,
+  getGCECustomMachineTypeStore,
   getGCENodeClassStore,
   getNodeClaimStore,
   getNodeOverlayStore,
@@ -27,6 +28,7 @@ export function useKarpenterDashboardData(): DashboardData {
     getEC2NodeClassStore(),
     getAKSNodeClassStore(),
     getGCENodeClassStore(),
+    getGCECustomMachineTypeStore(),
   ]
     .map((store) => store?.api.apiBase ?? "")
     .join(",");

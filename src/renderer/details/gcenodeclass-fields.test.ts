@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatAdditionalNetworkInterface, formatDisk, formatImage } from "./gcenodeclass-fields";
+import {
+  formatAdditionalNetworkInterface,
+  formatDisk,
+  formatImage,
+  formatSubnetRange,
+  hugepagesTexts,
+} from "./gcenodeclass-fields";
 
 const sourceImage = "projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre";
 
@@ -56,5 +62,32 @@ describe("formatAdditionalNetworkInterface", () => {
     expect(formatAdditionalNetworkInterface({ subnetwork, network: "storage" })).toBe(
       `${subnetwork} (network storage)`,
     );
+  });
+});
+
+describe("hugepagesTexts", () => {
+  it("writes each size of hugepages as a number of pages", () => {
+    expect(hugepagesTexts({ hugepages: { hugepageSize2m: 512, hugepageSize1g: 2 } })).toEqual([
+      "512 pages of 2 MiB",
+      "2 pages of 1 GiB",
+    ]);
+    expect(hugepagesTexts({ hugepages: { hugepageSize1g: 4 } })).toEqual(["4 pages of 1 GiB"]);
+  });
+
+  it("writes nothing without hugepages", () => {
+    expect(hugepagesTexts({ hugepages: {} })).toEqual([]);
+    expect(hugepagesTexts({})).toEqual([]);
+    expect(hugepagesTexts(undefined)).toEqual([]);
+  });
+});
+
+describe("formatSubnetRange", () => {
+  it("writes a pod range with its free IPs, also none", () => {
+    expect(formatSubnetRange({ name: "pods-a", totalFreeIP: 3840 })).toBe("pods-a: 3840 free IPs");
+    expect(formatSubnetRange({ name: "pods-b", totalFreeIP: 0 })).toBe("pods-b: 0 free IPs");
+  });
+
+  it("writes the name alone while the count is not known", () => {
+    expect(formatSubnetRange({ name: "pods-c" })).toBe("pods-c");
   });
 });

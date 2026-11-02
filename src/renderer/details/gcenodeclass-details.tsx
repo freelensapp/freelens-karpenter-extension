@@ -7,7 +7,13 @@ import { getNodePoolStore } from "../data/stores";
 import { useSubscribedStores } from "../data/use-subscribed-stores";
 import { nodePoolSelfLink } from "../utils/kube-helpers";
 import { fieldTexts, formatSelectorTerm } from "./fields";
-import { formatAdditionalNetworkInterface, formatDisk, formatImage } from "./gcenodeclass-fields";
+import {
+  formatAdditionalNetworkInterface,
+  formatDisk,
+  formatImage,
+  formatSubnetRange,
+  hugepagesTexts,
+} from "./gcenodeclass-fields";
 import { notTrueReason } from "./karpenter-v1";
 
 import type React from "react";
@@ -41,8 +47,9 @@ function Section({ title, hasContent, children }: SectionProps) {
  * The details of a GCENodeClass of karpenter.k8s.gcp/v1alpha1, after the host's own: the metadata, the printer columns
  * and the conditions, and the events of the object at the end. Grouped as the fields of the spec go together: the
  * image selector terms next to the images they resolved to, with `ImagesReady` when it is not `True`; the instances
- * (service account, disks, shielded and confidential instance, labels, metadata, kubelet); the network; the GPU; then
- * the NodePools that use it.
+ * (service account, disks and local SSDs, shielded and confidential instance, advanced machine features, the
+ * preemption notice of Spot VMs, hugepages, kubelet, labels, metadata); the network, with the pod ranges it names next
+ * to their free IPs; the GPU; then the NodePools that use it.
  *
  * An observer: it reads the NodePools from their store, which it loads when the page under the drawer has not.
  */
@@ -61,9 +68,13 @@ export const GCENodeClassDetails = observer(
 
     const disks = (spec?.disks ?? []).map(formatDisk);
     const shieldedInstance = fieldTexts(spec?.shieldedInstanceConfig);
+    const advancedMachineFeatures = fieldTexts(spec?.advancedMachineFeatures);
+    const hugepages = hugepagesTexts(spec?.linuxNodeConfig);
     const kubelet = fieldTexts(spec?.kubeletConfiguration);
     const network = spec?.networkConfig;
     const networkTags = spec?.networkTags ?? [];
+    const subnetRangeNames = spec?.subnetRangeNames ?? [];
+    const subnetRanges = (status?.subnetRanges ?? []).map(formatSubnetRange);
     const additionalInterfaces = (network?.additionalNetworkInterfaces ?? []).map(formatAdditionalNetworkInterface);
 
     return (
@@ -88,7 +99,11 @@ export const GCENodeClassDetails = observer(
             !!spec?.serviceAccount ||
             disks.length > 0 ||
             shieldedInstance.length > 0 ||
+            advancedMachineFeatures.length > 0 ||
             !!spec?.confidentialInstanceType ||
+            !!spec?.localSsdMode ||
+            !!spec?.preemptionNoticeDuration ||
+            hugepages.length > 0 ||
             kubelet.length > 0 ||
             Object.keys(spec?.labels ?? {}).length > 0 ||
             Object.keys(spec?.metadata ?? {}).length > 0
@@ -98,10 +113,18 @@ export const GCENodeClassDetails = observer(
             {spec?.serviceAccount}
           </DrawerItem>
           <Badges name="Disks" texts={disks} />
+          <DrawerItem name="Local SSD Mode" hidden={!spec?.localSsdMode}>
+            {spec?.localSsdMode}
+          </DrawerItem>
           <Badges name="Shielded Instance" texts={shieldedInstance} />
+          <Badges name="Advanced Machine Features" texts={advancedMachineFeatures} />
           <DrawerItem name="Confidential Instance" hidden={!spec?.confidentialInstanceType}>
             {spec?.confidentialInstanceType}
           </DrawerItem>
+          <DrawerItem name="Preemption Notice" hidden={!spec?.preemptionNoticeDuration}>
+            {spec?.preemptionNoticeDuration}
+          </DrawerItem>
+          <Badges name="Hugepages" texts={hugepages} />
           <Badges name="Kubelet" texts={kubelet} />
           <DrawerItemLabels name="Labels" labels={spec?.labels ?? {}} />
           <DrawerItemLabels name="Metadata" labels={spec?.metadata ?? {}} />
@@ -111,6 +134,8 @@ export const GCENodeClassDetails = observer(
           title="Network"
           hasContent={
             !!spec?.subnetRangeName ||
+            subnetRangeNames.length > 0 ||
+            subnetRanges.length > 0 ||
             network?.enablePrivateNodes !== undefined ||
             !!network?.subnetwork ||
             additionalInterfaces.length > 0 ||
@@ -123,6 +148,8 @@ export const GCENodeClassDetails = observer(
           <DrawerItem name="Subnet Range" hidden={!spec?.subnetRangeName}>
             {spec?.subnetRangeName}
           </DrawerItem>
+          <Badges name="Subnet Ranges" texts={subnetRangeNames} />
+          <Badges name="Resolved Ranges" texts={subnetRanges} />
           <DrawerItem name="Private Nodes" hidden={network?.enablePrivateNodes === undefined}>
             <BadgeBoolean value={!!network?.enablePrivateNodes} />
           </DrawerItem>

@@ -28,17 +28,37 @@ const defaultClass = new GCENodeClass({
   },
 });
 
+// A GCENodeClass of v0.7.0 with two pod ranges.
+const rangesClass = new GCENodeClass({
+  apiVersion: "karpenter.k8s.gcp/v1alpha1",
+  kind: "GCENodeClass",
+  metadata: {
+    name: "ranges",
+    uid: "2",
+    resourceVersion: "1",
+    selfLink: "/apis/karpenter.k8s.gcp/v1alpha1/gcenodeclasses/ranges",
+  },
+  spec: {
+    imageSelectorTerms: [{ family: "Ubuntu2404", version: "latest" }],
+    subnetRangeNames: ["pods-a", "pods-b"],
+  },
+});
+
 // The host's API registry, which is observable, and the GCENodeClasses of its store.
 const served = observable.box(false);
+const items = observable.box([defaultClass]);
 
 vi.mock("../../data/stores", () => ({
-  getGCENodeClassStore: () => (served.get() ? { items: [defaultClass] } : undefined),
+  getGCENodeClassStore: () => (served.get() ? { items: items.get() } : undefined),
 }));
 
 const extension = {} as Renderer.LensExtension;
 
 beforeEach(() => {
-  runInAction(() => served.set(true));
+  runInAction(() => {
+    served.set(true);
+    items.set([defaultClass]);
+  });
 });
 
 afterEach(() => {
@@ -67,6 +87,19 @@ describe("GCENodeClassesPage", () => {
       "True",
       "age",
     ]);
+  });
+
+  it("shows several subnet range names each as a badge, and one as a text", () => {
+    runInAction(() => items.set([defaultClass, rangesClass]));
+    render(<GCENodeClassesPage extension={extension} />);
+
+    // The cells of Subnet, the fourth column, of default and ranges.
+    const subnetCells = screen
+      .getAllByRole("row")
+      .slice(1)
+      .map((row) => row.querySelectorAll("td")[3]);
+    expect([...(subnetCells[0]?.children ?? [])].map((element) => element.textContent)).toEqual(["pods"]);
+    expect([...(subnetCells[1]?.children ?? [])].map((element) => element.textContent)).toEqual(["pods-a", "pods-b"]);
   });
 
   it("follows the CRD as the host registers it and removes it", () => {

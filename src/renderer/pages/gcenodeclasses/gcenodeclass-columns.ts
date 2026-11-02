@@ -1,10 +1,9 @@
 // The columns of `kubectl get gcenodeclasses -o wide`, from the `additionalPrinterColumns` of
-// karpenter.k8s.gcp_gcenodeclasses.yaml of cloudpilot-ai/karpenter-provider-gcp v0.6.1: the value of each `jsonPath`
+// karpenter.k8s.gcp_gcenodeclasses.yaml of cloudpilot-ai/karpenter-provider-gcp v0.7.0: the value of each `jsonPath`
 // as `kubectl` prints it, and the value it sorts by. The CRD has no `-o wide` column.
 
+import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
 import { conditionStatus, conditionStatusOrder } from "../../utils/printer-columns";
-
-import type { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
 
 export interface GCENodeClassColumnValues {
   /** Ready: `.status.conditions[?(@.type=="Ready")].status`. */
@@ -36,7 +35,7 @@ type ImageTerm = { alias?: string; family?: string; channel?: string; version?: 
  * Image Family, which the CRD has no printer column for: the family of each image selector term with its version,
  * `family=version`, its channel without one, `latest` without either; an alias term, `Family@version`, is the same
  * pair. A term without a family, which selects an image by id, has none. A node class without terms, which the CRD of
- * v0.6.1 rejects, with `spec.imageFamily` alone has that family at `latest`.
+ * v0.7.0 rejects, with `spec.imageFamily` alone has that family at `latest`.
  */
 export function gceNodeClassImageTerms(nodeClass: GCENodeClass): string[] {
   const spec = nodeClass.spec;
@@ -65,7 +64,11 @@ export function gceNodeClassDiskLabels(nodeClass: GCENodeClass): string[] {
   );
 }
 
-/** Subnet, which the CRD has no printer column for: `spec.subnetRangeName`; an empty one is none. */
-export function gceNodeClassSubnet(nodeClass: GCENodeClass): string | undefined {
-  return nodeClass.spec?.subnetRangeName || undefined;
+/**
+ * Subnet, which the CRD has no printer column for: the pod ranges the node class names, as the provider takes them,
+ * `spec.subnetRangeNames`, else `spec.subnetRangeName` (`GCENodeClass.getSubnetRangeNames`); none for the cluster's
+ * own pod ranges.
+ */
+export function gceNodeClassSubnets(nodeClass: GCENodeClass): string[] {
+  return GCENodeClass.getSubnetRangeNames(nodeClass);
 }

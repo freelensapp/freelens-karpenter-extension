@@ -4,8 +4,9 @@
  */
 
 // Self-hosted Karpenter on GKE, with the CRDs of
-// cloudpilot-ai/karpenter-provider-gcp: a GCENodeClass, a NodePool, a
-// NodeOverlay, NodeClaims and their events, without nodes. The controller
+// cloudpilot-ai/karpenter-provider-gcp: a GCENodeClass, a
+// GCECustomMachineType, a NodePool, a NodeOverlay, NodeClaims and their
+// events, without nodes. The controller
 // Deployment is scaled to zero. The session disconnects the kind cluster, sets
 // up the variant, connects the cluster again, so that the app reads the CRDs
 // anew, and leaves the cluster disconnected; it does not depend on another
@@ -22,6 +23,7 @@ import {
   expectInDetails,
   expectListRow,
   expectNoKindPageEntry,
+  gceCustomMachineTypeColumns,
   gceNodeClassColumns,
   hostMetricsRequestPattern,
   installExtension,
@@ -92,7 +94,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     // has a card for its NodeClaim still waiting for its node; it sets no
     // memory limit, and the NodeOverlay that can apply to it is on its card.
     await openTab(frame, "Overview", [
-      "Karpenter 0.6.1",
+      "Karpenter 0.7.0",
       "gke",
       "gke-pend1",
       /\/ —$/,
@@ -107,8 +109,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
 
   it("shows the node classes", async () => {
     // The GCENodeClass is served as v1alpha1. Its image family comes from its
-    // family term, and its service account is shown. A value follows its label
-    // in the element of the item, so the pattern names both.
+    // family term, and its service account is shown, and its two pod ranges,
+    // the subnetRangeNames of v0.7.0. A value follows its label in the element
+    // of the item, so the pattern names both.
     await openTab(frame, "Node Classes", [
       "Node Classes",
       /^default\b/,
@@ -116,6 +119,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "1 NodePool",
       /^Image Family\s+ContainerOptimizedOS$/,
       /^Service Account\s+karpenter-node@lab\.iam\.gserviceaccount\.com$/,
+      /^Subnet Ranges\s+pods-a, pods-b$/,
     ]);
   });
 
@@ -222,22 +226,22 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
 
   it("lists the GCENodeClasses on their page, and shows the details of one", async () => {
     // The entry of the sidebar, Image Family, the family of the image selector
-    // term at its channel, as it names no version, Disks, Subnet (empty, as
-    // default names none), and the columns of kubectl get gcenodeclasses -o
-    // wide. The image selector term of default with the image it resolved and
-    // its kubelet configuration are in the details only. The API server returns
-    // the fields of a custom resource with their keys sorted, so the details
-    // have the channel of the term first.
+    // term at its channel, as it names no version, Disks, Subnet (the two
+    // subnetRangeNames of v0.7.0, a badge each), and the columns of kubectl get
+    // gcenodeclasses -o wide. The image selector term of default with the image
+    // it resolved and its kubelet configuration are in the details only. The
+    // API server returns the fields of a custom resource with their keys
+    // sorted, so the details have the channel of the term first.
     await openKindPage(frame, "gcenodeclasses", "GCE Node Classes");
 
     const row = await expectListRow(frame, gceNodeClassColumns, [
       "default",
       "ContainerOptimizedOS=stable",
       "boot 100 GiB pd-balanced",
+      /^pods-a\s*pods-b$/,
       "True",
       agePattern,
     ]);
-    await expectEmptyCells(frame, row, ["Subnet"]);
 
     await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^GCENodeClass: default/);
     await expectInDetails(frame, [
@@ -248,6 +252,40 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "Used By",
       "gke",
     ]);
+    // The fields of v0.7.0: the local SSD mode, nested virtualization, the
+    // preemption notice, the hugepages, the parallel image pulls of the
+    // kubelet, and the free IPs of each pod range from the status.
+    await expectInDetails(frame, [
+      "Ephemeral",
+      "enableNestedVirtualization: true",
+      "120s",
+      "512 pages of 2 MiB",
+      "maxParallelImagePulls: 5",
+      "pods-a: 3840 free IPs",
+      "pods-b: 1012 free IPs",
+    ]);
+  });
+
+  it("lists the GCECustomMachineTypes on their page, and shows the details of one", async () => {
+    // The entry of the sidebar, and the columns of kubectl get
+    // gcecustommachinetypes -o wide: the custom shape, named as its machine
+    // type, is Ready. Its prices, and the memory and zones the provider
+    // resolved, are in the details only.
+    await openKindPage(frame, "gcecustommachinetypes", "GCE Custom Machine Types");
+
+    const row = await expectListRow(frame, gceCustomMachineTypeColumns, [
+      "n2-custom-8-24576",
+      "n2-custom-8-24576",
+      "True",
+      agePattern,
+    ]);
+
+    await clickAndExpectDetails(
+      frame,
+      row.getByText("n2-custom-8-24576", { exact: true }).first(),
+      /^GCECustomMachineType: n2-custom-8-24576/,
+    );
+    await expectInDetails(frame, ["0.3891 USD per hour", "0.0934 USD per hour", "24.0GiB", "us-central1-c"]);
   });
 
   it("opens the GCENodeClass of a NodePool on the GCE Node Classes page", async () => {

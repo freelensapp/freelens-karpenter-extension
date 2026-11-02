@@ -11,9 +11,9 @@ Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robert
 The extension adds **Karpenter** to the cluster sidebar, with its pages as
 entries: **Overview**, a dashboard with four tabs, **Node Claims**, **Node
 Pools**, **Node Overlays** and, on AWS, **EC2 Node Classes**, on Azure,
-**AKS Node Classes** or, on GCP, **GCE Node Classes**, the lists of the
-NodeClaims, the NodePools, the NodeOverlays and the node classes with their
-details. It also adds a Karpenter section to the details of a node. It follows the Freelens theme, light or dark, and
+**AKS Node Classes** or, on GCP, **GCE Node Classes** and **GCE Custom Machine
+Types**, the lists of the NodeClaims, the NodePools, the NodeOverlays, the node
+classes and the custom machine types with their details. It also adds a Karpenter section to the details of a node. It follows the Freelens theme, light or dark, and
 updates while it is open, as Karpenter launches and removes nodes.
 
 ### Overview
@@ -44,7 +44,7 @@ capacity type (spot or on-demand). A click on a node opens its details.
 
 Every EC2NodeClass (AWS), AKSNodeClass (Azure) and GCENodeClass (GCP) with
 its status and main settings (image family, role or service account,
-selectors, disks, kubelet settings, OS disk), and the NodePools that use it,
+selectors, disks, subnet ranges, kubelet settings, OS disk), and the NodePools that use it,
 with their nodes, usage, limits, consolidation and expiry. The tab reads only
 the node classes of the provider the cluster runs, so a GKE cluster shows
 nothing of AWS or Azure, and the reverse.
@@ -152,24 +152,40 @@ Ready and Age, after Image Family, Disks and Subnet. Image Family has a
 `family=version` badge for each image selector term with a family, its
 channel when it names no version, such as `ContainerOptimizedOS=stable`, and
 `latest` without either, or the image family of a node class without terms;
-Disks has a badge for each disk, such as `boot 100 GiB pd-balanced`; Subnet has the subnet range name. They are
-sortable, searchable, and with the columns you choose. The entry is in the
-sidebar while the cluster serves GCENodeClasses, which only Karpenter on GCP
-does.
+Disks has a badge for each disk, such as `boot 100 GiB pd-balanced`; Subnet has
+the pod ranges the node class names, `subnetRangeNames` or the deprecated
+`subnetRangeName`, a badge each when there are several. They are sortable,
+searchable, and with the columns you choose. The entry is in the sidebar while
+the cluster serves GCENodeClasses, which only Karpenter on GCP does.
 
 A click on a GCENodeClass, here, in the Node Classes tab, on a NodePool card
 or in the NodeClass column of the Node Pools and Node Claims pages, opens its
 details: why it is not ready; its image family and image selector terms next
 to the images they resolved to, with why they did not; the service account,
-disks, shielded and confidential instance settings, kubelet configuration,
-labels and metadata of its instances; its subnetwork, subnet range, private
-nodes, additional network interfaces and network tags; its GPU driver version
-and automatic GPU taint; and the NodePools that use it, as links. Freelens
-shows its conditions and events with them.
+disks, local SSD mode, shielded and confidential instance settings, advanced
+machine features, Spot preemption notice, hugepages, kubelet configuration,
+labels and metadata of its instances; its subnetwork, subnet ranges with the
+free IPs of each, private nodes, additional network interfaces and network
+tags; its GPU driver version and automatic GPU taint; and the NodePools that
+use it, as links. Freelens shows its conditions and events with them.
+
+### GCE Custom Machine Types
+
+The GCECustomMachineTypes with the columns of
+`kubectl get gcecustommachinetypes -o wide`: Machine Type, Ready and Age,
+sortable, searchable, and with the columns you choose. The entry is in the
+sidebar while the cluster serves GCECustomMachineTypes, which Karpenter on GCP
+does since 0.7.
+
+A click on a GCECustomMachineType opens its details: why it is not ready, its
+machine type, such as `n2-custom-8-24576`, its on-demand and spot prices in
+USD per hour, which GCP does not publish for custom shapes, and the vCPUs,
+memory and zones the provider resolved for it. Freelens shows its conditions
+and events with them.
 
 While the extension is enabled, NodePools, NodeClaims, NodeOverlays,
-EC2NodeClasses, AKSNodeClasses and GCENodeClasses are no longer listed under
-Custom Resources in the sidebar: each has its page here.
+EC2NodeClasses, AKSNodeClasses, GCENodeClasses and GCECustomMachineTypes are no
+longer listed under Custom Resources in the sidebar: each has its page here.
 
 ### Node details
 
@@ -187,18 +203,19 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
   autoprovisioning) or Google GKE (the
   [GCP provider](https://github.com/cloudpilot-ai/karpenter-provider-gcp) of
   CloudPilot AI). The extension follows Karpenter 1.15, the AWS provider 1.15,
-  the Azure provider 1.14 and the GCP provider 0.6.
+  the Azure provider 1.14 and the GCP provider 0.7.
 
 ## Supported APIs
 
-| Group                 | API Version       | Kind           | Shown in                                           |
-| --------------------- | ----------------- | -------------- | -------------------------------------------------- |
-| `karpenter.sh`        | v1                | `NodePool`     | every tab, Node Pools                              |
-| `karpenter.sh`        | v1                | `NodeClaim`    | Overview, Topology, Scaling Decisions, Node Claims |
-| `karpenter.sh`        | v1alpha1          | `NodeOverlay`  | Overview (NodePool cards), Node Overlays           |
-| `karpenter.k8s.aws`   | v1                | `EC2NodeClass` | Overview, Node Classes, EC2 Node Classes           |
-| `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass` | Overview, Node Classes, AKS Node Classes           |
-| `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass` | Overview, Node Classes, GCE Node Classes           |
+| Group                 | API Version       | Kind                   | Shown in                                           |
+| --------------------- | ----------------- | ---------------------- | -------------------------------------------------- |
+| `karpenter.sh`        | v1                | `NodePool`             | every tab, Node Pools                              |
+| `karpenter.sh`        | v1                | `NodeClaim`            | Overview, Topology, Scaling Decisions, Node Claims |
+| `karpenter.sh`        | v1alpha1          | `NodeOverlay`          | Overview (NodePool cards), Node Overlays           |
+| `karpenter.k8s.aws`   | v1                | `EC2NodeClass`         | Overview, Node Classes, EC2 Node Classes           |
+| `karpenter.azure.com` | v1beta1, v1alpha2 | `AKSNodeClass`         | Overview, Node Classes, AKS Node Classes           |
+| `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass`         | Overview, Node Classes, GCE Node Classes           |
+| `karpenter.k8s.gcp`   | v1alpha1          | `GCECustomMachineType` | GCE Custom Machine Types                           |
 
 
 A kind that the cluster does not serve is left out; the Overview says so when the

@@ -84,15 +84,6 @@ export function quantityColumn<K extends KubeObject>(
   };
 }
 
-/** A narrow column whose cell is a short text, such as a name of a range; one without a text sorts first. */
-export function shortTextColumn<K extends KubeObject>(
-  id: string,
-  title: string,
-  value: (object: K) => string | undefined,
-): KindColumn<K> {
-  return textColumn(id, title, value, (object) => value(object) ?? "", styles.short);
-}
-
 /** A narrow column whose cell is a short number, such as a count or a quantity. */
 export function numberColumn<K extends KubeObject>(
   id: string,
@@ -128,6 +119,26 @@ export function badgesColumn<K extends KubeObject>(
       </>
     ),
     sortBy,
+  };
+}
+
+/**
+ * A narrow column whose cell is a list of short texts, such as names of ranges: one text as a text, several each a
+ * badge, as `badgesColumn` shows them. It sorts by the texts joined; one without a text sorts first.
+ */
+export function shortTextsColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  texts: (object: K) => string[],
+): KindColumn<K> {
+  const badges = badgesColumn(id, title, texts, "narrow");
+  return {
+    ...badges,
+    className: styles.short,
+    render: (object) => {
+      const values = texts(object);
+      return values.length > 1 ? badges.render(object) : <WithTooltip>{values[0] ?? ""}</WithTooltip>;
+    },
   };
 }
 

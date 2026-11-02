@@ -16,6 +16,7 @@ export const pageId = {
   ec2NodeClasses: "ec2nodeclasses",
   aksNodeClasses: "aksnodeclasses",
   gceNodeClasses: "gcenodeclasses",
+  gceCustomMachineTypes: "gcecustommachinetypes",
 } as const;
 
 export type PageId = (typeof pageId)[keyof typeof pageId];

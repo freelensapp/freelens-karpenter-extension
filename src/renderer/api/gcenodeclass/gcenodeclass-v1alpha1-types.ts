@@ -1,5 +1,5 @@
 // The spec and status types of karpenter.k8s.gcp/v1alpha1 (GCENodeClass), after the Go types of
-// cloudpilot-ai/karpenter-provider-gcp v0.6.1 (pkg/apis/v1alpha1) and the optional fields of its generated CRD.
+// cloudpilot-ai/karpenter-provider-gcp v0.7.0 (pkg/apis/v1alpha1) and the optional fields of its generated CRD.
 
 import type { Condition, NodeSelectorRequirement } from "../types";
 
@@ -9,21 +9,30 @@ export type ConfidentialInstanceType = "SEV" | "SEV_SNP" | "TDX";
 
 export type GPUDriverVersion = "default" | "latest" | "disabled";
 
+export type LocalSSDMode = "RawBlock" | "Ephemeral";
+
 export interface GCENodeClassSpec {
   serviceAccount?: string;
   disks?: Disk[];
   imageSelectorTerms: ImageSelectorTerm[];
   imageFamily?: ImageFamily;
+  /** Deprecated by the provider in favour of `subnetRangeNames` with one name; the two are mutually exclusive. */
   subnetRangeName?: string;
+  subnetRangeNames?: string[];
   kubeletConfiguration?: KubeletConfiguration;
+  linuxNodeConfig?: LinuxNodeConfig;
   labels?: Record<string, string>;
   metadata?: Record<string, string>;
   networkTags?: NetworkTag[];
   shieldedInstanceConfig?: ShieldedInstanceConfig;
+  advancedMachineFeatures?: AdvancedMachineFeatures;
   confidentialInstanceType?: ConfidentialInstanceType;
   networkConfig?: NetworkConfig;
   autoGPUTaint?: boolean;
   gpuDriverVersion?: GPUDriverVersion;
+  localSsdMode?: LocalSSDMode;
+  /** A `metav1.Duration` of at most two minutes, such as `120s`. */
+  preemptionNoticeDuration?: string;
 }
 
 export interface NetworkConfig {
@@ -67,6 +76,8 @@ export interface KubeletConfiguration {
   imageGCHighThresholdPercent?: number;
   imageGCLowThresholdPercent?: number;
   cpuCFSQuota?: boolean;
+  serializeImagePulls?: boolean;
+  maxParallelImagePulls?: number;
 }
 
 export interface Disk {
@@ -87,7 +98,6 @@ export type DiskCategory =
   | "hyperdisk-extreme"
   | "hyperdisk-ml"
   | "hyperdisk-throughput"
-  | "local-ssd"
   | "pd-balanced"
   | "pd-extreme"
   | "pd-ssd"
@@ -104,9 +114,28 @@ export interface ShieldedInstanceConfig {
   enableIntegrityMonitoring?: boolean;
 }
 
+export interface LinuxNodeConfig {
+  hugepages?: HugepagesConfig;
+}
+
+export interface HugepagesConfig {
+  hugepageSize2m?: number;
+  hugepageSize1g?: number;
+}
+
+export interface AdvancedMachineFeatures {
+  enableNestedVirtualization?: boolean;
+}
+
 export interface GCENodeClassStatus {
   images?: Image[];
+  subnetRanges?: SubnetRangeStatus[];
   conditions?: Condition[];
+}
+
+export interface SubnetRangeStatus {
+  name: string;
+  totalFreeIP?: number;
 }
 
 export interface Image {

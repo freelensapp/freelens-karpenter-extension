@@ -862,6 +862,12 @@ export const aksNodeClassColumns = ["Name", "ImageFamily", "Ready", "Age"];
  */
 export const gceNodeClassColumns = ["Name", "Image Family", "Disks", "Subnet", "Ready", "Age"];
 
+/**
+ * The columns of `kubectl get gcecustommachinetypes -o wide`, which the GCE Custom Machine Types page has, with
+ * MachineType as "Machine Type".
+ */
+export const gceCustomMachineTypeColumns = ["Name", "Machine Type", "Ready", "Age"];
+
 /** An age as the host shows it, such as `42s` or `3m`. */
 export const agePattern = /^\d+[smhdy]/;
 

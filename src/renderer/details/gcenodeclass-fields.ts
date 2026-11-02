@@ -1,10 +1,16 @@
 // What the details of a GCENodeClass of karpenter.k8s.gcp/v1alpha1 show of its fields, as text: the images its
-// selector terms resolved to, its disks and its additional network interfaces, after the Go types of
-// cloudpilot-ai/karpenter-provider-gcp v0.6.1.
+// selector terms resolved to, its disks, its additional network interfaces, its hugepages and its pod ranges, after
+// the Go types of cloudpilot-ai/karpenter-provider-gcp v0.7.0.
 
 import { formatRequirement } from "./karpenter-v1";
 
-import type { AdditionalNetworkInterface, Disk, Image } from "../api/gcenodeclass/gcenodeclass-v1alpha1-types";
+import type {
+  AdditionalNetworkInterface,
+  Disk,
+  Image,
+  LinuxNodeConfig,
+  SubnetRangeStatus,
+} from "../api/gcenodeclass/gcenodeclass-v1alpha1-types";
 
 /** An image the GCENodeClass resolved: its source image, then the instances it is for. */
 export function formatImage(image: Image): string {
@@ -39,4 +45,24 @@ export function formatAdditionalNetworkInterface(networkInterface: AdditionalNet
   return networkInterface.network
     ? `${networkInterface.subnetwork} (network ${networkInterface.network})`
     : networkInterface.subnetwork;
+}
+
+/**
+ * The static hugepages of `spec.linuxNodeConfig`, one text for each size the node allocates at boot, as a number of
+ * pages of that size: `512 pages of 2 MiB`.
+ */
+export function hugepagesTexts(linuxNodeConfig: LinuxNodeConfig | undefined): string[] {
+  const hugepages = linuxNodeConfig?.hugepages;
+  return [
+    hugepages?.hugepageSize2m ? `${hugepages.hugepageSize2m} pages of 2 MiB` : undefined,
+    hugepages?.hugepageSize1g ? `${hugepages.hugepageSize1g} pages of 1 GiB` : undefined,
+  ].filter((text): text is string => text !== undefined);
+}
+
+/**
+ * A pod range the provider considered for launch, of `status.subnetRanges`: its name, then its free IPv4 addresses as
+ * Compute reported them, `pods-a: 3840 free IPs`; the name alone while the count is not known.
+ */
+export function formatSubnetRange(range: SubnetRangeStatus): string {
+  return range.totalFreeIP === undefined ? range.name : `${range.name}: ${range.totalFreeIP} free IPs`;
 }

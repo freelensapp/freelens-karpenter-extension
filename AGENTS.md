@@ -11,7 +11,7 @@ It adds "Karpenter" to the cluster sidebar, with its pages as entries: the
 dashboard, "Overview", with four tabs (Overview, Topology, Node Classes,
 Scaling Decisions), and a list page with details for each Karpenter kind it
 models, "Node Claims", "Node Pools", "Node Overlays", "EC2 Node Classes", "AKS
-Node Classes" and "GCE Node Classes". It also adds a Karpenter section to the
+Node Classes", "GCE Node Classes" and "GCE Custom Machine Types". It also adds a Karpenter section to the
 host's Node details. It reads the Karpenter objects, the nodes, the pods and the events of the
 cluster, and writes nothing to it.
 
@@ -30,9 +30,9 @@ there, and is copied here.
   `karpenter.k8s.aws/v1` (EC2NodeClass) of aws/karpenter-provider-aws,
   `karpenter.azure.com/v1beta1` and `v1alpha2` (AKSNodeClass) of
   Azure/karpenter-provider-azure, `karpenter.k8s.gcp/v1alpha1`
-  (GCENodeClass) of cloudpilot-ai/karpenter-provider-gcp; the types follow
-  Karpenter 1.15.0, the AWS provider 1.15.0, the Azure provider 1.14.5 and the
-  GCP provider 0.6.1
+  (GCENodeClass, GCECustomMachineType) of cloudpilot-ai/karpenter-provider-gcp;
+  the types follow Karpenter 1.15.0, the AWS provider 1.15.0, the Azure
+  provider 1.14.5 and the GCP provider 0.7.0
 - **Toolchain**: Node.js 24.x, yq 4.x and cosign 3.x (`mise.toml` with
   `mise.lock`; Node also in `.nvmrc`)
 - **Package manager**: pnpm 12.x (`packageManager`, run through corepack)
@@ -190,17 +190,21 @@ from the objects is in pure modules next to them, which the unit tests cover:
 `pages/nodeoverlays/nodeoverlay-columns.ts`,
 `pages/ec2nodeclasses/ec2nodeclass-columns.ts`,
 `pages/aksnodeclasses/aksnodeclass-columns.ts`,
-`pages/gcenodeclasses/gcenodeclass-columns.ts`, `details/node-karpenter.ts`,
-`details/karpenter-v1.ts`, `details/fields.ts`, `details/nodepool-relations.ts`,
-`details/nodeclaim-status.ts`, `details/nodeoverlay-relations.ts`,
-`details/ec2nodeclass-fields.ts`, `details/aksnodeclass-fields.ts` and
-`details/gcenodeclass-fields.ts`. Keep it that way: logic that needs the host
+`pages/gcenodeclasses/gcenodeclass-columns.ts`,
+`pages/gcecustommachinetypes/gcecustommachinetype-columns.ts`,
+`details/node-karpenter.ts`, `details/karpenter-v1.ts`, `details/fields.ts`,
+`details/nodepool-relations.ts`, `details/nodeclaim-status.ts`,
+`details/nodeoverlay-relations.ts`, `details/ec2nodeclass-fields.ts`,
+`details/aksnodeclass-fields.ts`, `details/gcenodeclass-fields.ts` and
+`details/gcecustommachinetype-fields.ts`. Keep it that way: logic that needs the host
 or a store goes into `data/`, logic on objects into a pure module with a test,
 and the component only renders.
 
 Every kind the extension models (NodePool, NodeClaim, NodeOverlay,
-EC2NodeClass, AKSNodeClass, GCENodeClass) has an entry under "Karpenter" in
-the sidebar, a list page and details; see "Pages and Details of a Kind". A
+EC2NodeClass, AKSNodeClass, GCENodeClass, GCECustomMachineType) has an entry
+under "Karpenter" in the sidebar, a list page and details; see "Pages and
+Details of a Kind". No field of another kind refers to a GCECustomMachineType,
+so nothing links to it; it opens from its own page. A
 click on such an object in a tab opens its page with its details (`openNodePoolDetail`, `openNodeClaimDetail`
 and `openNodeOverlayDetail` of `utils/kube-helpers.ts`, `openNodeClassDetail`
 of `data/nodeclass.ts`), and a link inside a details drawer opens the other
@@ -218,7 +222,7 @@ Claims page, and the NodeClass column with `nodeClassPage` of
   versions of a kind newest first and returns `undefined` when none is served
   (`getNodePoolStore()`, `getNodeClaimStore()`, `getNodeOverlayStore()`,
   `getEC2NodeClassStore()`, `getAKSNodeClassStore()`,
-  `getGCENodeClassStore()`). Only one version of a kind is used, so no object
+  `getGCENodeClassStore()`, `getGCECustomMachineTypeStore()`). Only one version of a kind is used, so no object
   is counted twice. AKSNodeClass has two models, `v1beta1` and `v1alpha2`: the
   Azure provider serves only `v1beta1` since 1.14.3, and 1.14.2 and older
   serve both. The extension keeps `v1alpha2` for those, with one page and one
@@ -274,8 +278,8 @@ has no page for.
 A model is a subclass of `Renderer.K8sApi.LensExtensionKubeObject`, one file
 per kind and API version, `src/renderer/api/<kind>/<kind>-<version>.ts`:
 `nodepool-v1.ts`, `nodeclaim-v1.ts`, `nodeoverlay-v1alpha1.ts`,
-`ec2nodeclass-v1.ts`, `aksnodeclass-v1beta1.ts`, `aksnodeclass-v1alpha2.ts`
-and `gcenodeclass-v1alpha1.ts`.
+`ec2nodeclass-v1.ts`, `aksnodeclass-v1beta1.ts`, `aksnodeclass-v1alpha2.ts`,
+`gcenodeclass-v1alpha1.ts` and `gcecustommachinetype-v1alpha1.ts`.
 Their spec and status types are in `*-types.ts` next to them; NodePool and
 NodeClaim share `api/karpenter/karpenter-v1-types.ts`.
 
@@ -397,7 +401,7 @@ every variant.
 
 A kind gets its page and its details together, built from the parts the
 kinds share, as Node Pools, Node Claims, Node Overlays, EC2 Node Classes, AKS
-Node Classes and GCE Node Classes have them:
+Node Classes, GCE Node Classes and GCE Custom Machine Types have them:
 
 1. **The title**: `crd.title` of each of its models, with their tests.
 2. **The sidebar entry**: a `clusterPageMenus` entry under `parentId:
@@ -430,8 +434,10 @@ Node Classes and GCE Node Classes have them:
    family, of an alias term too, its channel without a version, `latest`
    without either, or the image family alone at `latest` (`badgesColumn`,
    `gceNodeClassImageTerms`); Disks, a badge for each disk, boot, size and
-   category (`gceNodeClassDiskLabels`); and Subnet, `spec.subnetRangeName`
-   (`shortTextColumn`).
+   category (`gceNodeClassDiskLabels`); and Subnet, the pod ranges as the
+   provider takes them, `spec.subnetRangeNames`, else the deprecated
+   `spec.subnetRangeName` (`GCENodeClass.getSubnetRangeNames`), one as a text
+   and several as a badge each (`shortTextsColumn`).
    The other exception is the Node Claims page. It has Status in place of
    Ready, before Drifted: the status of the NodeClaim as the Overview counts
    it (Ready, Provisioning, Claiming, Terminating, Not Ready), from its node
@@ -510,7 +516,8 @@ Node Classes and GCE Node Classes have them:
   sections, so it renders nothing for a node Karpenter does not manage.
 - The pages are entries under "Karpenter" in the sidebar, which has no page of its own. The host renders a page whose
   entry has a parent inside a tab layout with a tab for each entry of the parent ("Overview", "Node Claims", "Node
-  Pools", "Node Overlays", and "EC2 Node Classes", "AKS Node Classes" or "GCE Node Classes"), above the page; the
+  Pools", "Node Overlays", and "EC2 Node Classes", "AKS Node Classes" or "GCE Node Classes" with "GCE Custom Machine
+  Types"), above the page; the
   dashboard has its own tabs below them.
 - The host renders a cluster page with `params` only. The page gets the extension from the registration
   (`Page: () => <KarpenterDashboard extension={this} />`).
@@ -1053,7 +1060,7 @@ fixtures are in `integration/fixtures/<variant>/`:
   (`charts/karpenter/crds/` for GCP). Each provider ships
   its own copy of the `karpenter.sh` CRDs, so the session has exactly what a
   cluster of that variant has. A Renovate rule updates the release in the URLs.
-- `objects.yaml`: the node classes, NodePools, NodeOverlays, NodeClaims and
+- `objects.yaml`: the node classes, the GCECustomMachineType of GCP, NodePools, NodeOverlays, NodeClaims and
   Karpenter's events. There are no nodes and no pods: without a kubelet a node
   turns NotReady, and pods on it stay Pending. Without a node, the Overview
   folds a NodePool into "+N empty"; a NodeClaim still waiting for its node
@@ -1218,7 +1225,8 @@ The API server drops events an hour after they are created; apply
   iframe. The pages and the details live in that frame, not in the main page.
 - The URL of a page is `/extension/freelensapp--karpenter-extension/<page id>`,
   with the ids of `pages/routes.ts`: `dashboard` for the Overview, `nodepools`, `nodeclaims`,
-  `nodeoverlays`, `ec2nodeclasses`, `aksnodeclasses`, `gcenodeclasses`.
+  `nodeoverlays`, `ec2nodeclasses`, `aksnodeclasses`, `gcenodeclasses`,
+  `gcecustommachinetypes`.
   The sidebar entries navigate in `onClick`; their `href` is not the page URL.
   "Karpenter" opens and closes its entries, and is closed until it is clicked.
   A click on `[data-testid="sidebar-item-…"]` does not navigate; a DOM
