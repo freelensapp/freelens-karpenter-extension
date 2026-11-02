@@ -10,12 +10,35 @@ status:
         - key: kubernetes.io/arch
           operator: In
           values: [amd64]
+  subnetRanges:
+    - name: pods-a
+      totalFreeIP: 3840
+    - name: pods-b
+      totalFreeIP: 1012
   conditions:
     - type: ImagesReady
       status: "True"
       reason: ImagesReady
       message: ""
       lastTransitionTime: "2026-10-01T08:00:00Z"
+    - type: Ready
+      status: "True"
+      reason: Ready
+      message: ""
+      lastTransitionTime: "2026-10-01T08:00:00Z"
+---
+apiVersion: karpenter.k8s.gcp/v1alpha1
+kind: GCECustomMachineType
+metadata:
+  name: n2-custom-8-24576
+status:
+  guestCpus: 8
+  memoryMb: 24576
+  zones:
+    - us-central1-a
+    - us-central1-b
+    - us-central1-c
+  conditions:
     - type: Ready
       status: "True"
       reason: Ready

@@ -1,7 +1,12 @@
 # The objects of the GCP session: self-hosted Karpenter on GKE with a
-# GCENodeClass, without nodes. The events carry no timestamps, so the API
-# server dates them when they are applied. The controller Deployment is scaled
-# to zero; the dashboard reads the version from its image.
+# GCENodeClass and a GCECustomMachineType, without nodes. The events carry no
+# timestamps, so the API server dates them when they are applied. The
+# controller Deployment is scaled to zero; the dashboard reads the version from
+# its image.
+#
+# The GCENodeClass sets the fields that v0.7.0 adds: the pod ranges as
+# subnetRangeNames, hugepages, nested virtualization, the local SSD mode, the
+# preemption notice of Spot VMs and parallel image pulls of the kubelet.
 apiVersion: karpenter.k8s.gcp/v1alpha1
 kind: GCENodeClass
 metadata:
@@ -15,10 +20,34 @@ spec:
     - category: pd-balanced
       sizeGiB: 100
       boot: true
+  subnetRangeNames:
+    - pods-a
+    - pods-b
   networkTags:
     - karpenter
   kubeletConfiguration:
     maxPods: 64
+    serializeImagePulls: false
+    maxParallelImagePulls: 5
+  linuxNodeConfig:
+    hugepages:
+      hugepageSize2m: 512
+  advancedMachineFeatures:
+    enableNestedVirtualization: true
+  localSsdMode: Ephemeral
+  preemptionNoticeDuration: 120s
+---
+# A custom shape, with the hourly prices in USD that GCP does not publish for
+# it; the provider resolves its CPUs, memory and zones into its status.
+apiVersion: karpenter.k8s.gcp/v1alpha1
+kind: GCECustomMachineType
+metadata:
+  name: n2-custom-8-24576
+spec:
+  machineType: n2-custom-8-24576
+  prices:
+    onDemand: "0.3891"
+    spot: "0.0934"
 ---
 apiVersion: karpenter.sh/v1
 kind: NodePool
@@ -246,4 +275,4 @@ spec:
     spec:
       containers:
         - name: karpenter
-          image: public.ecr.aws/cloudpilotai/gcp/karpenter:v0.6.1
+          image: public.ecr.aws/cloudpilotai/gcp/karpenter:v0.7.0

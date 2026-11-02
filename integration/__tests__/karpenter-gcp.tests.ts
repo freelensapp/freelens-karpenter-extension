@@ -92,7 +92,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     // has a card for its NodeClaim still waiting for its node; it sets no
     // memory limit, and the NodeOverlay that can apply to it is on its card.
     await openTab(frame, "Overview", [
-      "Karpenter 0.6.1",
+      "Karpenter 0.7.0",
       "gke",
       "gke-pend1",
       /\/ —$/,
