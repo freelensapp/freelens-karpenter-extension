@@ -9,10 +9,10 @@ Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robert
 ## What it shows
 
 The extension adds **Karpenter** to the cluster sidebar, with its pages as
-entries: **Overview**, a dashboard with four tabs, **Node Pools**, **Node
-Claims**, **Node Overlays** and, on AWS, **EC2 Node Classes**, on Azure,
+entries: **Overview**, a dashboard with four tabs, **Node Claims**, **Node
+Pools**, **Node Overlays** and, on AWS, **EC2 Node Classes**, on Azure,
 **AKS Node Classes** or, on GCP, **GCE Node Classes**, the lists of the
-NodePools, the NodeClaims, the NodeOverlays and the node classes with their
+NodeClaims, the NodePools, the NodeOverlays and the node classes with their
 details. It also adds a Karpenter section to the details of a node. It follows the Freelens theme, light or dark, and
 updates while it is open, as Karpenter launches and removes nodes.
 
@@ -58,22 +58,6 @@ and other, for the last hour, 6 hours, 24 hours or all; the number of nodes of
 each NodePool over time; and the pod and node decisions as tables. A click on
 a time bucket highlights its events in the tables.
 
-### Node Pools
-
-The NodePools with the columns of `kubectl get nodepools -o wide`: NodeClass,
-Nodes, Ready, Age, Weight, CPU and Memory, sortable, searchable, and with the
-columns you choose. The entry is in the sidebar while the cluster serves
-NodePools.
-
-A click on a NodePool, here or in the tabs, opens its details: why it is not
-ready, its node class, weight, replicas and nodes, the resources in use
-against its limits, the template of its NodeClaims (labels, annotations,
-requirements, taints, startup taints, expiry and termination grace period),
-its disruption settings and budgets, and its NodeClaims with their nodes and
-the NodeOverlays that apply to it, as links, with those that Karpenter
-rejected and why.
-Freelens shows its conditions and events with them.
-
 ### Node Claims
 
 The NodeClaims with the columns of `kubectl get nodeclaims -o wide`: Type,
@@ -91,6 +75,22 @@ and image ID, the time of its last pod event, the capacity and allocatable of
 its node, and its spec: resource requests, requirements, taints, startup
 taints, expiry and termination grace period. Freelens shows its conditions
 and events with them.
+
+### Node Pools
+
+The NodePools with the columns of `kubectl get nodepools -o wide`: NodeClass,
+Nodes, Ready, Age, Weight, CPU and Memory, sortable, searchable, and with the
+columns you choose. The entry is in the sidebar while the cluster serves
+NodePools.
+
+A click on a NodePool, here or in the tabs, opens its details: why it is not
+ready, its node class, weight, replicas and nodes, the resources in use
+against its limits, the template of its NodeClaims (labels, annotations,
+requirements, taints, startup taints, expiry and termination grace period),
+its disruption settings and budgets, and its NodeClaims with their nodes and
+the NodeOverlays that apply to it, as links, with those that Karpenter
+rejected and why.
+Freelens shows its conditions and events with them.
 
 ### Node Overlays
 

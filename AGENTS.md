@@ -10,7 +10,7 @@ This repository is the Freelens extension for [Karpenter](https://karpenter.sh/)
 It adds "Karpenter" to the cluster sidebar, with its pages as entries: the
 dashboard, "Overview", with four tabs (Overview, Topology, Node Classes,
 Scaling Decisions), and a list page with details for each Karpenter kind it
-models, "Node Pools", "Node Claims", "Node Overlays", "EC2 Node Classes", "AKS
+models, "Node Claims", "Node Pools", "Node Overlays", "EC2 Node Classes", "AKS
 Node Classes" and "GCE Node Classes". It also adds a Karpenter section to the
 host's Node details. It reads the Karpenter objects, the nodes, the pods and the events of the
 cluster, and writes nothing to it.
@@ -486,8 +486,8 @@ Node Classes and GCE Node Classes have them:
   `Renderer.Component.KubeObjectDetailsProps<Renderer.K8sApi.Node>`. The host renders it for every node, after its own
   sections, so it renders nothing for a node Karpenter does not manage.
 - The pages are entries under "Karpenter" in the sidebar, which has no page of its own. The host renders a page whose
-  entry has a parent inside a tab layout with a tab for each entry of the parent ("Overview", "Node Pools", "Node
-  Claims", "Node Overlays", and "EC2 Node Classes", "AKS Node Classes" or "GCE Node Classes"), above the page; the
+  entry has a parent inside a tab layout with a tab for each entry of the parent ("Overview", "Node Claims", "Node
+  Pools", "Node Overlays", and "EC2 Node Classes", "AKS Node Classes" or "GCE Node Classes"), above the page; the
   dashboard has its own tabs below them.
 - The host renders a cluster page with `params` only. The page gets the extension from the registration
   (`Page: () => <KarpenterDashboard extension={this} />`).
