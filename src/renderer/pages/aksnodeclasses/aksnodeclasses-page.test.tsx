@@ -87,7 +87,7 @@ describe("AKSNodeClassesPage", () => {
     runInAction(() => served.set("v1alpha2"));
     render(<AKSNodeClassesPage extension={extension} />);
 
-    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["legacy", "Ubuntu2204", "", "age"]);
+    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["legacy", "Ubuntu2204", "-", "age"]);
   });
 
   it("follows the CRD as the host registers it and removes it", () => {

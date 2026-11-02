@@ -1,8 +1,14 @@
 import { observer } from "mobx-react";
 import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
-import { ageColumn, type KindColumn, KindListPage, nameColumn } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
+import {
+  ageColumn,
+  booleanColumn,
+  type KindColumn,
+  KindListPage,
+  nameColumn,
+} from "../../components/KindListPage/KindListPage";
 import { getGCENodeClassStore } from "../../data/stores";
+import { conditionFlag } from "../../utils/printer-columns";
 import { gceNodeClassColumnValues, gceNodeClassSortValues } from "./gcenodeclass-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
@@ -14,12 +20,12 @@ export interface GCENodeClassesPageProps {
 // The columns of `kubectl get gcenodeclasses -o wide`, in its order.
 const columns: KindColumn<GCENodeClass>[] = [
   nameColumn(),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (nodeClass) => <ConditionStatus status={gceNodeClassColumnValues(nodeClass).ready} />,
-    sortBy: gceNodeClassSortValues.ready,
-  },
+  booleanColumn(
+    "ready",
+    "Ready",
+    (nodeClass) => conditionFlag(gceNodeClassColumnValues(nodeClass).ready),
+    gceNodeClassSortValues.ready,
+  ),
   ageColumn(),
 ];
 

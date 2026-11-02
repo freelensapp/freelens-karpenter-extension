@@ -2,13 +2,14 @@ import { observer } from "mobx-react";
 import { AKSNodeClass as AKSNodeClassV1beta1 } from "../../api/aksnodeclass/aksnodeclass-v1beta1";
 import {
   ageColumn,
+  booleanColumn,
   type KindColumn,
   KindListPage,
   nameColumn,
   textColumn,
 } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { type AKSNodeClass, getAKSNodeClassStore } from "../../data/stores";
+import { conditionFlag } from "../../utils/printer-columns";
 import { aksNodeClassColumnValues, aksNodeClassSortValues } from "./aksnodeclass-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
@@ -26,12 +27,12 @@ const columns: KindColumn<AKSNodeClass>[] = [
     (nodeClass) => aksNodeClassColumnValues(nodeClass).imageFamily,
     aksNodeClassSortValues.imageFamily,
   ),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (nodeClass) => <ConditionStatus status={aksNodeClassColumnValues(nodeClass).ready} />,
-    sortBy: aksNodeClassSortValues.ready,
-  },
+  booleanColumn(
+    "ready",
+    "Ready",
+    (nodeClass) => conditionFlag(aksNodeClassColumnValues(nodeClass).ready),
+    aksNodeClassSortValues.ready,
+  ),
   ageColumn(),
 ];
 

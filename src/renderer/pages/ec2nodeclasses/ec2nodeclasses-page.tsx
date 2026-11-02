@@ -2,13 +2,14 @@ import { observer } from "mobx-react";
 import { EC2NodeClass } from "../../api/ec2nodeclass/ec2nodeclass-v1";
 import {
   ageColumn,
+  booleanColumn,
   type KindColumn,
   KindListPage,
   nameColumn,
   textColumn,
 } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { getEC2NodeClassStore } from "../../data/stores";
+import { conditionFlag } from "../../utils/printer-columns";
 import { ec2NodeClassColumnValues, ec2NodeClassSortValues } from "./ec2nodeclass-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
@@ -21,12 +22,12 @@ export interface EC2NodeClassesPageProps {
 const columns: KindColumn<EC2NodeClass>[] = [
   nameColumn(),
   textColumn("role", "Role", (nodeClass) => ec2NodeClassColumnValues(nodeClass).role, ec2NodeClassSortValues.role),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (nodeClass) => <ConditionStatus status={ec2NodeClassColumnValues(nodeClass).ready} />,
-    sortBy: ec2NodeClassSortValues.ready,
-  },
+  booleanColumn(
+    "ready",
+    "Ready",
+    (nodeClass) => conditionFlag(ec2NodeClassColumnValues(nodeClass).ready),
+    ec2NodeClassSortValues.ready,
+  ),
   ageColumn(),
 ];
 
