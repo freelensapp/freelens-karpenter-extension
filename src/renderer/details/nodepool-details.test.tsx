@@ -88,7 +88,7 @@ describe("NodePoolDetails", () => {
     for (const text of [
       "EC2NodeClass gpu",
       "50",
-      "2 (static NodePool)",
+      "2 (static Node Pool)",
       "False, NodeClassNotReady",
       "3",
       "4 / 32",
@@ -113,6 +113,9 @@ describe("NodePoolDetails", () => {
   it("links to its node class, its NodeClaims and the NodeOverlays that apply to it, in the drawer", () => {
     render(<NodePoolDetails object={gpu} />);
 
+    for (const title of ["Node Claim Template", "Node Claims", "Node Overlays"]) {
+      expect(screen.getByText(title)).toBeTruthy();
+    }
     expect(screen.getByText("(price 1.5)", { exact: false })).toBeTruthy();
     expect(screen.getByText("(ip-10-0-0-1)", { exact: false })).toBeTruthy();
 

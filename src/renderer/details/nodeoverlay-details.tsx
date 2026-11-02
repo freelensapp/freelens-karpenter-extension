@@ -56,7 +56,7 @@ export const NodeOverlayDetails = observer(
 
         {nodePoolStore && (
           <>
-            <DrawerTitle>NodePools</DrawerTitle>
+            <DrawerTitle>Node Pools</DrawerTitle>
             {/* A rejected overlay applies to no instance type: the NodePools it matches, said so. */}
             <DrawerItem name={rejected ? "Matches (not applied)" : "Applies To"}>
               {nodePools.length === 0
@@ -64,7 +64,7 @@ export const NodeOverlayDetails = observer(
                 : nodePools.map((name, index) => (
                     <span key={name}>
                       {index > 0 && ", "}
-                      <DetailsLink selfLink={nodePoolSelfLink(name)} title={`Open NodePool ${name}`}>
+                      <DetailsLink selfLink={nodePoolSelfLink(name)} title={`Open Node Pool ${name}`}>
                         {name}
                       </DetailsLink>
                     </span>

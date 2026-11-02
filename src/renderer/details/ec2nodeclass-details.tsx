@@ -172,14 +172,14 @@ export const EC2NodeClassDetails = observer(
 
         {nodePoolStore && (
           <>
-            <DrawerTitle>NodePools</DrawerTitle>
+            <DrawerTitle>Node Pools</DrawerTitle>
             <DrawerItem name="Used By">
               {nodePools.length === 0
                 ? "None"
                 : nodePools.map((name, index) => (
                     <span key={name}>
                       {index > 0 && ", "}
-                      <DetailsLink selfLink={nodePoolSelfLink(name)} title={`Open NodePool ${name}`}>
+                      <DetailsLink selfLink={nodePoolSelfLink(name)} title={`Open Node Pool ${name}`}>
                         {name}
                       </DetailsLink>
                     </span>

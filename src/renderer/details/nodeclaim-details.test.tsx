@@ -121,6 +121,8 @@ describe("NodeClaimDetails", () => {
   it("links to its node, its NodePool and its node class, in the drawer", () => {
     render(<NodeClaimDetails object={launched} />);
 
+    expect(screen.getByText("Node Pool")).toBeTruthy();
+
     fireEvent.click(screen.getByText("ip-10-0-2-12"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/api/v1/nodes/ip-10-0-2-12");
     fireEvent.click(screen.getByText("general"));

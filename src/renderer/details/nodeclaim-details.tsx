@@ -49,9 +49,9 @@ export const NodeClaimDetails = observer(
             </DetailsLink>
           )}
         </DrawerItem>
-        <DrawerItem name="NodePool" hidden={values.nodePool === undefined}>
+        <DrawerItem name="Node Pool" hidden={values.nodePool === undefined}>
           {values.nodePool !== undefined && (
-            <DetailsLink selfLink={nodePoolSelfLink(values.nodePool)} title={`Open NodePool ${values.nodePool}`}>
+            <DetailsLink selfLink={nodePoolSelfLink(values.nodePool)} title={`Open Node Pool ${values.nodePool}`}>
               {values.nodePool}
             </DetailsLink>
           )}
