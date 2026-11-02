@@ -72,7 +72,9 @@ export function nodeClassMetaItems(nodeClass: NodeClass): MetaItem[] {
     add("Image Selectors", spec?.imageSelectorTerms?.length);
     add("Disks", spec?.disks?.length);
     add("Network Tags", spec?.networkTags?.length);
-    add("Subnet Range", spec?.subnetRangeName);
+    // `spec.subnetRangeNames`, else the deprecated `spec.subnetRangeName`, as the provider takes them.
+    const subnetRanges = GCENodeClass.getSubnetRangeNames(nodeClass);
+    add(subnetRanges.length > 1 ? "Subnet Ranges" : "Subnet Range", subnetRanges.join(", "));
     // `spec.kubeletConfiguration` of karpenter.k8s.gcp/v1alpha1.
     if (hasSettings(spec?.kubeletConfiguration)) add("Kubelet Config", "✓");
   } else {

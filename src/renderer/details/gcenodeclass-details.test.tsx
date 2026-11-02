@@ -94,6 +94,29 @@ const ubuntuClass = new GCENodeClass({
   },
 });
 
+// default of the fixtures of the integration tests as v0.7.0 writes it: the fields it adds, and the free IPs of its
+// pod ranges.
+const v070Class = new GCENodeClass({
+  apiVersion: "karpenter.k8s.gcp/v1alpha1",
+  kind: "GCENodeClass",
+  metadata: { name: "default", uid: "3", resourceVersion: "1", selfLink: "" },
+  spec: {
+    imageSelectorTerms: [{ family: "ContainerOptimizedOS", channel: "stable" }],
+    subnetRangeNames: ["pods-a", "pods-b"],
+    kubeletConfiguration: { maxPods: 64, serializeImagePulls: false, maxParallelImagePulls: 5 },
+    linuxNodeConfig: { hugepages: { hugepageSize2m: 512 } },
+    advancedMachineFeatures: { enableNestedVirtualization: true },
+    localSsdMode: "Ephemeral",
+    preemptionNoticeDuration: "120s",
+  },
+  status: {
+    subnetRanges: [
+      { name: "pods-a", totalFreeIP: 3840 },
+      { name: "pods-b", totalFreeIP: 1012 },
+    ],
+  },
+});
+
 vi.mock("../data/stores", () => ({
   getNodePoolStore: () => ({ items: nodePools, api: { apiBase: "/apis/karpenter.sh/v1/nodepools" } }),
 }));
@@ -149,6 +172,37 @@ describe("GCENodeClassDetails", () => {
     expect(screen.getAllByText("False")).toHaveLength(1);
   });
 
+  it("shows the fields of v0.7.0, and the pod ranges next to their free IPs", () => {
+    render(<GCENodeClassDetails object={v070Class} />);
+
+    for (const text of [
+      "Ephemeral",
+      "enableNestedVirtualization: true",
+      "120s",
+      "512 pages of 2 MiB",
+      "serializeImagePulls: false",
+      "maxParallelImagePulls: 5",
+      "pods-a",
+      "pods-b",
+      "pods-a: 3840 free IPs",
+      "pods-b: 1012 free IPs",
+    ]) {
+      expect(screen.getByText(text)).toBeTruthy();
+    }
+    for (const name of [
+      "Local SSD Mode",
+      "Advanced Machine Features",
+      "Preemption Notice",
+      "Hugepages",
+      "Subnet Ranges",
+      "Resolved Ranges",
+    ]) {
+      expect(screen.getByText(name)).toBeTruthy();
+    }
+    // The deprecated single name, which the node class does not set.
+    expect(screen.queryByText("Subnet Range")).toBeNull();
+  });
+
   it("opens a NodePool that uses it in the drawer", () => {
     render(<GCENodeClassDetails object={defaultClass} />);
 
@@ -172,12 +226,18 @@ describe("GCENodeClassDetails", () => {
       "Instances",
       "Service Account",
       "Disks",
+      "Local SSD Mode",
       "Shielded Instance",
+      "Advanced Machine Features",
       "Confidential Instance",
+      "Preemption Notice",
+      "Hugepages",
       "Kubelet",
       "Labels",
       "Metadata",
       "Network",
+      "Subnet Ranges",
+      "Resolved Ranges",
       "GPU",
     ]) {
       expect(screen.queryByText(name)).toBeNull();

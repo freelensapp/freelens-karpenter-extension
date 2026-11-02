@@ -7,7 +7,7 @@ import {
   KindListPage,
   nameColumn,
   readyColumn,
-  shortTextColumn,
+  shortTextsColumn,
 } from "../../components/KindListPage/KindListPage";
 import { getGCENodeClassStore } from "../../data/stores";
 import {
@@ -15,7 +15,7 @@ import {
   gceNodeClassDiskLabels,
   gceNodeClassImageTerms,
   gceNodeClassSortValues,
-  gceNodeClassSubnet,
+  gceNodeClassSubnets,
 } from "./gcenodeclass-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
@@ -29,7 +29,7 @@ const columns: KindColumn<GCENodeClass>[] = [
   nameColumn(),
   badgesColumn("imageFamily", "Image Family", gceNodeClassImageTerms, "narrow"),
   badgesColumn("disks", "Disks", gceNodeClassDiskLabels, "wide"),
-  shortTextColumn("subnet", "Subnet", gceNodeClassSubnet),
+  shortTextsColumn("subnet", "Subnet", gceNodeClassSubnets),
   readyColumn((nodeClass) => gceNodeClassColumnValues(nodeClass).ready, gceNodeClassSortValues.ready),
   ageColumn(),
 ];

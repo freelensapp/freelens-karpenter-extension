@@ -5,7 +5,7 @@ import {
   gceNodeClassDiskLabels,
   gceNodeClassImageTerms,
   gceNodeClassSortValues,
-  gceNodeClassSubnet,
+  gceNodeClassSubnets,
 } from "./gcenodeclass-columns";
 
 import type { GCENodeClassSpec, GCENodeClassStatus } from "../../api/gcenodeclass/gcenodeclass-v1alpha1-types";
@@ -121,18 +121,23 @@ describe("gceNodeClassDiskLabels", () => {
   });
 });
 
-describe("gceNodeClassSubnet", () => {
-  const withSubnet = (subnetRangeName?: string) =>
+describe("gceNodeClassSubnets", () => {
+  const withSubnet = (spec: Pick<GCENodeClassSpec, "subnetRangeName" | "subnetRangeNames">) =>
     new GCENodeClass({
       apiVersion: "karpenter.k8s.gcp/v1alpha1",
       kind: "GCENodeClass",
       metadata: { name: "c", uid: "c", resourceVersion: "1", selfLink: "" },
-      spec: { imageSelectorTerms: [], subnetRangeName },
+      spec: { imageSelectorTerms: [], ...spec },
     });
 
-  it("has the subnet range name, and none for an empty one", () => {
-    expect(gceNodeClassSubnet(withSubnet("pods"))).toBe("pods");
-    expect(gceNodeClassSubnet(withSubnet(""))).toBeUndefined();
-    expect(gceNodeClassSubnet(withSubnet())).toBeUndefined();
+  it("has the subnet range names of v0.7.0, as the provider takes them", () => {
+    expect(gceNodeClassSubnets(withSubnet({ subnetRangeNames: ["pods-a", "pods-b"] }))).toEqual(["pods-a", "pods-b"]);
+    expect(gceNodeClassSubnets(withSubnet({ subnetRangeNames: ["pods-a"] }))).toEqual(["pods-a"]);
+  });
+
+  it("has the deprecated subnet range name as one, and none for an empty one", () => {
+    expect(gceNodeClassSubnets(withSubnet({ subnetRangeName: "pods" }))).toEqual(["pods"]);
+    expect(gceNodeClassSubnets(withSubnet({ subnetRangeName: "" }))).toEqual([]);
+    expect(gceNodeClassSubnets(withSubnet({}))).toEqual([]);
   });
 });

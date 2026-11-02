@@ -134,6 +134,15 @@ describe("nodeClassMetaItems", () => {
     ]);
   });
 
+  it("summarises the subnet range names of a GCENodeClass of v0.7.0, as the provider takes them", () => {
+    expect(nodeClassMetaItems(gce("a", { imageSelectorTerms: [], subnetRangeNames: ["pods-a", "pods-b"] }))).toEqual([
+      { label: "Subnet Ranges", value: "pods-a, pods-b" },
+    ]);
+    expect(nodeClassMetaItems(gce("a", { imageSelectorTerms: [], subnetRangeNames: ["pods-a"] }))).toEqual([
+      { label: "Subnet Range", value: "pods-a" },
+    ]);
+  });
+
   it("does not read the name kubelet of the other providers in a GCENodeClass", () => {
     expect(nodeClassMetaItems(gce("a", { imageSelectorTerms: [], kubelet: { maxPods: 10 } }))).toEqual([]);
   });

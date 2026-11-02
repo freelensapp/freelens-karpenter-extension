@@ -132,6 +132,26 @@ export function badgesColumn<K extends KubeObject>(
 }
 
 /**
+ * A narrow column whose cell is a list of short texts, such as names of ranges: one text as a text, as
+ * `shortTextColumn` shows it, several each a badge, as a narrow `badgesColumn`. It sorts by the texts joined; one
+ * without a text sorts first.
+ */
+export function shortTextsColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  texts: (object: K) => string[],
+): KindColumn<K> {
+  const badges = badgesColumn(id, title, texts, "narrow");
+  return {
+    ...badges,
+    render: (object) => {
+      const values = texts(object);
+      return values.length > 1 ? badges.render(object) : <WithTooltip>{values[0] ?? ""}</WithTooltip>;
+    },
+  };
+}
+
+/**
  * The Ready column of every page that has one: the status of the Ready condition as the host's badge of a boolean,
  * `-` for `Unknown` and none (`conditionFlag`), in a column narrower than another flag.
  */
