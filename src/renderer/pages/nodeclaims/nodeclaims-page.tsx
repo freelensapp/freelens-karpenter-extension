@@ -9,11 +9,13 @@ import {
 } from "../../components/KindListPage/KindListPage";
 import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { DetailsLink } from "../../components/shared/DetailsLink";
+import { STATUS_BORDER_COLOR, STATUS_VISUAL } from "../../config/theme";
 import { detectProvider, nodeClassPage, nodeClassSelfLink } from "../../data/nodeclass";
-import { getNodeClaimStore } from "../../data/stores";
+import { getNodeClaimStore, getNodeStore } from "../../data/stores";
+import { useSubscribedStores } from "../../data/use-subscribed-stores";
 import { nodePoolSelfLink, nodeSelfLink } from "../../utils/kube-helpers";
 import { pageId, pageUrl } from "../routes";
-import { nodeClaimColumnValues, nodeClaimSortValues } from "./nodeclaim-columns";
+import { nodeClaimColumnValues, nodeClaimSortValues, nodeClaimStatus, nodeClaimStatusOrder } from "./nodeclaim-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
 
@@ -43,6 +45,19 @@ function NodePoolLink({ nodeClaim }: { nodeClaim: NodeClaim }) {
   );
 }
 
+/** The node of a NodeClaim in the host's store, which the page loads. */
+const nodeOf = (nodeClaim: NodeClaim) => {
+  const name = nodeClaim.status?.nodeName;
+  return name ? getNodeStore().getByName(name) : undefined;
+};
+
+// The status of a NodeClaim in the colour the Overview gives it, as plain text, as the host's tables show a status.
+// An observer: it follows the node in the store.
+const StatusCell = observer(function StatusCell({ nodeClaim }: { nodeClaim: NodeClaim }) {
+  const status = nodeClaimStatus(nodeClaim, nodeOf(nodeClaim));
+  return <span style={{ color: STATUS_BORDER_COLOR[status] }}>{STATUS_VISUAL[status].label}</span>;
+});
+
 // The node class of a NodeClaim, on the page of its kind when it has one, else over the page. An observer: the link
 // reads which node class stores the cluster serves.
 const NodeClassLink = observer(function NodeClassLink({ nodeClaim }: { nodeClaim: NodeClaim }) {
@@ -61,7 +76,7 @@ const NodeClassLink = observer(function NodeClassLink({ nodeClaim }: { nodeClaim
   );
 });
 
-// The columns of `kubectl get nodeclaims -o wide`, in its order.
+// The columns of `kubectl get nodeclaims -o wide`, in its order, with Status in place of Ready.
 const columns: KindColumn<NodeClaim>[] = [
   nameColumn(),
   textColumn("type", "Type", (nodeClaim) => nodeClaimColumnValues(nodeClaim).type, nodeClaimSortValues.type),
@@ -79,10 +94,10 @@ const columns: KindColumn<NodeClaim>[] = [
     sortBy: nodeClaimSortValues.node,
   },
   {
-    id: "ready",
-    title: "Ready",
-    render: (nodeClaim) => <ConditionStatus status={nodeClaimColumnValues(nodeClaim).ready} />,
-    sortBy: nodeClaimSortValues.ready,
+    id: "status",
+    title: "Status",
+    render: (nodeClaim) => <StatusCell nodeClaim={nodeClaim} />,
+    sortBy: (nodeClaim) => nodeClaimStatusOrder(nodeClaimStatus(nodeClaim, nodeOf(nodeClaim))),
   },
   ageColumn(),
   textColumn(
@@ -112,12 +127,18 @@ const columns: KindColumn<NodeClaim>[] = [
   },
 ];
 
-/** The Node Claims page: the NodeClaims of `karpenter.sh/v1`. An observer, which follows the CRD. */
-export const NodeClaimsPage = observer((_props: NodeClaimsPageProps) => (
-  <KindListPage
-    title={NodeClaim.crd.title}
-    plural={NodeClaim.crd.plural}
-    store={getNodeClaimStore()}
-    columns={columns}
-  />
-));
+/**
+ * The Node Claims page: the NodeClaims of `karpenter.sh/v1`. An observer, which follows the CRD. It loads the nodes,
+ * which the Status column reads, when no other view has.
+ */
+export const NodeClaimsPage = observer((_props: NodeClaimsPageProps) => {
+  useSubscribedStores([getNodeStore()]);
+  return (
+    <KindListPage
+      title={NodeClaim.crd.title}
+      plural={NodeClaim.crd.plural}
+      store={getNodeClaimStore()}
+      columns={columns}
+    />
+  );
+});
