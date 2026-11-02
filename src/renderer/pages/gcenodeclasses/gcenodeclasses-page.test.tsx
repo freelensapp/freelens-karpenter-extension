@@ -45,12 +45,22 @@ afterEach(() => {
 });
 
 describe("GCENodeClassesPage", () => {
-  it("lists the GCENodeClasses with the columns of kubectl get gcenodeclasses -o wide", () => {
+  it("lists the GCENodeClasses with their image selector terms and the columns of kubectl get gcenodeclasses -o wide", () => {
     render(<GCENodeClassesPage extension={extension} />);
 
     expect(screen.getByRole("heading", { name: "GCE Node Classes" })).toBeTruthy();
-    expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual(["Name", "Ready", "Age"]);
-    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["default", "True", "age"]);
+    expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual([
+      "Name",
+      "ImageFamily",
+      "Ready",
+      "Age",
+    ]);
+    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
+      "default",
+      "family=ContainerOptimizedOSchannel=stable",
+      "True",
+      "age",
+    ]);
   });
 
   it("follows the CRD as the host registers it and removes it", () => {

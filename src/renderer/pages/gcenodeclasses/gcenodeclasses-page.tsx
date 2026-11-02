@@ -2,6 +2,7 @@ import { observer } from "mobx-react";
 import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
 import {
   ageColumn,
+  badgesColumn,
   booleanColumn,
   type KindColumn,
   KindListPage,
@@ -9,7 +10,7 @@ import {
 } from "../../components/KindListPage/KindListPage";
 import { getGCENodeClassStore } from "../../data/stores";
 import { conditionFlag } from "../../utils/printer-columns";
-import { gceNodeClassColumnValues, gceNodeClassSortValues } from "./gcenodeclass-columns";
+import { gceNodeClassColumnValues, gceNodeClassImageTerms, gceNodeClassSortValues } from "./gcenodeclass-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
 
@@ -17,9 +18,10 @@ export interface GCENodeClassesPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get gcenodeclasses -o wide`, in its order.
+// The columns of `kubectl get gcenodeclasses -o wide`, after ImageFamily, which the CRD has none for.
 const columns: KindColumn<GCENodeClass>[] = [
   nameColumn(),
+  badgesColumn("imageFamily", "ImageFamily", gceNodeClassImageTerms),
   booleanColumn(
     "ready",
     "Ready",

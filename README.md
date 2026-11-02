@@ -147,10 +147,12 @@ links. Freelens shows its conditions and events with them.
 
 ### GCE Node Classes
 
-The GCENodeClasses with the columns of `kubectl get gcenodeclasses -o wide`:
-Ready and Age, sortable, searchable, and with the columns you choose. The
-entry is in the sidebar while the cluster serves GCENodeClasses, which only
-Karpenter on GCP does.
+The GCENodeClasses with the columns of `kubectl get gcenodeclasses -o wide`,
+Ready and Age, after ImageFamily: the image selector terms, each field as a
+`key=value` badge, such as `family=ContainerOptimizedOS` and `channel=stable`,
+or the image family of a node class without terms. They are sortable,
+searchable, and with the columns you choose. The entry is in the sidebar while
+the cluster serves GCENodeClasses, which only Karpenter on GCP does.
 
 A click on a GCENodeClass, here, in the Node Classes tab, on a NodePool card
 or in the NodeClass column of the Node Pools and Node Claims pages, opens its

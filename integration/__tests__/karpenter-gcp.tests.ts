@@ -221,14 +221,20 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
   });
 
   it("lists the GCENodeClasses on their page, and shows the details of one", async () => {
-    // The entry of the sidebar, and the columns of kubectl get gcenodeclasses
-    // -o wide. The image selector term of default with the image it resolved,
-    // its boot disk and its kubelet configuration are in the details only.
-    // The API server returns the fields of a custom resource with their keys
-    // sorted, so the term has its channel first.
+    // The entry of the sidebar, ImageFamily, with the fields of the image
+    // selector term in the order of the Go struct, and the columns of kubectl
+    // get gcenodeclasses -o wide. The image selector term of default with the
+    // image it resolved, its boot disk and its kubelet configuration are in the
+    // details only. The API server returns the fields of a custom resource with
+    // their keys sorted, so the details have the channel of the term first.
     await openKindPage(frame, "gcenodeclasses", "GCE Node Classes");
 
-    const row = await expectListRow(frame, gceNodeClassColumns, ["default", "True", agePattern]);
+    const row = await expectListRow(frame, gceNodeClassColumns, [
+      "default",
+      /^family=ContainerOptimizedOS\s*channel=stable$/,
+      "True",
+      agePattern,
+    ]);
 
     await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^GCENodeClass: default/);
     await expectInDetails(frame, [

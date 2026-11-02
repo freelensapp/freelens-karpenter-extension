@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
-import { gceNodeClassColumnValues, gceNodeClassSortValues } from "./gcenodeclass-columns";
+import { gceNodeClassColumnValues, gceNodeClassImageTerms, gceNodeClassSortValues } from "./gcenodeclass-columns";
 
-import type { GCENodeClassStatus } from "../../api/gcenodeclass/gcenodeclass-v1alpha1-types";
+import type { GCENodeClassSpec, GCENodeClassStatus } from "../../api/gcenodeclass/gcenodeclass-v1alpha1-types";
 
 const nodeClass = (name: string, status?: GCENodeClassStatus) =>
   new GCENodeClass({
@@ -44,5 +44,42 @@ describe("gceNodeClassColumnValues", () => {
 describe("gceNodeClassSortValues", () => {
   it("sorts the status of Ready True, False, Unknown, then none", () => {
     expect([ready, notReady, unknown, unreconciled].map(gceNodeClassSortValues.ready)).toEqual([0, 1, 2, 3]);
+  });
+});
+
+describe("gceNodeClassImageTerms", () => {
+  const withSpec = (spec: Partial<GCENodeClassSpec>) =>
+    new GCENodeClass({
+      apiVersion: "karpenter.k8s.gcp/v1alpha1",
+      kind: "GCENodeClass",
+      metadata: { name: "c", uid: "c", resourceVersion: "1", selfLink: "" },
+      spec: { imageSelectorTerms: [], ...spec },
+    });
+
+  it("has each field of each image selector term as key=value", () => {
+    expect(
+      gceNodeClassImageTerms(
+        withSpec({
+          imageSelectorTerms: [{ family: "ContainerOptimizedOS", channel: "stable" }, { id: "projects/lab/images/x" }],
+        }),
+      ),
+    ).toEqual(["family=ContainerOptimizedOS", "channel=stable", "id=projects/lab/images/x"]);
+  });
+
+  it("orders the fields of a term as the Go struct, whatever order the API server returns them in", () => {
+    expect(
+      gceNodeClassImageTerms(withSpec({ imageSelectorTerms: [{ channel: "stable", family: "ContainerOptimizedOS" }] })),
+    ).toEqual(["family=ContainerOptimizedOS", "channel=stable"]);
+  });
+
+  it("takes the image family alone for a term of that family", () => {
+    expect(gceNodeClassImageTerms(withSpec({ imageFamily: "Ubuntu" }))).toEqual(["family=Ubuntu"]);
+  });
+
+  it("takes the terms over the image family, and has nothing without either", () => {
+    expect(
+      gceNodeClassImageTerms(withSpec({ imageFamily: "Ubuntu", imageSelectorTerms: [{ alias: "Ubuntu@latest" }] })),
+    ).toEqual(["alias=Ubuntu@latest"]);
+    expect(gceNodeClassImageTerms(withSpec({}))).toEqual([]);
   });
 });

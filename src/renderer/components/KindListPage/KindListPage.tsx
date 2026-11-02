@@ -6,7 +6,7 @@ import styles from "./kind-list-page.module.scss";
 import type React from "react";
 
 const {
-  Component: { BadgeBoolean, KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { Badge, BadgeBoolean, KubeObjectAge, KubeObjectListLayout, WithTooltip },
 } = Renderer;
 
 type KubeObject = Renderer.K8sApi.KubeObject;
@@ -91,6 +91,31 @@ export function numberColumn<K extends KubeObject>(
   sortBy: (object: K) => string | number | undefined,
 ): KindColumn<K> {
   return textColumn(id, title, value, sortBy, styles.number);
+}
+
+/**
+ * A column whose cell is a list of texts, such as `key=value` pairs, each a badge, as the host's `DrawerItemLabels`
+ * shows labels. It sorts by the texts joined.
+ */
+export function badgesColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  texts: (object: K) => string[],
+  sortBy: (object: K) => string | number | undefined = (object) => texts(object).join(" "),
+): KindColumn<K> {
+  return {
+    id,
+    title,
+    // A text can repeat, as the same channel in two terms: the key is its place.
+    render: (object) => (
+      <>
+        {texts(object).map((text, index) => (
+          <Badge key={index} label={text} title={text} />
+        ))}
+      </>
+    ),
+    sortBy,
+  };
 }
 
 /**

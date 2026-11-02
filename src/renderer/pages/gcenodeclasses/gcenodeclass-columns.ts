@@ -28,3 +28,32 @@ export const gceNodeClassSortValues: Record<
 > = {
   ready: (nodeClass) => conditionStatusOrder(gceNodeClassColumnValues(nodeClass).ready),
 };
+
+/** The fields of an image selector term in the order of its Go struct; the API server returns them sorted by key. */
+const termFields = ["alias", "id", "family", "channel", "version"];
+
+/**
+ * ImageFamily, which the CRD has no printer column for: the image selector terms, each field of each term that is set
+ * as `key=value`, in the order of the terms and of the fields of the Go struct. A node class without terms, which the
+ * CRD of v0.6.1 rejects, with `spec.imageFamily` alone has its family as a term.
+ */
+export function gceNodeClassImageTerms(nodeClass: GCENodeClass): string[] {
+  const spec = nodeClass.spec;
+  const terms: object[] = spec?.imageSelectorTerms?.length
+    ? spec.imageSelectorTerms
+    : spec?.imageFamily
+      ? [{ family: spec.imageFamily }]
+      : [];
+  return terms.flatMap((term) =>
+    Object.entries(term)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .sort(([a], [b]) => fieldOrder(a) - fieldOrder(b))
+      .map(([key, value]) => `${key}=${value}`),
+  );
+}
+
+/** The place of a field of a term; one the Go struct does not have comes last. */
+function fieldOrder(key: string): number {
+  const index = termFields.indexOf(key);
+  return index === -1 ? termFields.length : index;
+}
