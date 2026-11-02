@@ -60,8 +60,8 @@ export function textColumn<K extends KubeObject>(
 }
 
 /**
- * A column whose cell is a quantity of a resource, as the host's Node details show it: memory and ephemeral storage in
- * units, with the quantity as it was written in its tooltip (`resourceQuantity`).
+ * A narrow column whose cell is a quantity of a resource, as the host's Node details show it: memory and ephemeral
+ * storage in units, with the quantity as it was written in its tooltip (`resourceQuantity`).
  */
 export function quantityColumn<K extends KubeObject>(
   id: string,
@@ -79,6 +79,7 @@ export function quantityColumn<K extends KubeObject>(
       return <WithTooltip tooltip={shown !== written ? written : undefined}>{shown ?? ""}</WithTooltip>;
     },
     sortBy,
+    className: styles.quantity,
   };
 }
 
