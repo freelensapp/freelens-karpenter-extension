@@ -147,11 +147,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
       "azure",
       "default",
       "2",
-      "True",
-      agePattern,
       "10",
       "12",
       "49284200Ki",
+      "True",
+      agePattern,
     ]);
 
     await clickAndExpectDetails(frame, row.getByText("azure", { exact: true }).first(), /^NodePool: azure/);
@@ -172,9 +172,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
       "spot",
       "westeurope-2",
       "aks-azure-d3e4f-12345678-vmss000001",
-      "Ready",
       "azure",
       "default",
+      "Ready",
       "True",
       agePattern,
     ]);
@@ -182,9 +182,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
     const pending = await expectListRow(frame, nodeClaimColumns, [
       "azure-pend1",
       "spot",
-      "Claiming",
       "azure",
       "default",
+      "Claiming",
       "False",
       agePattern,
     ]);
@@ -204,7 +204,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
     // spot, and its requirement are in the details only.
     await openKindPage(frame, "nodeoverlays", "Node Overlays");
 
-    const row = await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
+    const row = await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "10", "True", agePattern]);
 
     await clickAndExpectDetails(
       frame,
@@ -221,7 +221,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
     // only.
     await openKindPage(frame, "aksnodeclasses", "AKS Node Classes");
 
-    const row = await expectListRow(frame, aksNodeClassColumns, ["default", "True", agePattern, "AzureLinux"]);
+    const row = await expectListRow(frame, aksNodeClassColumns, ["default", "AzureLinux", "True", agePattern]);
 
     await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^AKSNodeClass: default/);
     await expectInDetails(frame, [

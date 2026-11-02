@@ -77,9 +77,9 @@ describe("NodeClaimsPage", () => {
       "Capacity",
       "Zone",
       "Node",
-      "Status",
       "NodePool",
       "NodeClass",
+      "Status",
       "Drifted",
       "Age",
     ]);
@@ -89,9 +89,9 @@ describe("NodeClaimsPage", () => {
       "on-demand",
       "eu-west-1b",
       "ip-10-0-2-12",
-      "Ready",
       "general",
       "default",
+      "Ready",
       "True",
       "age",
     ]);

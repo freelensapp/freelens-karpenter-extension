@@ -53,15 +53,28 @@ export function textColumn<K extends KubeObject>(
   title: string,
   value: (object: K) => string | undefined,
   sortBy: (object: K) => string | number | undefined = value,
+  className?: string,
 ): KindColumn<K> {
-  return { id, title, render: (object) => <WithTooltip>{value(object) ?? ""}</WithTooltip>, sortBy };
+  return { id, title, render: (object) => <WithTooltip>{value(object) ?? ""}</WithTooltip>, sortBy, className };
 }
 
-/** A narrow column whose cell is a flag, as the host's badge of a boolean. */
+/** A narrow column whose cell is a short number, such as a count or a quantity. */
+export function numberColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  value: (object: K) => string | undefined,
+  sortBy: (object: K) => string | number | undefined,
+): KindColumn<K> {
+  return textColumn(id, title, value, sortBy, styles.number);
+}
+
+/**
+ * A narrow column whose cell is a flag, as the host's badge of a boolean: `True`, `False`, or `-` for `undefined`.
+ */
 export function booleanColumn<K extends KubeObject>(
   id: string,
   title: string,
-  value: (object: K) => boolean,
+  value: (object: K) => boolean | undefined,
   sortBy: (object: K) => string | number | undefined = (object) => (value(object) ? 0 : 1),
 ): KindColumn<K> {
   return { id, title, render: (object) => <BadgeBoolean value={value(object)} />, sortBy, className: styles.flag };

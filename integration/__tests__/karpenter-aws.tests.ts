@@ -172,11 +172,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "gpu",
       "gpu",
       "1",
-      "False",
-      agePattern,
       "50",
       "4",
       "16202400Ki",
+      "False",
+      agePattern,
     ]);
 
     await clickAndExpectDetails(frame, row.getByText("gpu", { exact: true }).first(), /^NodePool: gpu/);
@@ -202,9 +202,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "on-demand",
       "eu-west-1b",
       "ip-10-0-2-12.eu-west-1.compute.internal",
-      "Ready",
       "general",
       "default",
+      "Ready",
       "True",
       agePattern,
     ]);
@@ -212,9 +212,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     const pending = await expectListRow(frame, nodeClaimColumns, [
       "general-pend1",
       "on-demand",
-      "Claiming",
       "general",
       "default",
+      "Claiming",
       "False",
       agePattern,
     ]);
@@ -239,9 +239,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     // the capacity it adds, as a resource list, are in the details only.
     await openKindPage(frame, "nodeoverlays", "Node Overlays");
 
-    await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
-    await expectListRow(frame, nodeOverlayColumns, ["spot-adjustment", "False", agePattern, "10"]);
-    const row = await expectListRow(frame, nodeOverlayColumns, ["gpu-fpga", "True", agePattern, "50"]);
+    await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "10", "True", agePattern]);
+    await expectListRow(frame, nodeOverlayColumns, ["spot-adjustment", "10", "False", agePattern]);
+    const row = await expectListRow(frame, nodeOverlayColumns, ["gpu-fpga", "50", "True", agePattern]);
 
     await clickAndExpectDetails(frame, row.getByText("gpu-fpga", { exact: true }).first(), /^NodeOverlay: gpu-fpga/);
     await expectInDetails(frame, ["Applies To", "gpu", "karpenter.sh/nodepool In [gpu]", "example.com/fpga 1"]);
@@ -255,12 +255,12 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     // the details only.
     await openKindPage(frame, "ec2nodeclasses", "EC2 Node Classes");
 
-    await expectListRow(frame, ec2NodeClassColumns, ["gpu", "False", agePattern, "KarpenterNodeRole-lab"]);
+    await expectListRow(frame, ec2NodeClassColumns, ["gpu", "KarpenterNodeRole-lab", "False", agePattern]);
     const row = await expectListRow(frame, ec2NodeClassColumns, [
       "default",
+      "KarpenterNodeRole-lab",
       "True",
       agePattern,
-      "KarpenterNodeRole-lab",
     ]);
 
     await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^EC2NodeClass: default/);

@@ -58,8 +58,8 @@ function Badge({ label }: { label?: ReactNode }) {
 }
 
 // A flag as the text of the host's `getBooleanText`.
-function BadgeBoolean({ value }: { value: boolean }) {
-  return createElement(Badge, { label: value ? "True" : "False" });
+function BadgeBoolean({ value }: { value?: boolean }) {
+  return createElement(Badge, { label: value === undefined ? "-" : value ? "True" : "False" });
 }
 
 function DrawerItemLabels({ name, labels }: { name: ReactNode; labels: Record<string, string> | string[] }) {

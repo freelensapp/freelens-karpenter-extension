@@ -58,21 +58,21 @@ describe("NodePoolsPage", () => {
       "Name",
       "NodeClass",
       "Nodes",
-      "Ready",
-      "Age",
       "Weight",
       "CPU",
       "Memory",
+      "Ready",
+      "Age",
     ]);
     expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
       "general",
       "default",
       "4",
-      "True",
-      "age",
       "50",
       "16",
       "59687568Ki",
+      "True",
+      "age",
     ]);
   });
 

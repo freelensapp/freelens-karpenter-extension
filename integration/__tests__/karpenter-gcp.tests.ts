@@ -157,11 +157,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "gke",
       "default",
       "2",
-      "True",
-      agePattern,
       "10",
       "12",
       "49283072Ki",
+      "True",
+      agePattern,
     ]);
 
     await clickAndExpectDetails(frame, row.getByText("gke", { exact: true }).first(), /^NodePool: gke/);
@@ -182,9 +182,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "spot",
       "us-central1-b",
       "karpenter-gke-d3e4f",
-      "Ready",
       "gke",
       "default",
+      "Ready",
       "True",
       agePattern,
     ]);
@@ -192,9 +192,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     const pending = await expectListRow(frame, nodeClaimColumns, [
       "gke-pend1",
       "spot",
-      "Claiming",
       "gke",
       "default",
+      "Claiming",
       "False",
       agePattern,
     ]);
@@ -210,7 +210,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     // and its requirement are in the details only.
     await openKindPage(frame, "nodeoverlays", "Node Overlays");
 
-    const row = await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
+    const row = await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "10", "True", agePattern]);
 
     await clickAndExpectDetails(
       frame,

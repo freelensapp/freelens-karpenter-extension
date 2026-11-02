@@ -17,9 +17,10 @@ export interface EC2NodeClassesPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get ec2nodeclasses -o wide`, in its order.
+// The columns of `kubectl get ec2nodeclasses -o wide`, with Ready right before Age, last.
 const columns: KindColumn<EC2NodeClass>[] = [
   nameColumn(),
+  textColumn("role", "Role", (nodeClass) => ec2NodeClassColumnValues(nodeClass).role, ec2NodeClassSortValues.role),
   {
     id: "ready",
     title: "Ready",
@@ -27,7 +28,6 @@ const columns: KindColumn<EC2NodeClass>[] = [
     sortBy: ec2NodeClassSortValues.ready,
   },
   ageColumn(),
-  textColumn("role", "Role", (nodeClass) => ec2NodeClassColumnValues(nodeClass).role, ec2NodeClassSortValues.role),
 ];
 
 /** The EC2 Node Classes page: the EC2NodeClasses of `karpenter.k8s.aws/v1`. An observer, which follows the CRD. */

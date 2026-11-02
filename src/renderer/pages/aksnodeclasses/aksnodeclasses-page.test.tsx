@@ -71,15 +71,15 @@ describe("AKSNodeClassesPage", () => {
     expect(screen.getByRole("heading", { name: "AKS Node Classes" })).toBeTruthy();
     expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual([
       "Name",
+      "ImageFamily",
       "Ready",
       "Age",
-      "ImageFamily",
     ]);
     expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
       "default",
+      "AzureLinux",
       "True",
       "age",
-      "AzureLinux",
     ]);
   });
 
@@ -87,7 +87,7 @@ describe("AKSNodeClassesPage", () => {
     runInAction(() => served.set("v1alpha2"));
     render(<AKSNodeClassesPage extension={extension} />);
 
-    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["legacy", "", "age", "Ubuntu2204"]);
+    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["legacy", "Ubuntu2204", "", "age"]);
   });
 
   it("follows the CRD as the host registers it and removes it", () => {

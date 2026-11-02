@@ -17,9 +17,15 @@ export interface AKSNodeClassesPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get aksnodeclasses -o wide`, in its order, the same in both versions.
+// The columns of `kubectl get aksnodeclasses -o wide`, the same in both versions, with Ready right before Age, last.
 const columns: KindColumn<AKSNodeClass>[] = [
   nameColumn(),
+  textColumn(
+    "imageFamily",
+    "ImageFamily",
+    (nodeClass) => aksNodeClassColumnValues(nodeClass).imageFamily,
+    aksNodeClassSortValues.imageFamily,
+  ),
   {
     id: "ready",
     title: "Ready",
@@ -27,12 +33,6 @@ const columns: KindColumn<AKSNodeClass>[] = [
     sortBy: aksNodeClassSortValues.ready,
   },
   ageColumn(),
-  textColumn(
-    "imageFamily",
-    "ImageFamily",
-    (nodeClass) => aksNodeClassColumnValues(nodeClass).imageFamily,
-    aksNodeClassSortValues.imageFamily,
-  ),
 ];
 
 /**

@@ -17,9 +17,10 @@ export interface NodeOverlaysPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get nodeoverlays -o wide`, in its order.
+// The columns of `kubectl get nodeoverlays -o wide`, with Ready right before Age, last.
 const columns: KindColumn<NodeOverlay>[] = [
   nameColumn(),
+  textColumn("weight", "Weight", (overlay) => nodeOverlayColumnValues(overlay).weight, nodeOverlaySortValues.weight),
   {
     id: "ready",
     title: "Ready",
@@ -27,7 +28,6 @@ const columns: KindColumn<NodeOverlay>[] = [
     sortBy: nodeOverlaySortValues.ready,
   },
   ageColumn(),
-  textColumn("weight", "Weight", (overlay) => nodeOverlayColumnValues(overlay).weight, nodeOverlaySortValues.weight),
 ];
 
 /** The Node Overlays page: the NodeOverlays of `karpenter.sh/v1alpha1`. An observer, which follows the CRD. */

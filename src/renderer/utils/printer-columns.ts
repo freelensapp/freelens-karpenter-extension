@@ -29,3 +29,10 @@ export function conditionStatusOrder(status: string | undefined): number {
       return 3;
   }
 }
+
+/** The status of a condition as a flag: `True` and `False` as they are, `Unknown` and none as `undefined`. */
+export function conditionFlag(status: string | undefined): boolean | undefined {
+  if (status === "True") return true;
+  if (status === "False") return false;
+  return undefined;
+}

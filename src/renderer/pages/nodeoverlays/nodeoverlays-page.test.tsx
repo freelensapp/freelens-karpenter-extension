@@ -52,11 +52,11 @@ describe("NodeOverlaysPage", () => {
     expect(screen.getByRole("heading", { name: "Node Overlays" })).toBeTruthy();
     expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual([
       "Name",
+      "Weight",
       "Ready",
       "Age",
-      "Weight",
     ]);
-    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["spot-discount", "True", "age", "10"]);
+    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["spot-discount", "10", "True", "age"]);
   });
 
   it("follows the CRD as the host registers it and removes it", () => {

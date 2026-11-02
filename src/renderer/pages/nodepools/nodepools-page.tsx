@@ -2,15 +2,17 @@ import { observer } from "mobx-react";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
 import {
   ageColumn,
+  booleanColumn,
   type KindColumn,
   KindListPage,
   nameColumn,
+  numberColumn,
   textColumn,
 } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { DetailsLink } from "../../components/shared/DetailsLink";
 import { detectProvider, nodeClassPage, nodeClassSelfLink } from "../../data/nodeclass";
 import { getNodePoolStore } from "../../data/stores";
+import { conditionFlag } from "../../utils/printer-columns";
 import { nodePoolColumnValues, nodePoolSortValues } from "./nodepool-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
@@ -37,7 +39,7 @@ const NodeClassLink = observer(function NodeClassLink({ nodePool }: { nodePool: 
   );
 });
 
-// The columns of `kubectl get nodepools -o wide`, in its order.
+// The columns of `kubectl get nodepools -o wide`, with Ready right before Age, last.
 const columns: KindColumn<NodePool>[] = [
   nameColumn(),
   {
@@ -46,17 +48,17 @@ const columns: KindColumn<NodePool>[] = [
     render: (nodePool) => <NodeClassLink nodePool={nodePool} />,
     sortBy: nodePoolSortValues.nodeClass,
   },
-  textColumn("nodes", "Nodes", (nodePool) => nodePoolColumnValues(nodePool).nodes, nodePoolSortValues.nodes),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (nodePool) => <ConditionStatus status={nodePoolColumnValues(nodePool).ready} />,
-    sortBy: nodePoolSortValues.ready,
-  },
-  ageColumn(),
+  numberColumn("nodes", "Nodes", (nodePool) => nodePoolColumnValues(nodePool).nodes, nodePoolSortValues.nodes),
   textColumn("weight", "Weight", (nodePool) => nodePoolColumnValues(nodePool).weight, nodePoolSortValues.weight),
-  textColumn("cpu", "CPU", (nodePool) => nodePoolColumnValues(nodePool).cpu, nodePoolSortValues.cpu),
+  numberColumn("cpu", "CPU", (nodePool) => nodePoolColumnValues(nodePool).cpu, nodePoolSortValues.cpu),
   textColumn("memory", "Memory", (nodePool) => nodePoolColumnValues(nodePool).memory, nodePoolSortValues.memory),
+  booleanColumn(
+    "ready",
+    "Ready",
+    (nodePool) => conditionFlag(nodePoolColumnValues(nodePool).ready),
+    nodePoolSortValues.ready,
+  ),
+  ageColumn(),
 ];
 
 /** The Node Pools page: the NodePools of `karpenter.sh/v1`. An observer, which follows the CRD. */

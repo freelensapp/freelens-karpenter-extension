@@ -76,8 +76,8 @@ const NodeClassLink = observer(function NodeClassLink({ nodeClaim }: { nodeClaim
   );
 });
 
-// The columns of `kubectl get nodeclaims -o wide`, in its order, with Status in place of Ready, without ImageID and ID,
-// and Age last.
+// The columns of `kubectl get nodeclaims -o wide`, without ImageID and ID, with Status in place of Ready, before
+// Drifted, and Age last.
 const columns: KindColumn<NodeClaim>[] = [
   nameColumn(),
   textColumn("type", "Type", (nodeClaim) => nodeClaimColumnValues(nodeClaim).type, nodeClaimSortValues.type),
@@ -95,12 +95,6 @@ const columns: KindColumn<NodeClaim>[] = [
     sortBy: nodeClaimSortValues.node,
   },
   {
-    id: "status",
-    title: "Status",
-    render: (nodeClaim) => <StatusCell nodeClaim={nodeClaim} />,
-    sortBy: (nodeClaim) => nodeClaimStatusOrder(nodeClaimStatus(nodeClaim, nodeOf(nodeClaim))),
-  },
-  {
     id: "nodePool",
     title: "NodePool",
     render: (nodeClaim) => <NodePoolLink nodeClaim={nodeClaim} />,
@@ -111,6 +105,12 @@ const columns: KindColumn<NodeClaim>[] = [
     title: "NodeClass",
     render: (nodeClaim) => <NodeClassLink nodeClaim={nodeClaim} />,
     sortBy: nodeClaimSortValues.nodeClass,
+  },
+  {
+    id: "status",
+    title: "Status",
+    render: (nodeClaim) => <StatusCell nodeClaim={nodeClaim} />,
+    sortBy: (nodeClaim) => nodeClaimStatusOrder(nodeClaimStatus(nodeClaim, nodeOf(nodeClaim))),
   },
   booleanColumn(
     "drifted",

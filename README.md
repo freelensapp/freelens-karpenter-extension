@@ -60,10 +60,10 @@ a time bucket highlights its events in the tables.
 
 ### Node Claims
 
-The NodeClaims with the columns Type, Capacity, Zone, Node, Status, NodePool,
-NodeClass, Drifted and Age, sortable, searchable, and with the columns you
-choose. Status is Ready, Provisioning, Claiming, Terminating or Not Ready, in
-the colours of the Overview. A NodeClaim still waiting for its node is
+The NodeClaims with the columns Type, Capacity, Zone, Node, NodePool,
+NodeClass, Status, Drifted and Age, sortable, searchable, and with the columns
+you choose. Status is Ready, Provisioning, Claiming, Terminating or Not Ready,
+in the colours of the Overview. A NodeClaim still waiting for its node is
 Claiming and has no Node. The node, the NodePool and the node class are links.
 The entry is in the sidebar while the cluster serves NodeClaims.
 
@@ -79,9 +79,9 @@ and events with them.
 ### Node Pools
 
 The NodePools with the columns of `kubectl get nodepools -o wide`: NodeClass,
-Nodes, Ready, Age, Weight, CPU and Memory, sortable, searchable, and with the
-columns you choose. The entry is in the sidebar while the cluster serves
-NodePools.
+Nodes, Weight, CPU, Memory, Ready and Age, sortable, searchable, and with the
+columns you choose. A NodePool without a weight has 0, as Karpenter takes it.
+The entry is in the sidebar while the cluster serves NodePools.
 
 A click on a NodePool, here or in the tabs, opens its details: why it is not
 ready, its node class, weight, replicas and nodes, the resources in use
@@ -95,7 +95,7 @@ Freelens shows its conditions and events with them.
 ### Node Overlays
 
 The NodeOverlays with the columns of `kubectl get nodeoverlays -o wide`:
-Ready, Age and Weight, sortable, searchable, and with the columns you choose.
+Weight, Ready and Age, sortable, searchable, and with the columns you choose.
 The entry is in the sidebar while the cluster serves NodeOverlays.
 
 A click on a NodeOverlay, here or on a NodePool card, opens its details: why
@@ -107,7 +107,7 @@ as links. Freelens shows its conditions and events with them.
 ### EC2 Node Classes
 
 The EC2NodeClasses with the columns of `kubectl get ec2nodeclasses -o wide`:
-Ready, Age and Role, sortable, searchable, and with the columns you choose.
+Role, Ready and Age, sortable, searchable, and with the columns you choose.
 The entry is in the sidebar while the cluster serves EC2NodeClasses, which
 only Karpenter on AWS does.
 
@@ -126,7 +126,7 @@ its conditions and events with them.
 ### AKS Node Classes
 
 The AKSNodeClasses with the columns of `kubectl get aksnodeclasses -o wide`:
-Ready, Age and ImageFamily, sortable, searchable, and with the columns you
+ImageFamily, Ready and Age, sortable, searchable, and with the columns you
 choose. The entry is in the sidebar while the cluster serves AKSNodeClasses,
 which only Karpenter on Azure does; the page reads `v1beta1`, or `v1alpha2` on
 a provider older than 1.14.3.

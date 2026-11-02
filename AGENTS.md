@@ -412,20 +412,23 @@ Node Classes and GCE Node Classes have them:
    the cluster serves, newest first, searchable and with the columns the user
    chooses, or a message when the cluster serves none. The columns are those
    of `kubectl get <plural> -o wide`, from the `additionalPrinterColumns` of
-   the newest CRD the fixtures install, in their order and under their names,
-   `-o wide` (`priority: 1`) included. A cell has the value of the column's
-   `jsonPath`, from a pure function of `pages/<plural>/<kind>-columns.ts`
-   with a test; a colour (`ConditionStatus` for a condition's status) or a
-   link (`DetailsLink`) on top of the value is fine, another value is not.
-   The one exception is the Node Claims page. It has Status in place of
-   Ready: the status of the NodeClaim as the Overview counts it (Ready,
-   Provisioning, Claiming, Terminating, Not Ready), from its node when the
-   host's store has it, which the page loads, else from its conditions
-   (`nodeClaimStatus`), as plain text in the colour of the status, without
-   the badge of the cards. It leaves out ImageID and ID, which the details
-   show, shows Drifted as the host's `BadgeBoolean` in a narrow column
-   (`booleanColumn`), `False` without the condition, which Karpenter removes
-   rather than sets to `False`, and has Age last.
+   the newest CRD the fixtures install, under their names, `-o wide`
+   (`priority: 1`) included, in their order with one change, the convention of
+   every page: Ready comes right before Age, and Age is the last column. A
+   cell has the value of the column's `jsonPath`, from a pure function of
+   `pages/<plural>/<kind>-columns.ts` with a test; a colour (`ConditionStatus`
+   for a condition's status), a link (`DetailsLink`) or the host's
+   `BadgeBoolean` for a flag (`booleanColumn`, as Ready of the Node Pools
+   page) on top of the value is fine, another value is not. A short number
+   gets a narrow column (`numberColumn`, as Nodes and CPU of the Node Pools
+   page). The one exception is the Node Claims page. It has Status in place of
+   Ready, before Drifted: the status of the NodeClaim as the Overview counts
+   it (Ready, Provisioning, Claiming, Terminating, Not Ready), from its node
+   when the host's store has it, which the page loads, else from its
+   conditions (`nodeClaimStatus`), as plain text in the colour of the status,
+   without the badge of the cards. It leaves out ImageID and ID, which the
+   details show, and shows Drifted as a `BadgeBoolean`, `False` without the
+   condition, which Karpenter removes rather than sets to `False`.
    A link to an object of a kind that has a page opens it there (`DetailsLink`
    with `page={pageUrl(pageId.x)}`); other links open over the page. Every
    column with a value sorts, numbers and quantities by their amount.
