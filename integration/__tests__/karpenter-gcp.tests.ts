@@ -157,11 +157,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "gke",
       "default",
       "2",
-      "True",
-      agePattern,
       "10",
       "12",
-      "49283072Ki",
+      "47.0GiB",
+      "True",
+      agePattern,
     ]);
 
     await clickAndExpectDetails(frame, row.getByText("gke", { exact: true }).first(), /^NodePool: gke/);
@@ -170,10 +170,10 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
 
   it("lists the NodeClaims on their page, and shows the details of one", async () => {
     // The entry of the sidebar, and the columns of kubectl get nodeclaims -o
-    // wide. gke-d3e4f is the one NodeClaim that drifted; gke-pend1 has no
-    // node yet, so its Node, ImageID and ID are empty. The capacity and
-    // allocatable CPUs of gke-d3e4f, and its requirement, are in the details
-    // only.
+    // wide, with Status in place of Ready, without ImageID and ID, and Age
+    // last. gke-d3e4f is the one NodeClaim that drifted; gke-pend1 has no node
+    // yet: it is Claiming and has no Node. The capacity and allocatable CPUs of
+    // gke-d3e4f, and its requirement, are in the details only.
     await openKindPage(frame, "nodeclaims", "Node Claims");
 
     const row = await expectListRow(frame, nodeClaimColumns, [
@@ -182,17 +182,23 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "spot",
       "us-central1-b",
       "karpenter-gke-d3e4f",
-      "True",
-      agePattern,
-      "projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre",
-      "gce://lab/us-central1-b/karpenter-gke-d3e4f",
       "gke",
       "default",
+      "Ready",
       "True",
+      agePattern,
     ]);
 
-    const pending = await expectListRow(frame, nodeClaimColumns, ["gke-pend1", "spot", agePattern, "gke", "default"]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Ready", "ImageID", "ID", "Drifted"]);
+    const pending = await expectListRow(frame, nodeClaimColumns, [
+      "gke-pend1",
+      "spot",
+      "gke",
+      "default",
+      "Claiming",
+      "False",
+      agePattern,
+    ]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node"]);
 
     await clickAndExpectDetails(frame, row.getByText("gke-d3e4f", { exact: true }).first(), /^NodeClaim: gke-d3e4f/);
     await expectInDetails(frame, ["8 / 7910m", "node.kubernetes.io/instance-type In [n2-standard-8]"]);
@@ -204,7 +210,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     // and its requirement are in the details only.
     await openKindPage(frame, "nodeoverlays", "Node Overlays");
 
-    const row = await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
+    const row = await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "10", "True", agePattern]);
 
     await clickAndExpectDetails(
       frame,
@@ -215,14 +221,23 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
   });
 
   it("lists the GCENodeClasses on their page, and shows the details of one", async () => {
-    // The entry of the sidebar, and the columns of kubectl get gcenodeclasses
-    // -o wide. The image selector term of default with the image it resolved,
-    // its boot disk and its kubelet configuration are in the details only.
-    // The API server returns the fields of a custom resource with their keys
-    // sorted, so the term has its channel first.
+    // The entry of the sidebar, Image Family, the family of the image selector
+    // term at its channel, as it names no version, Disks, Subnet (empty, as
+    // default names none), and the columns of kubectl get gcenodeclasses -o
+    // wide. The image selector term of default with the image it resolved and
+    // its kubelet configuration are in the details only. The API server returns
+    // the fields of a custom resource with their keys sorted, so the details
+    // have the channel of the term first.
     await openKindPage(frame, "gcenodeclasses", "GCE Node Classes");
 
-    const row = await expectListRow(frame, gceNodeClassColumns, ["default", "True", agePattern]);
+    const row = await expectListRow(frame, gceNodeClassColumns, [
+      "default",
+      "ContainerOptimizedOS=stable",
+      "boot 100 GiB pd-balanced",
+      "True",
+      agePattern,
+    ]);
+    await expectEmptyCells(frame, row, ["Subnet"]);
 
     await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^GCENodeClass: default/);
     await expectInDetails(frame, [

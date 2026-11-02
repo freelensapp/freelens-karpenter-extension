@@ -1,6 +1,8 @@
 // What the details of the kinds of karpenter.sh/v1 show of their fields, as text: the requirements, taints and
 // resource lists that NodePools and NodeClaims share, and the budgets of a NodePool.
 
+import { resourceQuantity } from "../utils/quantity";
+
 import type { Budget, NodeSelectorRequirementWithMinValues } from "../api/karpenter/karpenter-v1-types";
 import type { Condition, ResourceList, Taint } from "../api/types";
 
@@ -43,9 +45,32 @@ export function resourceNames(...lists: (ResourceList | undefined)[]): string[] 
   return [...new Set(lists.flatMap((list) => Object.keys(list ?? {})))].sort(byResource);
 }
 
-/** A quantity of a resource list as text, a string or a number as it was written; `undefined` without one. */
+/**
+ * A quantity of a resource list as text, as the host's Node details show it: memory and ephemeral storage in units
+ * (`resourceQuantity`), the others as they were written; `undefined` without one.
+ */
 export function resourceText(list: ResourceList | undefined, name: string): string | undefined {
-  return list?.[name] === undefined ? undefined : String(list[name]);
+  return resourceQuantity(name, list?.[name]);
+}
+
+/**
+ * The quantities of a resource in two lists as they were written, `first / second`, for the tooltip of a row that shows
+ * them in units; `undefined` when it shows them as written. `none` stands for a quantity the second list lacks.
+ */
+export function writtenPair(
+  name: string,
+  first: ResourceList | undefined,
+  second: ResourceList | undefined,
+  none = "-",
+): string | undefined {
+  const written = (list: ResourceList | undefined) => (list?.[name] === undefined ? undefined : String(list[name]));
+  if (resourceText(first, name) === written(first) && resourceText(second, name) === written(second)) return undefined;
+  return `${written(first) ?? "-"} / ${written(second) ?? none}`;
+}
+
+/** The `written` field of a row, only when it has one. */
+export function withWritten(written: string | undefined): { written?: string } {
+  return written === undefined ? {} : { written };
 }
 
 export interface ResourceRow {
@@ -54,6 +79,8 @@ export interface ResourceRow {
   inUse: string | undefined;
   /** The NodePool's limit of the resource, `spec.limits`. */
   limit: string | undefined;
+  /** Both as they were written, when the row shows them in units. */
+  written?: string;
 }
 
 /** The resources of a NodePool: those in use and those it limits, one row each, the well-known ones first. */
@@ -62,6 +89,7 @@ export function resourceRows(inUse: ResourceList | undefined, limits: ResourceLi
     name,
     inUse: resourceText(inUse, name),
     limit: resourceText(limits, name),
+    ...withWritten(writtenPair(name, inUse, limits, "no limit")),
   }));
 }
 

@@ -5,9 +5,9 @@ import {
   type KindColumn,
   KindListPage,
   nameColumn,
-  textColumn,
+  numberColumn,
+  readyColumn,
 } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { getNodeOverlayStore } from "../../data/stores";
 import { nodeOverlayColumnValues, nodeOverlaySortValues } from "./nodeoverlay-columns";
 
@@ -17,17 +17,12 @@ export interface NodeOverlaysPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get nodeoverlays -o wide`, in its order.
+// The columns of `kubectl get nodeoverlays -o wide`, with Ready right before Age, last.
 const columns: KindColumn<NodeOverlay>[] = [
   nameColumn(),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (overlay) => <ConditionStatus status={nodeOverlayColumnValues(overlay).ready} />,
-    sortBy: nodeOverlaySortValues.ready,
-  },
+  numberColumn("weight", "Weight", (overlay) => nodeOverlayColumnValues(overlay).weight, nodeOverlaySortValues.weight),
+  readyColumn((overlay) => nodeOverlayColumnValues(overlay).ready, nodeOverlaySortValues.ready),
   ageColumn(),
-  textColumn("weight", "Weight", (overlay) => nodeOverlayColumnValues(overlay).weight, nodeOverlaySortValues.weight),
 ];
 
 /** The Node Overlays page: the NodeOverlays of `karpenter.sh/v1alpha1`. An observer, which follows the CRD. */

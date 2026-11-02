@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
-import { nodeClaimColumnValues, nodeClaimSortValues } from "./nodeclaim-columns";
+import { nodeClaimColumnValues, nodeClaimSortValues, nodeClaimStatus, nodeClaimStatusOrder } from "./nodeclaim-columns";
 
 import type { NodeClaimStatus } from "../../api/karpenter/karpenter-v1-types";
+import type { Node } from "../../utils/kube-helpers";
 
 const nodeClaim = (name: string, labels: Record<string, string> = {}, status?: NodeClaimStatus) =>
   new NodeClaim({
@@ -50,7 +51,6 @@ describe("nodeClaimColumnValues", () => {
       capacity: "on-demand",
       zone: "eu-west-1b",
       node: "ip-10-0-2-12.eu-west-1.compute.internal",
-      ready: "True",
       imageID: "ami-0a1b2c3d4e5f60001",
       id: "aws:///eu-west-1b/i-0b79059e1a64a764c",
       nodePool: "general",
@@ -65,7 +65,6 @@ describe("nodeClaimColumnValues", () => {
       capacity: "on-demand",
       zone: undefined,
       node: undefined,
-      ready: undefined,
       imageID: undefined,
       id: undefined,
       nodePool: "general",
@@ -90,9 +89,89 @@ describe("nodeClaimSortValues", () => {
     expect(nodeClaimSortValues.nodeClass(pending)).toBe("default");
   });
 
-  it("sorts the statuses of Ready and Drifted True, False, Unknown, then none", () => {
-    const notReady = nodeClaim("n", {}, { conditions: [{ type: "Ready", status: "False" }] });
-    expect([launched, notReady, pending].map(nodeClaimSortValues.ready)).toEqual([0, 1, 3]);
+  it("sorts the status of Drifted True, False, Unknown, then none", () => {
     expect([launched, pending].map(nodeClaimSortValues.drifted)).toEqual([0, 3]);
+  });
+});
+
+const node = (name: string, ready: "True" | "False", taints: { key: string; effect: string }[] = []) =>
+  ({
+    metadata: {
+      name,
+      labels: { "karpenter.sh/nodepool": "general" },
+      creationTimestamp: "2026-11-01T00:00:00Z",
+    },
+    spec: { taints },
+    status: { conditions: [{ type: "Ready", status: ready }] },
+  }) as unknown as Node;
+
+const now = Date.parse("2026-11-02T00:00:00Z");
+
+describe("nodeClaimStatus", () => {
+  it("is Claiming while the NodeClaim has no node", () => {
+    expect(nodeClaimStatus(pending, undefined, now)).toBe("Claiming");
+  });
+
+  it("is the status of the node, as the Overview has it", () => {
+    expect(nodeClaimStatus(launched, node("n", "True"), now)).toBe("Ready");
+    expect(nodeClaimStatus(launched, node("n", "False"), now)).toBe("NotReady");
+    expect(
+      nodeClaimStatus(launched, node("n", "True", [{ key: "karpenter.sh/disrupted", effect: "NoSchedule" }]), now),
+    ).toBe("Ready");
+    expect(
+      nodeClaimStatus(launched, node("n", "False", [{ key: "karpenter.sh/disrupted", effect: "NoSchedule" }]), now),
+    ).toBe("Terminating");
+  });
+
+  it("follows the conditions of the NodeClaim without its node in the store", () => {
+    const withConditions = (conditions: { type: string; status: "True" | "False" | "Unknown" }[]) =>
+      nodeClaim("c", {}, { nodeName: "n", conditions });
+    expect(nodeClaimStatus(launched, undefined, now)).toBe("Ready");
+    expect(
+      nodeClaimStatus(
+        withConditions([
+          { type: "Launched", status: "True" },
+          { type: "Registered", status: "Unknown" },
+        ]),
+        undefined,
+        now,
+      ),
+    ).toBe("Provisioning");
+    expect(
+      nodeClaimStatus(
+        withConditions([
+          { type: "Launched", status: "True" },
+          { type: "Registered", status: "True" },
+          { type: "Initialized", status: "True" },
+          { type: "Ready", status: "False" },
+        ]),
+        undefined,
+        now,
+      ),
+    ).toBe("NotReady");
+  });
+
+  it("is Terminating while the NodeClaim is deleted, with a node or without", () => {
+    const deleted = (nodeName?: string) =>
+      new NodeClaim({
+        apiVersion: "karpenter.sh/v1",
+        kind: "NodeClaim",
+        metadata: {
+          name: "d",
+          uid: "d",
+          resourceVersion: "1",
+          selfLink: "",
+          deletionTimestamp: "2026-11-01T12:00:00Z",
+        },
+        status: { nodeName, conditions: [{ type: "Ready", status: "True" }] },
+      });
+    expect(nodeClaimStatus(deleted(), undefined, now)).toBe("Terminating");
+    expect(nodeClaimStatus(deleted("n"), undefined, now)).toBe("Terminating");
+  });
+
+  it("sorts as the Overview lists the statuses", () => {
+    expect(
+      (["NotReady", "Terminating", "Claiming", "Provisioning", "Ready"] as const).map(nodeClaimStatusOrder),
+    ).toEqual([4, 3, 2, 1, 0]);
   });
 });

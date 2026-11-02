@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { columnText, conditionStatus, conditionStatusOrder } from "./printer-columns";
+import { columnText, conditionFlag, conditionStatus, conditionStatusOrder } from "./printer-columns";
 
 describe("printer columns", () => {
   it("reads the status of the condition of a type", () => {
@@ -22,5 +22,9 @@ describe("printer columns", () => {
 
   it("orders the statuses of a condition", () => {
     expect(["True", "False", "Unknown", undefined, "Other"].map(conditionStatusOrder)).toEqual([0, 1, 2, 3, 3]);
+  });
+
+  it("takes the status of a condition for a flag, with no flag for Unknown and none", () => {
+    expect(["True", "False", "Unknown", undefined].map(conditionFlag)).toEqual([true, false, undefined, undefined]);
   });
 });

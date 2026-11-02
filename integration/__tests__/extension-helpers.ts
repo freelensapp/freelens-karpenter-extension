@@ -828,35 +828,39 @@ export async function expectNoKindPageEntry(frame: Frame, menuId: string, served
 }
 
 /** The columns of `kubectl get nodepools -o wide`, which the Node Pools page has. */
-export const nodePoolColumns = ["Name", "NodeClass", "Nodes", "Ready", "Age", "Weight", "CPU", "Memory"];
+export const nodePoolColumns = ["Name", "NodeClass", "Nodes", "Weight", "CPU", "Memory", "Ready", "Age"];
 
-/** The columns of `kubectl get nodeclaims -o wide`, which the Node Claims page has. */
+/**
+ * The columns of `kubectl get nodeclaims -o wide`, which the Node Claims page has, with Status in place of Ready,
+ * without ImageID and ID, and Age last.
+ */
 export const nodeClaimColumns = [
   "Name",
   "Type",
   "Capacity",
   "Zone",
   "Node",
-  "Ready",
-  "Age",
-  "ImageID",
-  "ID",
   "NodePool",
   "NodeClass",
+  "Status",
   "Drifted",
+  "Age",
 ];
 
 /** The columns of `kubectl get nodeoverlays -o wide`, which the Node Overlays page has. */
-export const nodeOverlayColumns = ["Name", "Ready", "Age", "Weight"];
+export const nodeOverlayColumns = ["Name", "Weight", "Ready", "Age"];
 
 /** The columns of `kubectl get ec2nodeclasses -o wide`, which the EC2 Node Classes page has. */
-export const ec2NodeClassColumns = ["Name", "Ready", "Age", "Role"];
+export const ec2NodeClassColumns = ["Name", "Role", "Ready", "Age"];
 
 /** The columns of `kubectl get aksnodeclasses -o wide`, which the AKS Node Classes page has. */
-export const aksNodeClassColumns = ["Name", "Ready", "Age", "ImageFamily"];
+export const aksNodeClassColumns = ["Name", "ImageFamily", "Ready", "Age"];
 
-/** The columns of `kubectl get gcenodeclasses -o wide`, which the GCE Node Classes page has. */
-export const gceNodeClassColumns = ["Name", "Ready", "Age"];
+/**
+ * The columns of `kubectl get gcenodeclasses -o wide`, which the GCE Node Classes page has, after Image Family, Disks
+ * and Subnet.
+ */
+export const gceNodeClassColumns = ["Name", "Image Family", "Disks", "Subnet", "Ready", "Age"];
 
 /** An age as the host shows it, such as `42s` or `3m`. */
 export const agePattern = /^\d+[smhdy]/;

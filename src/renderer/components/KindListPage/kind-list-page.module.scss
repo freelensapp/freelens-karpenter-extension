@@ -1,11 +1,39 @@
 .page {
   :global(.TableCell) {
     &.name {
-      flex-grow: 2;
+      flex-grow: 0.6;
     }
 
     &.age {
+      flex-grow: 0.4;
+    }
+
+    &.flag {
+      flex-grow: 0.6;
+    }
+
+    &.ready {
       flex-grow: 0.5;
+    }
+
+    &.short {
+      flex-grow: 0.5;
+    }
+
+    &.narrowBadges {
+      flex-grow: 0.7;
+    }
+
+    &.wideBadges {
+      flex-grow: 1.5;
+    }
+
+    &.number {
+      flex-grow: 0.4;
+    }
+
+    &.quantity {
+      flex-grow: 0.6;
     }
   }
 }

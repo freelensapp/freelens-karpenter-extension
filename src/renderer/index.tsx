@@ -130,19 +130,19 @@ export default class KarpenterExtensionRenderer extends Renderer.LensExtension {
       components: {},
     },
     {
-      id: pageId.nodePools,
-      parentId: "karpenter",
-      title: NodePool.crd.title,
-      target: { pageId: pageId.nodePools },
-      visible: computed(() => getNodePoolStore() !== undefined),
-      components: {},
-    },
-    {
       id: pageId.nodeClaims,
       parentId: "karpenter",
       title: NodeClaim.crd.title,
       target: { pageId: pageId.nodeClaims },
       visible: computed(() => getNodeClaimStore() !== undefined),
+      components: {},
+    },
+    {
+      id: pageId.nodePools,
+      parentId: "karpenter",
+      title: NodePool.crd.title,
+      target: { pageId: pageId.nodePools },
+      visible: computed(() => getNodePoolStore() !== undefined),
       components: {},
     },
     {

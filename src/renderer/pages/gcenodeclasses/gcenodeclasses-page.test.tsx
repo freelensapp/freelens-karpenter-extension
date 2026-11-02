@@ -20,6 +20,8 @@ const defaultClass = new GCENodeClass({
   spec: {
     serviceAccount: "karpenter-node@lab.iam.gserviceaccount.com",
     imageSelectorTerms: [{ family: "ContainerOptimizedOS", channel: "stable" }],
+    disks: [{ category: "pd-balanced", sizeGiB: 100, boot: true }],
+    subnetRangeName: "pods",
   },
   status: {
     conditions: [{ type: "Ready", status: "True", reason: "Ready", message: "", lastTransitionTime: "" }],
@@ -45,12 +47,26 @@ afterEach(() => {
 });
 
 describe("GCENodeClassesPage", () => {
-  it("lists the GCENodeClasses with the columns of kubectl get gcenodeclasses -o wide", () => {
+  it("lists the GCENodeClasses with their image selector terms, disks and subnet, and the columns of kubectl get gcenodeclasses -o wide", () => {
     render(<GCENodeClassesPage extension={extension} />);
 
     expect(screen.getByRole("heading", { name: "GCE Node Classes" })).toBeTruthy();
-    expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual(["Name", "Ready", "Age"]);
-    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["default", "True", "age"]);
+    expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual([
+      "Name",
+      "Image Family",
+      "Disks",
+      "Subnet",
+      "Ready",
+      "Age",
+    ]);
+    expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
+      "default",
+      "ContainerOptimizedOS=stable",
+      "boot 100 GiB pd-balanced",
+      "pods",
+      "True",
+      "age",
+    ]);
   });
 
   it("follows the CRD as the host registers it and removes it", () => {

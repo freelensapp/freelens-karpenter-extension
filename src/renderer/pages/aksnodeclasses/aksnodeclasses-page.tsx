@@ -5,9 +5,9 @@ import {
   type KindColumn,
   KindListPage,
   nameColumn,
+  readyColumn,
   textColumn,
 } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { type AKSNodeClass, getAKSNodeClassStore } from "../../data/stores";
 import { aksNodeClassColumnValues, aksNodeClassSortValues } from "./aksnodeclass-columns";
 
@@ -17,22 +17,17 @@ export interface AKSNodeClassesPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get aksnodeclasses -o wide`, in its order, the same in both versions.
+// The columns of `kubectl get aksnodeclasses -o wide`, the same in both versions, with Ready right before Age, last.
 const columns: KindColumn<AKSNodeClass>[] = [
   nameColumn(),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (nodeClass) => <ConditionStatus status={aksNodeClassColumnValues(nodeClass).ready} />,
-    sortBy: aksNodeClassSortValues.ready,
-  },
-  ageColumn(),
   textColumn(
     "imageFamily",
     "ImageFamily",
     (nodeClass) => aksNodeClassColumnValues(nodeClass).imageFamily,
     aksNodeClassSortValues.imageFamily,
   ),
+  readyColumn((nodeClass) => aksNodeClassColumnValues(nodeClass).ready, aksNodeClassSortValues.ready),
+  ageColumn(),
 ];
 
 /**

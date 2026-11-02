@@ -31,6 +31,8 @@ describe("NodeKarpenterDetails", () => {
     );
 
     expect(screen.getByText("Karpenter")).toBeTruthy();
+    expect(screen.getByText("Node Pool")).toBeTruthy();
+    expect(screen.getByText("Node Claim")).toBeTruthy();
     expect(screen.getByText("On-Demand")).toBeTruthy();
     expect(screen.getByText("Registered")).toBeTruthy();
     expect(screen.getByText("Do not disrupt")).toBeTruthy();

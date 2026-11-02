@@ -11,7 +11,7 @@ import { capacityRows, formatResources, stageNotReached, trueReason } from "./no
 import type { NodeClaim } from "../api/nodeclaim/nodeclaim-v1";
 
 const {
-  Component: { DrawerItem, DrawerTitle, LocaleDate },
+  Component: { DrawerItem, DrawerTitle, LocaleDate, WithTooltip },
 } = Renderer;
 
 /**
@@ -49,9 +49,9 @@ export const NodeClaimDetails = observer(
             </DetailsLink>
           )}
         </DrawerItem>
-        <DrawerItem name="NodePool" hidden={values.nodePool === undefined}>
+        <DrawerItem name="Node Pool" hidden={values.nodePool === undefined}>
           {values.nodePool !== undefined && (
-            <DetailsLink selfLink={nodePoolSelfLink(values.nodePool)} title={`Open NodePool ${values.nodePool}`}>
+            <DetailsLink selfLink={nodePoolSelfLink(values.nodePool)} title={`Open Node Pool ${values.nodePool}`}>
               {values.nodePool}
             </DetailsLink>
           )}
@@ -88,9 +88,9 @@ export const NodeClaimDetails = observer(
         {resources.length > 0 && (
           <>
             <DrawerTitle>Resources (capacity / allocatable)</DrawerTitle>
-            {resources.map(({ name, capacity, allocatable }) => (
+            {resources.map(({ name, capacity, allocatable, written }) => (
               <DrawerItem key={name} name={name}>
-                {`${capacity ?? "-"} / ${allocatable ?? "-"}`}
+                <WithTooltip tooltip={written}>{`${capacity ?? "-"} / ${allocatable ?? "-"}`}</WithTooltip>
               </DrawerItem>
             ))}
           </>

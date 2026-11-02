@@ -102,8 +102,8 @@ describe("NodeClaimDetails", () => {
       "ami-0a1b2c3d4e5f60001",
       "2026-10-01T09:30:00Z",
       "8 / 7920m",
-      "32118888Ki / 28906999Ki",
-      "20Gi / -",
+      "30.6GiB / 27.6GiB",
+      "20.0GiB / -",
       "cpu 1500m",
       "pods 7",
       "node.kubernetes.io/instance-type In [m5.2xlarge]",
@@ -120,6 +120,8 @@ describe("NodeClaimDetails", () => {
 
   it("links to its node, its NodePool and its node class, in the drawer", () => {
     render(<NodeClaimDetails object={launched} />);
+
+    expect(screen.getByText("Node Pool")).toBeTruthy();
 
     fireEvent.click(screen.getByText("ip-10-0-2-12"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/api/v1/nodes/ip-10-0-2-12");

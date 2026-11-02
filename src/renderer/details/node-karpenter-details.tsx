@@ -24,10 +24,10 @@ export function NodeKarpenterDetails({
       <DrawerTitle>Karpenter</DrawerTitle>
       {/* In place of the node's details, over the same page, as the host's own links in a drawer: the NodePool and
           the NodeClaim in the extension's details. */}
-      <DrawerItem name="NodePool" hidden={!info.nodePool}>
+      <DrawerItem name="Node Pool" hidden={!info.nodePool}>
         <DetailsLink selfLink={nodePoolSelfLink(info.nodePool)}>{info.nodePool}</DetailsLink>
       </DrawerItem>
-      <DrawerItem name="NodeClaim" hidden={!info.nodeClaim}>
+      <DrawerItem name="Node Claim" hidden={!info.nodeClaim}>
         <DetailsLink selfLink={nodeClaimSelfLink(info.nodeClaim)}>{info.nodeClaim}</DetailsLink>
       </DrawerItem>
       <DrawerItem name="Instance type">{info.instanceType}</DrawerItem>

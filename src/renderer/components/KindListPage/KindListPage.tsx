@@ -1,11 +1,13 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
+import { conditionFlag } from "../../utils/printer-columns";
+import { resourceQuantity } from "../../utils/quantity";
 import styles from "./kind-list-page.module.scss";
 
 import type React from "react";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { Badge, BadgeBoolean, KubeObjectAge, KubeObjectListLayout, WithTooltip },
 } = Renderer;
 
 type KubeObject = Renderer.K8sApi.KubeObject;
@@ -53,8 +55,106 @@ export function textColumn<K extends KubeObject>(
   title: string,
   value: (object: K) => string | undefined,
   sortBy: (object: K) => string | number | undefined = value,
+  className?: string,
 ): KindColumn<K> {
-  return { id, title, render: (object) => <WithTooltip>{value(object) ?? ""}</WithTooltip>, sortBy };
+  return { id, title, render: (object) => <WithTooltip>{value(object) ?? ""}</WithTooltip>, sortBy, className };
+}
+
+/**
+ * A narrow column whose cell is a quantity of a resource, as the host's Node details show it: memory and ephemeral
+ * storage in units, with the quantity as it was written in its tooltip (`resourceQuantity`).
+ */
+export function quantityColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  resource: string,
+  value: (object: K) => string | undefined,
+  sortBy: (object: K) => string | number | undefined,
+): KindColumn<K> {
+  return {
+    id,
+    title,
+    render: (object) => {
+      const written = value(object);
+      const shown = resourceQuantity(resource, written);
+      return <WithTooltip tooltip={shown !== written ? written : undefined}>{shown ?? ""}</WithTooltip>;
+    },
+    sortBy,
+    className: styles.quantity,
+  };
+}
+
+/** A narrow column whose cell is a short text, such as a name of a range; one without a text sorts first. */
+export function shortTextColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  value: (object: K) => string | undefined,
+): KindColumn<K> {
+  return textColumn(id, title, value, (object) => value(object) ?? "", styles.short);
+}
+
+/** A narrow column whose cell is a short number, such as a count or a quantity. */
+export function numberColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  value: (object: K) => string | undefined,
+  sortBy: (object: K) => string | number | undefined,
+): KindColumn<K> {
+  return textColumn(id, title, value, sortBy, styles.number);
+}
+
+/**
+ * A column whose cell is a list of texts, such as `key=value` pairs, each a badge, as the host's `DrawerItemLabels`
+ * shows labels, in a column narrower or wider than a text, for a few short texts or several long ones. It sorts by the
+ * texts joined.
+ */
+export function badgesColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  texts: (object: K) => string[],
+  width: "narrow" | "wide",
+  sortBy: (object: K) => string | number | undefined = (object) => texts(object).join(" "),
+): KindColumn<K> {
+  return {
+    id,
+    title,
+    className: width === "narrow" ? styles.narrowBadges : styles.wideBadges,
+    // A text can repeat, as the same channel in two terms: the key is its place.
+    render: (object) => (
+      <>
+        {texts(object).map((text, index) => (
+          <Badge key={index} label={text} title={text} />
+        ))}
+      </>
+    ),
+    sortBy,
+  };
+}
+
+/**
+ * The Ready column of every page that has one: the status of the Ready condition as the host's badge of a boolean,
+ * `-` for `Unknown` and none (`conditionFlag`), in a column narrower than another flag.
+ */
+export function readyColumn<K extends KubeObject>(
+  status: (object: K) => string | undefined,
+  sortBy: (object: K) => string | number | undefined,
+): KindColumn<K> {
+  return {
+    ...booleanColumn("ready", "Ready", (object) => conditionFlag(status(object)), sortBy),
+    className: styles.ready,
+  };
+}
+
+/**
+ * A narrow column whose cell is a flag, as the host's badge of a boolean: `True`, `False`, or `-` for `undefined`.
+ */
+export function booleanColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  value: (object: K) => boolean | undefined,
+  sortBy: (object: K) => string | number | undefined = (object) => (value(object) ? 0 : 1),
+): KindColumn<K> {
+  return { id, title, render: (object) => <BadgeBoolean value={value(object)} />, sortBy, className: styles.flag };
 }
 
 export interface KindListPageProps<K extends KubeObject> {

@@ -6,12 +6,12 @@ import { DetailsLink } from "../components/shared/DetailsLink";
 import { detectProvider, nodeClassSelfLink } from "../data/nodeclass";
 import { getNodeClaimStore, getNodeOverlayStore } from "../data/stores";
 import { useSubscribedStores } from "../data/use-subscribed-stores";
-import { nodeClaimSelfLink, nodeOverlaySelfLink } from "../utils/kube-helpers";
+import { nodeClaimSelfLink, nodeOverlaySelfLink, nodeSelfLink } from "../utils/kube-helpers";
 import { formatBudget, formatRequirement, formatTaint, notTrueReason, resourceRows } from "./karpenter-v1";
 import { nodeClaimsOfNodePool, overlaysOfNodePool, rejectedOverlaysOfNodePool } from "./nodepool-relations";
 
 const {
-  Component: { DrawerItem, DrawerItemLabels, DrawerTitle },
+  Component: { DrawerItem, DrawerItemLabels, DrawerTitle, WithTooltip },
 } = Renderer;
 
 /**
@@ -54,11 +54,9 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
           </DetailsLink>
         )}
       </DrawerItem>
-      <DrawerItem name="Weight" hidden={spec?.weight === undefined}>
-        {spec?.weight}
-      </DrawerItem>
+      <DrawerItem name="Weight">{NodePool.getWeight(nodePool)}</DrawerItem>
       <DrawerItem name="Replicas" hidden={spec?.replicas === undefined}>
-        {`${spec?.replicas} (static NodePool)`}
+        {`${spec?.replicas} (static Node Pool)`}
       </DrawerItem>
       <DrawerItem name="Nodes" hidden={status?.nodes === undefined}>
         {status?.nodes}
@@ -70,15 +68,15 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
       {resources.length > 0 && (
         <>
           <DrawerTitle>Resources (in use / limit)</DrawerTitle>
-          {resources.map(({ name, inUse, limit }) => (
+          {resources.map(({ name, inUse, limit, written }) => (
             <DrawerItem key={name} name={name}>
-              {`${inUse ?? "-"} / ${limit ?? "no limit"}`}
+              <WithTooltip tooltip={written}>{`${inUse ?? "-"} / ${limit ?? "no limit"}`}</WithTooltip>
             </DrawerItem>
           ))}
         </>
       )}
 
-      <DrawerTitle>NodeClaim Template</DrawerTitle>
+      <DrawerTitle>Node Claim Template</DrawerTitle>
       <DrawerItemLabels name="Labels" labels={metadata?.labels ?? {}} />
       <DrawerItemLabels name="Annotations" labels={metadata?.annotations ?? {}} />
       <Badges name="Requirements" texts={(template?.requirements ?? []).map(formatRequirement)} />
@@ -100,32 +98,43 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
       </DrawerItem>
       <Badges name="Budgets" texts={(disruption?.budgets ?? []).map(formatBudget)} />
 
-      <DrawerTitle>NodeClaims</DrawerTitle>
+      <DrawerTitle>Node Claims</DrawerTitle>
       {nodeClaims.length === 0 ? (
-        <DrawerItem name="NodeClaims">None</DrawerItem>
+        <DrawerItem name="Node Claims">None</DrawerItem>
       ) : (
         nodeClaims.map((nodeClaim) => (
           <DrawerItem key={nodeClaim.getName()} name={nodeClaim.status?.nodeName ? "Node" : "Pending"}>
             <DetailsLink
               selfLink={nodeClaimSelfLink(nodeClaim.getName())}
-              title={`Open NodeClaim ${nodeClaim.getName()}`}
+              title={`Open Node Claim ${nodeClaim.getName()}`}
             >
               {nodeClaim.getName()}
             </DetailsLink>
-            {nodeClaim.status?.nodeName ? ` (${nodeClaim.status.nodeName})` : ""}
+            {nodeClaim.status?.nodeName && (
+              <>
+                {" ("}
+                <DetailsLink
+                  selfLink={nodeSelfLink(nodeClaim.status.nodeName)}
+                  title={`Open Node ${nodeClaim.status.nodeName}`}
+                >
+                  {nodeClaim.status.nodeName}
+                </DetailsLink>
+                {")"}
+              </>
+            )}
           </DrawerItem>
         ))
       )}
 
       {nodeOverlayStore && (
         <>
-          <DrawerTitle>NodeOverlays</DrawerTitle>
+          <DrawerTitle>Node Overlays</DrawerTitle>
           {overlays.length === 0 ? (
-            <DrawerItem name="NodeOverlays">None applies</DrawerItem>
+            <DrawerItem name="Node Overlays">None applies</DrawerItem>
           ) : (
             overlays.map((overlay) => (
               <DrawerItem key={overlay.name} name={`Weight ${overlay.weight}`}>
-                <DetailsLink selfLink={nodeOverlaySelfLink(overlay.name)} title={`Open NodeOverlay ${overlay.name}`}>
+                <DetailsLink selfLink={nodeOverlaySelfLink(overlay.name)} title={`Open Node Overlay ${overlay.name}`}>
                   {overlay.name}
                 </DetailsLink>
                 {overlay.changes ? ` (${overlay.changes})` : ""}
@@ -134,7 +143,7 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
           )}
           {rejectedOverlays.map((overlay) => (
             <DrawerItem key={overlay.name} name="Not Applied">
-              <DetailsLink selfLink={nodeOverlaySelfLink(overlay.name)} title={`Open NodeOverlay ${overlay.name}`}>
+              <DetailsLink selfLink={nodeOverlaySelfLink(overlay.name)} title={`Open Node Overlay ${overlay.name}`}>
                 {overlay.name}
               </DetailsLink>
               {overlay.changes ? ` (${overlay.changes})` : ""}

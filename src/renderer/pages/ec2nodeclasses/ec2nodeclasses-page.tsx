@@ -5,9 +5,9 @@ import {
   type KindColumn,
   KindListPage,
   nameColumn,
+  readyColumn,
   textColumn,
 } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { getEC2NodeClassStore } from "../../data/stores";
 import { ec2NodeClassColumnValues, ec2NodeClassSortValues } from "./ec2nodeclass-columns";
 
@@ -17,17 +17,12 @@ export interface EC2NodeClassesPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get ec2nodeclasses -o wide`, in its order.
+// The columns of `kubectl get ec2nodeclasses -o wide`, with Ready right before Age, last.
 const columns: KindColumn<EC2NodeClass>[] = [
   nameColumn(),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (nodeClass) => <ConditionStatus status={ec2NodeClassColumnValues(nodeClass).ready} />,
-    sortBy: ec2NodeClassSortValues.ready,
-  },
-  ageColumn(),
   textColumn("role", "Role", (nodeClass) => ec2NodeClassColumnValues(nodeClass).role, ec2NodeClassSortValues.role),
+  readyColumn((nodeClass) => ec2NodeClassColumnValues(nodeClass).ready, ec2NodeClassSortValues.ready),
+  ageColumn(),
 ];
 
 /** The EC2 Node Classes page: the EC2NodeClasses of `karpenter.k8s.aws/v1`. An observer, which follows the CRD. */

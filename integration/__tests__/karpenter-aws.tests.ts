@@ -172,11 +172,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "gpu",
       "gpu",
       "1",
-      "False",
-      agePattern,
       "50",
       "4",
-      "16202400Ki",
+      "15.5GiB",
+      "False",
+      agePattern,
     ]);
 
     await clickAndExpectDetails(frame, row.getByText("gpu", { exact: true }).first(), /^NodePool: gpu/);
@@ -189,10 +189,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
 
   it("lists the NodeClaims on their page, and shows the details of one", async () => {
     // The entry of the sidebar, and the columns of kubectl get nodeclaims -o
-    // wide. general-9qwmt is the one NodeClaim that drifted; general-pend1
-    // has no node yet, so its Node, ImageID and ID are empty. Why it has
-    // none, the reason and message of its Launched condition, is in the
-    // details only, as its capacity type and its requirement.
+    // wide, with Status in place of Ready, without ImageID and ID, and Age
+    // last. general-9qwmt is the one NodeClaim that drifted; general-pend1 has
+    // no node yet: it is Claiming and has no Node. Why it has none, the reason
+    // and message of its Launched condition, is in the details only, as its
+    // capacity type and its requirement.
     await openKindPage(frame, "nodeclaims", "Node Claims");
 
     await expectListRow(frame, nodeClaimColumns, [
@@ -201,23 +202,23 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "on-demand",
       "eu-west-1b",
       "ip-10-0-2-12.eu-west-1.compute.internal",
-      "True",
-      agePattern,
-      "ami-0a1b2c3d4e5f60001",
-      "aws:///eu-west-1b/i-0b79059e1a64a764c",
       "general",
       "default",
+      "Ready",
       "True",
+      agePattern,
     ]);
 
     const pending = await expectListRow(frame, nodeClaimColumns, [
       "general-pend1",
       "on-demand",
-      agePattern,
       "general",
       "default",
+      "Claiming",
+      "False",
+      agePattern,
     ]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Ready", "ImageID", "ID", "Drifted"]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node"]);
 
     await clickAndExpectDetails(
       frame,
@@ -238,9 +239,9 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     // the capacity it adds, as a resource list, are in the details only.
     await openKindPage(frame, "nodeoverlays", "Node Overlays");
 
-    await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "True", agePattern, "10"]);
-    await expectListRow(frame, nodeOverlayColumns, ["spot-adjustment", "False", agePattern, "10"]);
-    const row = await expectListRow(frame, nodeOverlayColumns, ["gpu-fpga", "True", agePattern, "50"]);
+    await expectListRow(frame, nodeOverlayColumns, ["spot-discount", "10", "True", agePattern]);
+    await expectListRow(frame, nodeOverlayColumns, ["spot-adjustment", "10", "False", agePattern]);
+    const row = await expectListRow(frame, nodeOverlayColumns, ["gpu-fpga", "50", "True", agePattern]);
 
     await clickAndExpectDetails(frame, row.getByText("gpu-fpga", { exact: true }).first(), /^NodeOverlay: gpu-fpga/);
     await expectInDetails(frame, ["Applies To", "gpu", "karpenter.sh/nodepool In [gpu]", "example.com/fpga 1"]);
@@ -254,12 +255,12 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     // the details only.
     await openKindPage(frame, "ec2nodeclasses", "EC2 Node Classes");
 
-    await expectListRow(frame, ec2NodeClassColumns, ["gpu", "False", agePattern, "KarpenterNodeRole-lab"]);
+    await expectListRow(frame, ec2NodeClassColumns, ["gpu", "KarpenterNodeRole-lab", "False", agePattern]);
     const row = await expectListRow(frame, ec2NodeClassColumns, [
       "default",
+      "KarpenterNodeRole-lab",
       "True",
       agePattern,
-      "KarpenterNodeRole-lab",
     ]);
 
     await clickAndExpectDetails(frame, row.getByText("default", { exact: true }).first(), /^EC2NodeClass: default/);

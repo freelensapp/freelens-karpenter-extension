@@ -42,9 +42,7 @@ export const NodeOverlayDetails = observer(
         </DrawerItem>
 
         <DrawerTitle>Spec</DrawerTitle>
-        <DrawerItem name="Weight" hidden={spec?.weight === undefined}>
-          {spec?.weight}
-        </DrawerItem>
+        <DrawerItem name="Weight">{NodeOverlay.getWeight(overlay)}</DrawerItem>
         <Badges name="Requirements" texts={(spec?.requirements ?? []).map(formatRequirement)} />
         <DrawerItem name="Price" hidden={spec?.price === undefined}>
           {spec?.price}
@@ -56,7 +54,7 @@ export const NodeOverlayDetails = observer(
 
         {nodePoolStore && (
           <>
-            <DrawerTitle>NodePools</DrawerTitle>
+            <DrawerTitle>Node Pools</DrawerTitle>
             {/* A rejected overlay applies to no instance type: the NodePools it matches, said so. */}
             <DrawerItem name={rejected ? "Matches (not applied)" : "Applies To"}>
               {nodePools.length === 0
@@ -64,7 +62,7 @@ export const NodeOverlayDetails = observer(
                 : nodePools.map((name, index) => (
                     <span key={name}>
                       {index > 0 && ", "}
-                      <DetailsLink selfLink={nodePoolSelfLink(name)} title={`Open NodePool ${name}`}>
+                      <DetailsLink selfLink={nodePoolSelfLink(name)} title={`Open Node Pool ${name}`}>
                         {name}
                       </DetailsLink>
                     </span>

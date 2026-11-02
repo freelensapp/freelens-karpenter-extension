@@ -88,11 +88,11 @@ describe("NodePoolDetails", () => {
     for (const text of [
       "EC2NodeClass gpu",
       "50",
-      "2 (static NodePool)",
+      "2 (static Node Pool)",
       "False, NodeClassNotReady",
       "3",
       "4 / 32",
-      "16202400Ki / no limit",
+      "15.5GiB / no limit",
       "team=ml",
       "example.com/owner=ml-platform",
       "karpenter.k8s.aws/instance-family In [g5]",
@@ -113,13 +113,17 @@ describe("NodePoolDetails", () => {
   it("links to its node class, its NodeClaims and the NodeOverlays that apply to it, in the drawer", () => {
     render(<NodePoolDetails object={gpu} />);
 
+    for (const title of ["Node Claim Template", "Node Claims", "Node Overlays"]) {
+      expect(screen.getByText(title)).toBeTruthy();
+    }
     expect(screen.getByText("(price 1.5)", { exact: false })).toBeTruthy();
-    expect(screen.getByText("(ip-10-0-0-1)", { exact: false })).toBeTruthy();
 
     fireEvent.click(screen.getByText("EC2NodeClass gpu"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/apis/karpenter.k8s.aws/v1/ec2nodeclasses/gpu");
     fireEvent.click(screen.getByText("gpu-x1"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/apis/karpenter.sh/v1/nodeclaims/gpu-x1");
+    fireEvent.click(screen.getByText("ip-10-0-0-1"));
+    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/api/v1/nodes/ip-10-0-0-1");
     fireEvent.click(screen.getByText("gpu-price"));
     expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith(
       "/apis/karpenter.sh/v1alpha1/nodeoverlays/gpu-price",

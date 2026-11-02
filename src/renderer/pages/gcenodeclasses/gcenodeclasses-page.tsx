@@ -1,9 +1,22 @@
 import { observer } from "mobx-react";
 import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
-import { ageColumn, type KindColumn, KindListPage, nameColumn } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
+import {
+  ageColumn,
+  badgesColumn,
+  type KindColumn,
+  KindListPage,
+  nameColumn,
+  readyColumn,
+  shortTextColumn,
+} from "../../components/KindListPage/KindListPage";
 import { getGCENodeClassStore } from "../../data/stores";
-import { gceNodeClassColumnValues, gceNodeClassSortValues } from "./gcenodeclass-columns";
+import {
+  gceNodeClassColumnValues,
+  gceNodeClassDiskLabels,
+  gceNodeClassImageTerms,
+  gceNodeClassSortValues,
+  gceNodeClassSubnet,
+} from "./gcenodeclass-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
 
@@ -11,15 +24,13 @@ export interface GCENodeClassesPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get gcenodeclasses -o wide`, in its order.
+// The columns of `kubectl get gcenodeclasses -o wide`, after Image Family, Disks and Subnet, which the CRD has no columns for.
 const columns: KindColumn<GCENodeClass>[] = [
   nameColumn(),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (nodeClass) => <ConditionStatus status={gceNodeClassColumnValues(nodeClass).ready} />,
-    sortBy: gceNodeClassSortValues.ready,
-  },
+  badgesColumn("imageFamily", "Image Family", gceNodeClassImageTerms, "narrow"),
+  badgesColumn("disks", "Disks", gceNodeClassDiskLabels, "wide"),
+  shortTextColumn("subnet", "Subnet", gceNodeClassSubnet),
+  readyColumn((nodeClass) => gceNodeClassColumnValues(nodeClass).ready, gceNodeClassSortValues.ready),
   ageColumn(),
 ];
 

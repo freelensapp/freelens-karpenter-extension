@@ -9,10 +9,10 @@ Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robert
 ## What it shows
 
 The extension adds **Karpenter** to the cluster sidebar, with its pages as
-entries: **Overview**, a dashboard with four tabs, **Node Pools**, **Node
-Claims**, **Node Overlays** and, on AWS, **EC2 Node Classes**, on Azure,
+entries: **Overview**, a dashboard with four tabs, **Node Claims**, **Node
+Pools**, **Node Overlays** and, on AWS, **EC2 Node Classes**, on Azure,
 **AKS Node Classes** or, on GCP, **GCE Node Classes**, the lists of the
-NodePools, the NodeClaims, the NodeOverlays and the node classes with their
+NodeClaims, the NodePools, the NodeOverlays and the node classes with their
 details. It also adds a Karpenter section to the details of a node. It follows the Freelens theme, light or dark, and
 updates while it is open, as Karpenter launches and removes nodes.
 
@@ -58,29 +58,14 @@ and other, for the last hour, 6 hours, 24 hours or all; the number of nodes of
 each NodePool over time; and the pod and node decisions as tables. A click on
 a time bucket highlights its events in the tables.
 
-### Node Pools
-
-The NodePools with the columns of `kubectl get nodepools -o wide`: NodeClass,
-Nodes, Ready, Age, Weight, CPU and Memory, sortable, searchable, and with the
-columns you choose. The entry is in the sidebar while the cluster serves
-NodePools.
-
-A click on a NodePool, here or in the tabs, opens its details: why it is not
-ready, its node class, weight, replicas and nodes, the resources in use
-against its limits, the template of its NodeClaims (labels, annotations,
-requirements, taints, startup taints, expiry and termination grace period),
-its disruption settings and budgets, and its NodeClaims and the NodeOverlays
-that apply to it, as links, with those that Karpenter rejected and why.
-Freelens shows its conditions and events with them.
-
 ### Node Claims
 
-The NodeClaims with the columns of `kubectl get nodeclaims -o wide`: Type,
-Capacity, Zone, Node, Ready, Age, ImageID, ID, NodePool, NodeClass and
-Drifted, sortable, searchable, and with the columns you choose. A NodeClaim
-still waiting for its node has no Node. The node, the NodePool and the node
-class are links. The entry is in the sidebar while the cluster serves
-NodeClaims.
+The NodeClaims with the columns Type, Capacity, Zone, Node, NodePool,
+NodeClass, Status, Drifted and Age, sortable, searchable, and with the columns
+you choose. Status is Ready, Provisioning, Claiming, Terminating or Not Ready,
+in the colours of the Overview. A NodeClaim still waiting for its node is
+Claiming and has no Node. The node, the NodePool and the node class are links.
+The entry is in the sidebar while the cluster serves NodeClaims.
 
 A click on a NodeClaim, here or in the tabs, opens its details: why it is not
 ready, the first of launched, registered and initialized it has not reached
@@ -91,11 +76,30 @@ its node, and its spec: resource requests, requirements, taints, startup
 taints, expiry and termination grace period. Freelens shows its conditions
 and events with them.
 
+### Node Pools
+
+The NodePools with the columns of `kubectl get nodepools -o wide`: NodeClass,
+Nodes, Weight, CPU, Memory, Ready and Age, sortable, searchable, and with the
+columns you choose. A NodePool without a weight has 0, as Karpenter takes it.
+Memory is in units, such as 15.5GiB, as Freelens shows the memory of a node,
+here and in the details. The entry is in the sidebar while the cluster serves
+NodePools.
+
+A click on a NodePool, here or in the tabs, opens its details: why it is not
+ready, its node class, weight, replicas and nodes, the resources in use
+against its limits, the template of its NodeClaims (labels, annotations,
+requirements, taints, startup taints, expiry and termination grace period),
+its disruption settings and budgets, and its NodeClaims with their nodes and
+the NodeOverlays that apply to it, as links, with those that Karpenter
+rejected and why.
+Freelens shows its conditions and events with them.
+
 ### Node Overlays
 
 The NodeOverlays with the columns of `kubectl get nodeoverlays -o wide`:
-Ready, Age and Weight, sortable, searchable, and with the columns you choose.
-The entry is in the sidebar while the cluster serves NodeOverlays.
+Weight, Ready and Age, sortable, searchable, and with the columns you choose.
+A NodeOverlay without a weight has 0, as Karpenter takes it. The entry is in
+the sidebar while the cluster serves NodeOverlays.
 
 A click on a NodeOverlay, here or on a NodePool card, opens its details: why
 it is not ready, and why Karpenter has not validated it, such as a conflict
@@ -106,7 +110,7 @@ as links. Freelens shows its conditions and events with them.
 ### EC2 Node Classes
 
 The EC2NodeClasses with the columns of `kubectl get ec2nodeclasses -o wide`:
-Ready, Age and Role, sortable, searchable, and with the columns you choose.
+Role, Ready and Age, sortable, searchable, and with the columns you choose.
 The entry is in the sidebar while the cluster serves EC2NodeClasses, which
 only Karpenter on AWS does.
 
@@ -125,7 +129,7 @@ its conditions and events with them.
 ### AKS Node Classes
 
 The AKSNodeClasses with the columns of `kubectl get aksnodeclasses -o wide`:
-Ready, Age and ImageFamily, sortable, searchable, and with the columns you
+ImageFamily, Ready and Age, sortable, searchable, and with the columns you
 choose. The entry is in the sidebar while the cluster serves AKSNodeClasses,
 which only Karpenter on Azure does; the page reads `v1beta1`, or `v1alpha2` on
 a provider older than 1.14.3.
@@ -143,10 +147,15 @@ links. Freelens shows its conditions and events with them.
 
 ### GCE Node Classes
 
-The GCENodeClasses with the columns of `kubectl get gcenodeclasses -o wide`:
-Ready and Age, sortable, searchable, and with the columns you choose. The
-entry is in the sidebar while the cluster serves GCENodeClasses, which only
-Karpenter on GCP does.
+The GCENodeClasses with the columns of `kubectl get gcenodeclasses -o wide`,
+Ready and Age, after Image Family, Disks and Subnet. Image Family has a
+`family=version` badge for each image selector term with a family, its
+channel when it names no version, such as `ContainerOptimizedOS=stable`, and
+`latest` without either, or the image family of a node class without terms;
+Disks has a badge for each disk, such as `boot 100 GiB pd-balanced`; Subnet has the subnet range name. They are
+sortable, searchable, and with the columns you choose. The entry is in the
+sidebar while the cluster serves GCENodeClasses, which only Karpenter on GCP
+does.
 
 A click on a GCENodeClass, here, in the Node Classes tab, on a NodePool card
 or in the NodeClass column of the Node Pools and Node Claims pages, opens its

@@ -10,7 +10,7 @@ This repository is the Freelens extension for [Karpenter](https://karpenter.sh/)
 It adds "Karpenter" to the cluster sidebar, with its pages as entries: the
 dashboard, "Overview", with four tabs (Overview, Topology, Node Classes,
 Scaling Decisions), and a list page with details for each Karpenter kind it
-models, "Node Pools", "Node Claims", "Node Overlays", "EC2 Node Classes", "AKS
+models, "Node Claims", "Node Pools", "Node Overlays", "EC2 Node Classes", "AKS
 Node Classes" and "GCE Node Classes". It also adds a Karpenter section to the
 host's Node details. It reads the Karpenter objects, the nodes, the pods and the events of the
 cluster, and writes nothing to it.
@@ -412,11 +412,34 @@ Node Classes and GCE Node Classes have them:
    the cluster serves, newest first, searchable and with the columns the user
    chooses, or a message when the cluster serves none. The columns are those
    of `kubectl get <plural> -o wide`, from the `additionalPrinterColumns` of
-   the newest CRD the fixtures install, in their order and under their names,
-   `-o wide` (`priority: 1`) included. A cell has the value of the column's
-   `jsonPath`, from a pure function of `pages/<plural>/<kind>-columns.ts`
-   with a test; a colour (`ConditionStatus` for a condition's status) or a
-   link (`DetailsLink`) on top of the value is fine, another value is not.
+   the newest CRD the fixtures install, under their names, `-o wide`
+   (`priority: 1`) included, in their order with one change, the convention of
+   every page: Ready comes right before Age, and Age is the last column. A
+   cell has the value of the column's `jsonPath`, from a pure function of
+   `pages/<plural>/<kind>-columns.ts` with a test; a link (`DetailsLink`) or
+   the host's `BadgeBoolean` for a flag (`booleanColumn`; `readyColumn` for
+   Ready of every page that has it, `-` for `Unknown`) on top of the value is
+   fine, another value is not. So is a quantity of memory or ephemeral
+   storage in units, as the host's Node details show it, `15.5GiB`, with the
+   quantity as written in its tooltip (`resourceQuantity` of
+   `utils/quantity.ts`, `quantityColumn`, as Memory of the Node Pools page;
+   the resources in the details too). A short number gets a narrow column
+   (`numberColumn`, as Nodes, Weight and CPU of the Node Pools page).
+   The GCE Node Classes page has three columns the CRD has none for, first:
+   Image Family, a `family=version` badge for each image selector term with a
+   family, of an alias term too, its channel without a version, `latest`
+   without either, or the image family alone at `latest` (`badgesColumn`,
+   `gceNodeClassImageTerms`); Disks, a badge for each disk, boot, size and
+   category (`gceNodeClassDiskLabels`); and Subnet, `spec.subnetRangeName`
+   (`shortTextColumn`).
+   The other exception is the Node Claims page. It has Status in place of
+   Ready, before Drifted: the status of the NodeClaim as the Overview counts
+   it (Ready, Provisioning, Claiming, Terminating, Not Ready), from its node
+   when the host's store has it, which the page loads, else from its
+   conditions (`nodeClaimStatus`), as plain text in the colour of the status,
+   without the badge of the cards. It leaves out ImageID and ID, which the
+   details show, and shows Drifted as a `BadgeBoolean`, `False` without the
+   condition, which Karpenter removes rather than sets to `False`.
    A link to an object of a kind that has a page opens it there (`DetailsLink`
    with `page={pageUrl(pageId.x)}`); other links open over the page. Every
    column with a value sorts, numbers and quantities by their amount.
@@ -486,8 +509,8 @@ Node Classes and GCE Node Classes have them:
   `Renderer.Component.KubeObjectDetailsProps<Renderer.K8sApi.Node>`. The host renders it for every node, after its own
   sections, so it renders nothing for a node Karpenter does not manage.
 - The pages are entries under "Karpenter" in the sidebar, which has no page of its own. The host renders a page whose
-  entry has a parent inside a tab layout with a tab for each entry of the parent ("Overview", "Node Pools", "Node
-  Claims", "Node Overlays", and "EC2 Node Classes", "AKS Node Classes" or "GCE Node Classes"), above the page; the
+  entry has a parent inside a tab layout with a tab for each entry of the parent ("Overview", "Node Claims", "Node
+  Pools", "Node Overlays", and "EC2 Node Classes", "AKS Node Classes" or "GCE Node Classes"), above the page; the
   dashboard has its own tabs below them.
 - The host renders a cluster page with `params` only. The page gets the extension from the registration
   (`Page: () => <KarpenterDashboard extension={this} />`).

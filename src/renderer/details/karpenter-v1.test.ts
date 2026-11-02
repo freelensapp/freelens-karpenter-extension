@@ -59,7 +59,7 @@ describe("formatTaint", () => {
 });
 
 describe("resourceRows", () => {
-  it("joins the resources in use and the limits, the well-known ones first", () => {
+  it("joins the resources in use and the limits, memory in units with them as written, the well-known ones first", () => {
     expect(
       resourceRows(
         { pods: "174", memory: "59687568Ki", cpu: "16", "nvidia.com/gpu": "1" },
@@ -67,7 +67,7 @@ describe("resourceRows", () => {
       ),
     ).toEqual([
       { name: "cpu", inUse: "16", limit: "64" },
-      { name: "memory", inUse: "59687568Ki", limit: "256Gi" },
+      { name: "memory", inUse: "56.9GiB", limit: "256.0GiB", written: "59687568Ki / 256Gi" },
       { name: "pods", inUse: "174", limit: undefined },
       { name: "nvidia.com/gpu", inUse: "1", limit: undefined },
     ]);

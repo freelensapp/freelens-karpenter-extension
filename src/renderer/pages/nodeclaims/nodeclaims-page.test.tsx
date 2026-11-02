@@ -40,18 +40,25 @@ const launched = new NodeClaim({
 // The host's API registry, which is observable, and the NodeClaims of its store.
 const served = observable.box(false);
 
+// The nodes of the host's store, by name.
+const nodes = observable.map<string, Renderer.K8sApi.Node>();
+
 vi.mock("../../data/stores", () => ({
   getNodeClaimStore: () => (served.get() ? { items: [launched] } : undefined),
   getEC2NodeClassStore: () =>
     served.get() ? { api: { apiBase: "/apis/karpenter.k8s.aws/v1/ec2nodeclasses" } } : undefined,
   getAKSNodeClassStore: () => undefined,
+  getNodeStore: () => ({ getByName: (name: string) => nodes.get(name) }),
   getGCENodeClassStore: () => undefined,
 }));
+
+vi.mock("../../data/use-subscribed-stores", () => ({ useSubscribedStores: vi.fn() }));
 
 const extension = {} as Renderer.LensExtension;
 
 beforeEach(() => {
   runInAction(() => served.set(true));
+  runInAction(() => nodes.clear());
 });
 
 afterEach(() => {
@@ -60,7 +67,7 @@ afterEach(() => {
 });
 
 describe("NodeClaimsPage", () => {
-  it("lists the NodeClaims with the columns of kubectl get nodeclaims -o wide", () => {
+  it("lists the NodeClaims with the columns of kubectl get nodeclaims -o wide, as the page arranges them", () => {
     render(<NodeClaimsPage extension={extension} />);
 
     expect(screen.getByRole("heading", { name: "Node Claims" })).toBeTruthy();
@@ -70,13 +77,11 @@ describe("NodeClaimsPage", () => {
       "Capacity",
       "Zone",
       "Node",
-      "Ready",
-      "Age",
-      "ImageID",
-      "ID",
       "NodePool",
       "NodeClass",
+      "Status",
       "Drifted",
+      "Age",
     ]);
     expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
       "general-9qwmt",
@@ -84,13 +89,11 @@ describe("NodeClaimsPage", () => {
       "on-demand",
       "eu-west-1b",
       "ip-10-0-2-12",
-      "True",
-      "age",
-      "ami-0a1b2c3d4e5f60001",
-      "aws:///eu-west-1b/i-0b79059e1a64a764c",
       "general",
       "default",
+      "Ready",
       "True",
+      "age",
     ]);
   });
 
@@ -109,6 +112,21 @@ describe("NodeClaimsPage", () => {
     expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
       "/extension/freelensapp--karpenter-extension/nodepools?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral",
     );
+  });
+
+  it("shows the status of the NodeClaim's node, and follows the node", () => {
+    render(<NodeClaimsPage extension={extension} />);
+    expect(screen.getByText("Ready")).toBeTruthy();
+
+    act(() =>
+      runInAction(() =>
+        nodes.set("ip-10-0-2-12", {
+          metadata: { name: "ip-10-0-2-12", labels: { "karpenter.sh/nodepool": "general" } },
+          status: { conditions: [{ type: "Ready", status: "False" }] },
+        } as unknown as Renderer.K8sApi.Node),
+      ),
+    );
+    expect(screen.getByText("Not Ready")).toBeTruthy();
   });
 
   it("follows the CRD as the host registers it and removes it", () => {

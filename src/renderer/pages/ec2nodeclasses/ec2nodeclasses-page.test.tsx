@@ -53,15 +53,15 @@ describe("EC2NodeClassesPage", () => {
     expect(screen.getByRole("heading", { name: "EC2 Node Classes" })).toBeTruthy();
     expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual([
       "Name",
+      "Role",
       "Ready",
       "Age",
-      "Role",
     ]);
     expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
       "default",
+      "KarpenterNodeRole-lab",
       "True",
       "age",
-      "KarpenterNodeRole-lab",
     ]);
   });
 
