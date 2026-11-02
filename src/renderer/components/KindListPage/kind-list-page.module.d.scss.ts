@@ -5,6 +5,8 @@ declare const classNames: {
   readonly flag: "flag";
   readonly ready: "ready";
   readonly short: "short";
+  readonly narrowBadges: "narrowBadges";
+  readonly wideBadges: "wideBadges";
   readonly number: "number";
   readonly quantity: "quantity";
   readonly notServed: "notServed";

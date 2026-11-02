@@ -105,17 +105,20 @@ export function numberColumn<K extends KubeObject>(
 
 /**
  * A column whose cell is a list of texts, such as `key=value` pairs, each a badge, as the host's `DrawerItemLabels`
- * shows labels. It sorts by the texts joined.
+ * shows labels, in a column narrower or wider than a text, for a few short texts or several long ones. It sorts by the
+ * texts joined.
  */
 export function badgesColumn<K extends KubeObject>(
   id: string,
   title: string,
   texts: (object: K) => string[],
+  width: "narrow" | "wide",
   sortBy: (object: K) => string | number | undefined = (object) => texts(object).join(" "),
 ): KindColumn<K> {
   return {
     id,
     title,
+    className: width === "narrow" ? styles.narrowBadges : styles.wideBadges,
     // A text can repeat, as the same channel in two terms: the key is its place.
     render: (object) => (
       <>

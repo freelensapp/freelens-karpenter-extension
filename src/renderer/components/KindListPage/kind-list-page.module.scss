@@ -20,6 +20,14 @@
       flex-grow: 0.5;
     }
 
+    &.narrowBadges {
+      flex-grow: 0.7;
+    }
+
+    &.wideBadges {
+      flex-grow: 1.5;
+    }
+
     &.number {
       flex-grow: 0.4;
     }

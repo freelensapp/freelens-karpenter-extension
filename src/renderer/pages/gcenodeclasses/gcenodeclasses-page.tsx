@@ -27,8 +27,8 @@ export interface GCENodeClassesPageProps {
 // The columns of `kubectl get gcenodeclasses -o wide`, after Image Family, Disks and Subnet, which the CRD has no columns for.
 const columns: KindColumn<GCENodeClass>[] = [
   nameColumn(),
-  badgesColumn("imageFamily", "Image Family", gceNodeClassImageTerms),
-  badgesColumn("disks", "Disks", gceNodeClassDiskLabels),
+  badgesColumn("imageFamily", "Image Family", gceNodeClassImageTerms, "narrow"),
+  badgesColumn("disks", "Disks", gceNodeClassDiskLabels, "wide"),
   shortTextColumn("subnet", "Subnet", gceNodeClassSubnet),
   readyColumn((nodeClass) => gceNodeClassColumnValues(nodeClass).ready, gceNodeClassSortValues.ready),
   ageColumn(),
