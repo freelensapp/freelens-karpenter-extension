@@ -3,7 +3,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - https://raw.githubusercontent.com/cloudpilot-ai/karpenter-provider-gcp/refs/tags/v0.6.1/charts/karpenter/crds/karpenter.sh_nodeclaims.yaml
-  - https://raw.githubusercontent.com/cloudpilot-ai/karpenter-provider-gcp/refs/tags/v0.6.1/charts/karpenter/crds/karpenter.sh_nodeoverlays.yaml
-  - https://raw.githubusercontent.com/cloudpilot-ai/karpenter-provider-gcp/refs/tags/v0.6.1/charts/karpenter/crds/karpenter.sh_nodepools.yaml
-  - https://raw.githubusercontent.com/cloudpilot-ai/karpenter-provider-gcp/refs/tags/v0.6.1/charts/karpenter/crds/karpenter.k8s.gcp_gcenodeclasses.yaml
+  - https://raw.githubusercontent.com/cloudpilot-ai/karpenter-provider-gcp/refs/tags/v0.7.0/charts/karpenter/crds/karpenter.sh_nodeclaims.yaml
+  - https://raw.githubusercontent.com/cloudpilot-ai/karpenter-provider-gcp/refs/tags/v0.7.0/charts/karpenter/crds/karpenter.sh_nodeoverlays.yaml
+  - https://raw.githubusercontent.com/cloudpilot-ai/karpenter-provider-gcp/refs/tags/v0.7.0/charts/karpenter/crds/karpenter.sh_nodepools.yaml
+  - https://raw.githubusercontent.com/cloudpilot-ai/karpenter-provider-gcp/refs/tags/v0.7.0/charts/karpenter/crds/karpenter.k8s.gcp_gcenodeclasses.yaml
