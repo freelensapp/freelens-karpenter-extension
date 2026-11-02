@@ -43,8 +43,8 @@ describe("nodeOverlayColumnValues", () => {
     expect(nodeOverlayColumnValues(rejected)).toEqual({ ready: "False", weight: "10" });
   });
 
-  it("has no value where a NodeOverlay has none", () => {
-    expect(nodeOverlayColumnValues(fresh)).toEqual({ ready: undefined, weight: undefined });
+  it("has no Ready where a NodeOverlay has none, and a weight of 0 without one, as Karpenter takes it", () => {
+    expect(nodeOverlayColumnValues(fresh)).toEqual({ ready: undefined, weight: "0" });
   });
 });
 
@@ -53,7 +53,7 @@ describe("nodeOverlaySortValues", () => {
     expect([ready, rejected, fresh].map(nodeOverlaySortValues.ready)).toEqual([0, 1, 3]);
   });
 
-  it("sorts the weight by its value, a NodeOverlay without one first", () => {
-    expect([ready, overlay("heavy", { weight: 100 }), fresh].map(nodeOverlaySortValues.weight)).toEqual([10, 100, -1]);
+  it("sorts the weight by its value, 0 without one", () => {
+    expect([ready, overlay("heavy", { weight: 100 }), fresh].map(nodeOverlaySortValues.weight)).toEqual([10, 100, 0]);
   });
 });

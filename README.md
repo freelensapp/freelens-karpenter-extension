@@ -98,7 +98,8 @@ Freelens shows its conditions and events with them.
 
 The NodeOverlays with the columns of `kubectl get nodeoverlays -o wide`:
 Weight, Ready and Age, sortable, searchable, and with the columns you choose.
-The entry is in the sidebar while the cluster serves NodeOverlays.
+A NodeOverlay without a weight has 0, as Karpenter takes it. The entry is in
+the sidebar while the cluster serves NodeOverlays.
 
 A click on a NodeOverlay, here or on a NodePool card, opens its details: why
 it is not ready, and why Karpenter has not validated it, such as a conflict

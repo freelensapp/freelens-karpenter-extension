@@ -42,9 +42,7 @@ export const NodeOverlayDetails = observer(
         </DrawerItem>
 
         <DrawerTitle>Spec</DrawerTitle>
-        <DrawerItem name="Weight" hidden={spec?.weight === undefined}>
-          {spec?.weight}
-        </DrawerItem>
+        <DrawerItem name="Weight">{NodeOverlay.getWeight(overlay)}</DrawerItem>
         <Badges name="Requirements" texts={(spec?.requirements ?? []).map(formatRequirement)} />
         <DrawerItem name="Price" hidden={spec?.price === undefined}>
           {spec?.price}

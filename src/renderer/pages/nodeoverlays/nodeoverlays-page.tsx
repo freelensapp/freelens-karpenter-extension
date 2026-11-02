@@ -2,13 +2,14 @@ import { observer } from "mobx-react";
 import { NodeOverlay } from "../../api/nodeoverlay/nodeoverlay-v1alpha1";
 import {
   ageColumn,
+  booleanColumn,
   type KindColumn,
   KindListPage,
   nameColumn,
-  textColumn,
+  numberColumn,
 } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { getNodeOverlayStore } from "../../data/stores";
+import { conditionFlag } from "../../utils/printer-columns";
 import { nodeOverlayColumnValues, nodeOverlaySortValues } from "./nodeoverlay-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
@@ -20,13 +21,13 @@ export interface NodeOverlaysPageProps {
 // The columns of `kubectl get nodeoverlays -o wide`, with Ready right before Age, last.
 const columns: KindColumn<NodeOverlay>[] = [
   nameColumn(),
-  textColumn("weight", "Weight", (overlay) => nodeOverlayColumnValues(overlay).weight, nodeOverlaySortValues.weight),
-  {
-    id: "ready",
-    title: "Ready",
-    render: (overlay) => <ConditionStatus status={nodeOverlayColumnValues(overlay).ready} />,
-    sortBy: nodeOverlaySortValues.ready,
-  },
+  numberColumn("weight", "Weight", (overlay) => nodeOverlayColumnValues(overlay).weight, nodeOverlaySortValues.weight),
+  booleanColumn(
+    "ready",
+    "Ready",
+    (overlay) => conditionFlag(nodeOverlayColumnValues(overlay).ready),
+    nodeOverlaySortValues.ready,
+  ),
   ageColumn(),
 ];
 

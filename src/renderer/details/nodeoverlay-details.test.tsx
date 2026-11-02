@@ -130,7 +130,8 @@ describe("NodeOverlayDetails", () => {
     ]) {
       expect(screen.getByText(text)).toBeTruthy();
     }
-    expect(screen.queryByText("Weight")).toBeNull();
+    // Without a weight, Karpenter takes it as 0.
+    expect(screen.getByText("Weight").nextSibling?.textContent).toBe("0");
     expect(screen.queryByText("Applies To")).toBeNull();
   });
 
