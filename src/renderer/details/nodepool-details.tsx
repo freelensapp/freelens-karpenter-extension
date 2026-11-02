@@ -54,9 +54,7 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
           </DetailsLink>
         )}
       </DrawerItem>
-      <DrawerItem name="Weight" hidden={spec?.weight === undefined}>
-        {spec?.weight}
-      </DrawerItem>
+      <DrawerItem name="Weight">{NodePool.getWeight(nodePool)}</DrawerItem>
       <DrawerItem name="Replicas" hidden={spec?.replicas === undefined}>
         {`${spec?.replicas} (static Node Pool)`}
       </DrawerItem>

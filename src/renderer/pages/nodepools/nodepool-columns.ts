@@ -12,8 +12,8 @@ export interface NodePoolColumnValues {
   nodes: string | undefined;
   /** Ready: `.status.conditions[?(@.type=="Ready")].status`. */
   ready: string | undefined;
-  /** Weight: `.spec.weight`, `-o wide`. */
-  weight: string | undefined;
+  /** Weight: `.spec.weight`, `-o wide`; 0 without one, the weight Karpenter takes. */
+  weight: string;
   /** CPU: `.status.resources.cpu`, `-o wide`. */
   cpu: string | undefined;
   /** Memory: `.status.resources.memory`, `-o wide`. */
@@ -26,7 +26,7 @@ export function nodePoolColumnValues(nodePool: NodePool): NodePoolColumnValues {
     nodeClass: NodePool.getTemplateSpec(nodePool)?.nodeClassRef?.name,
     nodes: columnText(nodePool.status?.nodes),
     ready: conditionStatus(nodePool.status?.conditions, "Ready"),
-    weight: columnText(nodePool.spec?.weight),
+    weight: String(NodePool.getWeight(nodePool)),
     cpu: columnText(nodePool.status?.resources?.cpu),
     memory: columnText(nodePool.status?.resources?.memory),
   };
@@ -37,7 +37,7 @@ export const nodePoolSortValues: Record<keyof NodePoolColumnValues, (nodePool: N
   nodeClass: (nodePool) => NodePool.getTemplateSpec(nodePool)?.nodeClassRef?.name ?? "",
   nodes: (nodePool) => nodePool.status?.nodes ?? -1,
   ready: (nodePool) => conditionStatusOrder(conditionStatus(nodePool.status?.conditions, "Ready")),
-  weight: (nodePool) => nodePool.spec?.weight ?? -1,
+  weight: (nodePool) => NodePool.getWeight(nodePool),
   cpu: (nodePool) =>
     nodePool.status?.resources?.cpu === undefined ? -1 : parseCpuCores(nodePool.status.resources.cpu),
   memory: (nodePool) =>

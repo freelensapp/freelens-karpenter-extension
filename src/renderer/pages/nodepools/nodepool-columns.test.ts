@@ -52,7 +52,7 @@ describe("nodePoolColumnValues", () => {
       nodeClass: "default",
       nodes: undefined,
       ready: undefined,
-      weight: undefined,
+      weight: "0",
       cpu: undefined,
       memory: undefined,
     });
@@ -71,7 +71,7 @@ describe("nodePoolSortValues", () => {
     expect(nodePoolSortValues.nodes(small)).toBe(10);
     expect(nodePoolSortValues.nodes(none)).toBe(-1);
     expect(nodePoolSortValues.weight(small)).toBeLessThan(nodePoolSortValues.weight(general) as number);
-    expect(nodePoolSortValues.weight(none)).toBe(-1);
+    expect(nodePoolSortValues.weight(none)).toBe(0);
     expect(nodePoolSortValues.cpu(small)).toBe(0.5);
     expect(nodePoolSortValues.cpu(general)).toBe(16);
     expect(nodePoolSortValues.memory(small)).toBe(0.5);

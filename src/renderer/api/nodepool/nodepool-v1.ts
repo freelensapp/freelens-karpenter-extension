@@ -26,6 +26,11 @@ export class NodePool extends Renderer.K8sApi.LensExtensionKubeObject<
     return nodePool.spec?.template?.spec;
   }
 
+  /** The weight of a NodePool; none is 0, as Karpenter takes it. A higher weight takes precedence. */
+  static getWeight(nodePool: NodePool): number {
+    return nodePool.spec?.weight ?? 0;
+  }
+
   static getCondition(nodePool: NodePool, type: string): Condition | undefined {
     return nodePool.status?.conditions?.find((condition) => condition.type === type);
   }

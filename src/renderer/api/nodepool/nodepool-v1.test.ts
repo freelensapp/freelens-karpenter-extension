@@ -41,6 +41,26 @@ describe("NodePool (karpenter.sh/v1)", () => {
     expect(NodePool.getTemplateSpec(nodePool)?.nodeClassRef.kind).toBe("EC2NodeClass");
   });
 
+  it("takes no weight for 0", () => {
+    expect(NodePool.getWeight(nodePool)).toBe(0);
+    expect(
+      NodePool.getWeight(
+        new NodePool({
+          ...nodePool,
+          spec: {
+            template: {
+              spec: {
+                nodeClassRef: { group: "karpenter.k8s.aws", kind: "EC2NodeClass", name: "default" },
+                requirements: [],
+              },
+            },
+            weight: 50,
+          },
+        }),
+      ),
+    ).toBe(50);
+  });
+
   it("finds a condition by type", () => {
     expect(NodePool.getCondition(nodePool, "Ready")?.reason).toBe("NodeClassNotReady");
     expect(NodePool.getCondition(nodePool, "Missing")).toBeUndefined();
