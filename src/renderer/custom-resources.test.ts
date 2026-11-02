@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AKSNodeClass as AKSNodeClassV1alpha2 } from "./api/aksnodeclass/aksnodeclass-v1alpha2";
 import { AKSNodeClass as AKSNodeClassV1beta1 } from "./api/aksnodeclass/aksnodeclass-v1beta1";
 import { EC2NodeClass } from "./api/ec2nodeclass/ec2nodeclass-v1";
+import { GCECustomMachineType } from "./api/gcecustommachinetype/gcecustommachinetype-v1alpha1";
 import { GCENodeClass } from "./api/gcenodeclass/gcenodeclass-v1alpha1";
 import { NodeClaim } from "./api/nodeclaim/nodeclaim-v1";
 import { NodeOverlay } from "./api/nodeoverlay/nodeoverlay-v1alpha1";
@@ -18,6 +19,7 @@ describe("customResources", () => {
       AKSNodeClassV1beta1,
       AKSNodeClassV1alpha2,
       GCENodeClass,
+      GCECustomMachineType,
     ]);
   });
 });
