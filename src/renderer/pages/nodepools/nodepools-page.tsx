@@ -49,7 +49,7 @@ const columns: KindColumn<NodePool>[] = [
     sortBy: nodePoolSortValues.nodeClass,
   },
   numberColumn("nodes", "Nodes", (nodePool) => nodePoolColumnValues(nodePool).nodes, nodePoolSortValues.nodes),
-  textColumn("weight", "Weight", (nodePool) => nodePoolColumnValues(nodePool).weight, nodePoolSortValues.weight),
+  numberColumn("weight", "Weight", (nodePool) => nodePoolColumnValues(nodePool).weight, nodePoolSortValues.weight),
   numberColumn("cpu", "CPU", (nodePool) => nodePoolColumnValues(nodePool).cpu, nodePoolSortValues.cpu),
   textColumn("memory", "Memory", (nodePool) => nodePoolColumnValues(nodePool).memory, nodePoolSortValues.memory),
   booleanColumn(

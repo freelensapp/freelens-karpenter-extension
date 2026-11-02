@@ -420,8 +420,8 @@ Node Classes and GCE Node Classes have them:
    for a condition's status), a link (`DetailsLink`) or the host's
    `BadgeBoolean` for a flag (`booleanColumn`, as Ready of the Node Pools
    page) on top of the value is fine, another value is not. A short number
-   gets a narrow column (`numberColumn`, as Nodes and CPU of the Node Pools
-   page). The one exception is the Node Claims page. It has Status in place of
+   gets a narrow column (`numberColumn`, as Nodes, Weight and CPU of the Node
+   Pools page). The one exception is the Node Claims page. It has Status in place of
    Ready, before Drifted: the status of the NodeClaim as the Overview counts
    it (Ready, Provisioning, Claiming, Terminating, Not Ready), from its node
    when the host's store has it, which the page loads, else from its
