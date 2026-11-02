@@ -417,12 +417,13 @@ Node Classes and GCE Node Classes have them:
    `jsonPath`, from a pure function of `pages/<plural>/<kind>-columns.ts`
    with a test; a colour (`ConditionStatus` for a condition's status) or a
    link (`DetailsLink`) on top of the value is fine, another value is not.
-   The one exception is Status of the Node Claims page, in place of Ready:
-   the status of the NodeClaim as the Overview counts it (Ready,
+   The one exception is the Node Claims page. It has Status in place of
+   Ready: the status of the NodeClaim as the Overview counts it (Ready,
    Provisioning, Claiming, Terminating, Not Ready), from its node when the
    host's store has it, which the page loads, else from its conditions
    (`nodeClaimStatus`), as plain text in the colour of the status, without
-   the badge of the cards.
+   the badge of the cards. It leaves out ImageID and ID, which the details
+   show, and has Age last.
    A link to an object of a kind that has a page opens it there (`DetailsLink`
    with `page={pageUrl(pageId.x)}`); other links open over the page. Every
    column with a value sorts, numbers and quantities by their amount.

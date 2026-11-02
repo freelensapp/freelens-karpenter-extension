@@ -189,11 +189,11 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
 
   it("lists the NodeClaims on their page, and shows the details of one", async () => {
     // The entry of the sidebar, and the columns of kubectl get nodeclaims -o
-    // wide, with Status in place of Ready. general-9qwmt is the one NodeClaim
-    // that drifted; general-pend1 has no node yet: it is Claiming, and its
-    // Node, ImageID and ID are empty. Why it has none, the reason and message
-    // of its Launched condition, is in the details only, as its capacity type
-    // and its requirement.
+    // wide, with Status in place of Ready, without ImageID and ID, and Age
+    // last. general-9qwmt is the one NodeClaim that drifted; general-pend1 has
+    // no node yet: it is Claiming and has no Node. Why it has none, the reason
+    // and message of its Launched condition, is in the details only, as its
+    // capacity type and its requirement.
     await openKindPage(frame, "nodeclaims", "Node Claims");
 
     await expectListRow(frame, nodeClaimColumns, [
@@ -203,23 +203,21 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "eu-west-1b",
       "ip-10-0-2-12.eu-west-1.compute.internal",
       "Ready",
-      agePattern,
-      "ami-0a1b2c3d4e5f60001",
-      "aws:///eu-west-1b/i-0b79059e1a64a764c",
       "general",
       "default",
       "True",
+      agePattern,
     ]);
 
     const pending = await expectListRow(frame, nodeClaimColumns, [
       "general-pend1",
       "on-demand",
       "Claiming",
-      agePattern,
       "general",
       "default",
+      agePattern,
     ]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "ImageID", "ID", "Drifted"]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Drifted"]);
 
     await clickAndExpectDetails(
       frame,

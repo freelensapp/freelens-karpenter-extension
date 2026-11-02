@@ -170,10 +170,10 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
 
   it("lists the NodeClaims on their page, and shows the details of one", async () => {
     // The entry of the sidebar, and the columns of kubectl get nodeclaims -o
-    // wide, with Status in place of Ready. gke-d3e4f is the one NodeClaim that
-    // drifted; gke-pend1 has no node yet: it is Claiming, and its Node, ImageID
-    // and ID are empty. The capacity and allocatable CPUs of gke-d3e4f, and its
-    // requirement, are in the details only.
+    // wide, with Status in place of Ready, without ImageID and ID, and Age
+    // last. gke-d3e4f is the one NodeClaim that drifted; gke-pend1 has no node
+    // yet: it is Claiming and has no Node. The capacity and allocatable CPUs of
+    // gke-d3e4f, and its requirement, are in the details only.
     await openKindPage(frame, "nodeclaims", "Node Claims");
 
     const row = await expectListRow(frame, nodeClaimColumns, [
@@ -183,23 +183,21 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "us-central1-b",
       "karpenter-gke-d3e4f",
       "Ready",
-      agePattern,
-      "projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre",
-      "gce://lab/us-central1-b/karpenter-gke-d3e4f",
       "gke",
       "default",
       "True",
+      agePattern,
     ]);
 
     const pending = await expectListRow(frame, nodeClaimColumns, [
       "gke-pend1",
       "spot",
       "Claiming",
-      agePattern,
       "gke",
       "default",
+      agePattern,
     ]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "ImageID", "ID", "Drifted"]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Drifted"]);
 
     await clickAndExpectDetails(frame, row.getByText("gke-d3e4f", { exact: true }).first(), /^NodeClaim: gke-d3e4f/);
     await expectInDetails(frame, ["8 / 7910m", "node.kubernetes.io/instance-type In [n2-standard-8]"]);

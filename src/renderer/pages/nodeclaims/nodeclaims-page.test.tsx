@@ -67,7 +67,7 @@ afterEach(() => {
 });
 
 describe("NodeClaimsPage", () => {
-  it("lists the NodeClaims with the columns of kubectl get nodeclaims -o wide", () => {
+  it("lists the NodeClaims with the columns of kubectl get nodeclaims -o wide, as the page arranges them", () => {
     render(<NodeClaimsPage extension={extension} />);
 
     expect(screen.getByRole("heading", { name: "Node Claims" })).toBeTruthy();
@@ -78,12 +78,10 @@ describe("NodeClaimsPage", () => {
       "Zone",
       "Node",
       "Status",
-      "Age",
-      "ImageID",
-      "ID",
       "NodePool",
       "NodeClass",
       "Drifted",
+      "Age",
     ]);
     expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
       "general-9qwmt",
@@ -92,12 +90,10 @@ describe("NodeClaimsPage", () => {
       "eu-west-1b",
       "ip-10-0-2-12",
       "Ready",
-      "age",
-      "ami-0a1b2c3d4e5f60001",
-      "aws:///eu-west-1b/i-0b79059e1a64a764c",
       "general",
       "default",
       "True",
+      "age",
     ]);
   });
 

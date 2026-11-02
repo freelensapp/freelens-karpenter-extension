@@ -76,7 +76,8 @@ const NodeClassLink = observer(function NodeClassLink({ nodeClaim }: { nodeClaim
   );
 });
 
-// The columns of `kubectl get nodeclaims -o wide`, in its order, with Status in place of Ready.
+// The columns of `kubectl get nodeclaims -o wide`, in its order, with Status in place of Ready, without ImageID and ID,
+// and Age last.
 const columns: KindColumn<NodeClaim>[] = [
   nameColumn(),
   textColumn("type", "Type", (nodeClaim) => nodeClaimColumnValues(nodeClaim).type, nodeClaimSortValues.type),
@@ -99,14 +100,6 @@ const columns: KindColumn<NodeClaim>[] = [
     render: (nodeClaim) => <StatusCell nodeClaim={nodeClaim} />,
     sortBy: (nodeClaim) => nodeClaimStatusOrder(nodeClaimStatus(nodeClaim, nodeOf(nodeClaim))),
   },
-  ageColumn(),
-  textColumn(
-    "imageID",
-    "ImageID",
-    (nodeClaim) => nodeClaimColumnValues(nodeClaim).imageID,
-    nodeClaimSortValues.imageID,
-  ),
-  textColumn("id", "ID", (nodeClaim) => nodeClaimColumnValues(nodeClaim).id, nodeClaimSortValues.id),
   {
     id: "nodePool",
     title: "NodePool",
@@ -125,6 +118,7 @@ const columns: KindColumn<NodeClaim>[] = [
     render: (nodeClaim) => <ConditionStatus status={nodeClaimColumnValues(nodeClaim).drifted} />,
     sortBy: nodeClaimSortValues.drifted,
   },
+  ageColumn(),
 ];
 
 /**

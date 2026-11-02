@@ -830,7 +830,10 @@ export async function expectNoKindPageEntry(frame: Frame, menuId: string, served
 /** The columns of `kubectl get nodepools -o wide`, which the Node Pools page has. */
 export const nodePoolColumns = ["Name", "NodeClass", "Nodes", "Ready", "Age", "Weight", "CPU", "Memory"];
 
-/** The columns of `kubectl get nodeclaims -o wide`, which the Node Claims page has, with Status in place of Ready. */
+/**
+ * The columns of `kubectl get nodeclaims -o wide`, which the Node Claims page has, with Status in place of Ready,
+ * without ImageID and ID, and Age last.
+ */
 export const nodeClaimColumns = [
   "Name",
   "Type",
@@ -838,12 +841,10 @@ export const nodeClaimColumns = [
   "Zone",
   "Node",
   "Status",
-  "Age",
-  "ImageID",
-  "ID",
   "NodePool",
   "NodeClass",
   "Drifted",
+  "Age",
 ];
 
 /** The columns of `kubectl get nodeoverlays -o wide`, which the Node Overlays page has. */

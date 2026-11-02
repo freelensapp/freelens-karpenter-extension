@@ -60,14 +60,12 @@ a time bucket highlights its events in the tables.
 
 ### Node Claims
 
-The NodeClaims with the columns of `kubectl get nodeclaims -o wide`: Type,
-Capacity, Zone, Node, Status, Age, ImageID, ID, NodePool, NodeClass and
-Drifted, sortable, searchable, and with the columns you choose. Status takes
-the place of Ready: Ready, Provisioning, Claiming, Terminating or Not Ready,
-in the colours of the Overview. A NodeClaim still waiting for its node is
-Claiming and has no Node. The node, the NodePool and the node
-class are links. The entry is in the sidebar while the cluster serves
-NodeClaims.
+The NodeClaims with the columns Type, Capacity, Zone, Node, Status, NodePool,
+NodeClass, Drifted and Age, sortable, searchable, and with the columns you
+choose. Status is Ready, Provisioning, Claiming, Terminating or Not Ready, in
+the colours of the Overview. A NodeClaim still waiting for its node is
+Claiming and has no Node. The node, the NodePool and the node class are links.
+The entry is in the sidebar while the cluster serves NodeClaims.
 
 A click on a NodeClaim, here or in the tabs, opens its details: why it is not
 ready, the first of launched, registered and initialized it has not reached
