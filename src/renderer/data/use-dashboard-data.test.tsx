@@ -10,6 +10,7 @@ import { useKarpenterDashboardData } from "./use-dashboard-data";
 // The host registers the APIs of the CRDs after the cluster frame has loaded them, and its registry is
 // observable: `served` stands for it.
 const served = observable.box(false);
+const customMachineTypesServed = observable.box(false);
 
 vi.mock("./stores", () => ({
   getNodePoolStore: () => (served.get() ? { api: { apiBase: "/apis/karpenter.sh/v1/nodepools" } } : undefined),
@@ -18,6 +19,10 @@ vi.mock("./stores", () => ({
   getEC2NodeClassStore: () => undefined,
   getAKSNodeClassStore: () => undefined,
   getGCENodeClassStore: () => undefined,
+  getGCECustomMachineTypeStore: () =>
+    customMachineTypesServed.get()
+      ? { api: { apiBase: "/apis/karpenter.k8s.gcp/v1alpha1/gcecustommachinetypes" } }
+      : undefined,
 }));
 
 vi.mock("./load", () => ({ loadKarpenterData: vi.fn() }));
@@ -30,7 +35,10 @@ const Probe = observer(() => {
 });
 
 beforeEach(() => {
-  runInAction(() => served.set(false));
+  runInAction(() => {
+    served.set(false);
+    customMachineTypesServed.set(false);
+  });
 });
 
 afterEach(() => {
@@ -70,6 +78,23 @@ describe("useKarpenterDashboardData", () => {
     expect(screen.getByText("loading")).toBeDefined();
     expect(await screen.findByText("ready 1.15.0")).toBeDefined();
     expect(load).toHaveBeenCalledTimes(2);
+  });
+
+  it("loads again when the GCECustomMachineType CRD of GCP v0.7.0 appears, and stops the first load's subscriptions", async () => {
+    const first = vi.fn();
+    load
+      .mockResolvedValueOnce({ version: "0.6.1", dispose: first })
+      .mockResolvedValueOnce({ version: "0.7.0", dispose: vi.fn() });
+    runInAction(() => served.set(true));
+
+    render(<Probe />);
+    expect(await screen.findByText("ready 0.6.1")).toBeDefined();
+
+    act(() => runInAction(() => customMachineTypesServed.set(true)));
+
+    expect(await screen.findByText("ready 0.7.0")).toBeDefined();
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(first).toHaveBeenCalledTimes(1);
   });
 
   it("stops the subscriptions when the page is left", async () => {

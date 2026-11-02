@@ -3,6 +3,7 @@ import { fetchControllerVersion, parseVersionFromCrd } from "./controller-versio
 import {
   getAKSNodeClassStore,
   getEC2NodeClassStore,
+  getGCECustomMachineTypeStore,
   getGCENodeClassStore,
   getKarpenterEventStore,
   getNodeClaimStore,
@@ -105,6 +106,7 @@ export async function loadKarpenterData(signal: AbortSignal): Promise<KarpenterD
     getEC2NodeClassStore(),
     getAKSNodeClassStore(),
     getGCENodeClassStore(),
+    getGCECustomMachineTypeStore(),
   ];
   (await Promise.all(stores.map((store) => loadAndSubscribe(store, signal)))).forEach(keep);
 
