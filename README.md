@@ -149,10 +149,10 @@ links. Freelens shows its conditions and events with them.
 
 The GCENodeClasses with the columns of `kubectl get gcenodeclasses -o wide`,
 Ready and Age, after Image Family, Disks and Subnet. Image Family has a
-`family=version` badge for each image selector term with a family, such as
-`ContainerOptimizedOS=latest`, `latest` when the term names no version, or the
-image family of a node class without terms; Disks has a badge for each disk,
-such as `boot 100 GiB pd-balanced`; Subnet has the subnet range name. They are
+`family=version` badge for each image selector term with a family, its
+channel when it names no version, such as `ContainerOptimizedOS=stable`, and
+`latest` without either, or the image family of a node class without terms;
+Disks has a badge for each disk, such as `boot 100 GiB pd-balanced`; Subnet has the subnet range name. They are
 sortable, searchable, and with the columns you choose. The entry is in the
 sidebar while the cluster serves GCENodeClasses, which only Karpenter on GCP
 does.

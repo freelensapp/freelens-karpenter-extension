@@ -427,8 +427,9 @@ Node Classes and GCE Node Classes have them:
    (`numberColumn`, as Nodes, Weight and CPU of the Node Pools page).
    The GCE Node Classes page has three columns the CRD has none for, first:
    Image Family, a `family=version` badge for each image selector term with a
-   family, of an alias term too, `latest` without a version, or the image
-   family alone at `latest` (`badgesColumn`, `gceNodeClassImageTerms`); Disks, a badge for each disk, boot, size and
+   family, of an alias term too, its channel without a version, `latest`
+   without either, or the image family alone at `latest` (`badgesColumn`,
+   `gceNodeClassImageTerms`); Disks, a badge for each disk, boot, size and
    category (`gceNodeClassDiskLabels`); and Subnet, `spec.subnetRangeName`
    (`shortTextColumn`).
    The other exception is the Node Claims page. It has Status in place of

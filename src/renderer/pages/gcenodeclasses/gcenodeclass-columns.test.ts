@@ -62,7 +62,7 @@ describe("gceNodeClassImageTerms", () => {
       spec: { imageSelectorTerms: [], ...spec },
     });
 
-  it("has the family of each term with its version, latest without one, and nothing of a term by id", () => {
+  it("has the family of each term with its version, its channel without one, and nothing of a term by id", () => {
     expect(
       gceNodeClassImageTerms(
         withSpec({
@@ -73,7 +73,7 @@ describe("gceNodeClassImageTerms", () => {
           ],
         }),
       ),
-    ).toEqual(["ContainerOptimizedOS=latest", "Ubuntu2404=v20260101"]);
+    ).toEqual(["ContainerOptimizedOS=stable", "Ubuntu2404=v20260101"]);
   });
 
   it("has the family and the version of an alias term", () => {

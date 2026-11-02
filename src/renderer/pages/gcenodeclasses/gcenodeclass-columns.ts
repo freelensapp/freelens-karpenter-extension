@@ -29,15 +29,18 @@ export const gceNodeClassSortValues: Record<
   ready: (nodeClass) => conditionStatusOrder(gceNodeClassColumnValues(nodeClass).ready),
 };
 
+/** The fields of an image selector term that name an image family, also of one made of `spec.imageFamily`. */
+type ImageTerm = { alias?: string; family?: string; channel?: string; version?: string };
+
 /**
  * Image Family, which the CRD has no printer column for: the family of each image selector term with its version,
- * `family=version`, `latest` without one; an alias term, `Family@version`, is the same pair. A term without a family,
- * which selects an image by id, has none. A node class without terms, which the CRD of v0.6.1 rejects, with
- * `spec.imageFamily` alone has that family at `latest`.
+ * `family=version`, its channel without one, `latest` without either; an alias term, `Family@version`, is the same
+ * pair. A term without a family, which selects an image by id, has none. A node class without terms, which the CRD of
+ * v0.6.1 rejects, with `spec.imageFamily` alone has that family at `latest`.
  */
 export function gceNodeClassImageTerms(nodeClass: GCENodeClass): string[] {
   const spec = nodeClass.spec;
-  const terms: { alias?: string; family?: string; version?: string }[] = spec?.imageSelectorTerms?.length
+  const terms: ImageTerm[] = spec?.imageSelectorTerms?.length
     ? spec.imageSelectorTerms
     : spec?.imageFamily
       ? [{ family: spec.imageFamily }]
@@ -45,7 +48,7 @@ export function gceNodeClassImageTerms(nodeClass: GCENodeClass): string[] {
   return terms.flatMap((term) => {
     const [aliasFamily, aliasVersion] = term.alias?.split("@") ?? [];
     const family = term.family ?? aliasFamily;
-    return family ? [`${family}=${term.version || aliasVersion || "latest"}`] : [];
+    return family ? [`${family}=${term.version || term.channel || aliasVersion || "latest"}`] : [];
   });
 }
 
