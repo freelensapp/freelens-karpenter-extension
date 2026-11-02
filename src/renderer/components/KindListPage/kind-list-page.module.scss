@@ -1,15 +1,19 @@
 .page {
   :global(.TableCell) {
     &.name {
-      flex-grow: 2;
+      flex-grow: 0.6;
     }
 
     &.age {
-      flex-grow: 0.5;
+      flex-grow: 0.4;
     }
 
     &.flag {
       flex-grow: 0.6;
+    }
+
+    &.ready {
+      flex-grow: 0.5;
     }
 
     &.number {

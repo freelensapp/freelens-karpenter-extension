@@ -33,7 +33,7 @@ export const gceNodeClassSortValues: Record<
 const termFields = ["alias", "id", "family", "channel", "version"];
 
 /**
- * ImageFamily, which the CRD has no printer column for: the image selector terms, each field of each term that is set
+ * Image Family, which the CRD has no printer column for: the image selector terms, each field of each term that is set
  * as `key=value`, in the order of the terms and of the fields of the Go struct. A node class without terms, which the
  * CRD of v0.6.1 rejects, with `spec.imageFamily` alone has its family as a term.
  */

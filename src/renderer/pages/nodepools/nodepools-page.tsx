@@ -2,17 +2,16 @@ import { observer } from "mobx-react";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
 import {
   ageColumn,
-  booleanColumn,
   type KindColumn,
   KindListPage,
   nameColumn,
   numberColumn,
   quantityColumn,
+  readyColumn,
 } from "../../components/KindListPage/KindListPage";
 import { DetailsLink } from "../../components/shared/DetailsLink";
 import { detectProvider, nodeClassPage, nodeClassSelfLink } from "../../data/nodeclass";
 import { getNodePoolStore } from "../../data/stores";
-import { conditionFlag } from "../../utils/printer-columns";
 import { nodePoolColumnValues, nodePoolSortValues } from "./nodepool-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
@@ -58,12 +57,7 @@ const columns: KindColumn<NodePool>[] = [
     (nodePool) => nodePoolColumnValues(nodePool).memory,
     nodePoolSortValues.memory,
   ),
-  booleanColumn(
-    "ready",
-    "Ready",
-    (nodePool) => conditionFlag(nodePoolColumnValues(nodePool).ready),
-    nodePoolSortValues.ready,
-  ),
+  readyColumn((nodePool) => nodePoolColumnValues(nodePool).ready, nodePoolSortValues.ready),
   ageColumn(),
 ];
 

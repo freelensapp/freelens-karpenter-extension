@@ -417,16 +417,16 @@ Node Classes and GCE Node Classes have them:
    every page: Ready comes right before Age, and Age is the last column. A
    cell has the value of the column's `jsonPath`, from a pure function of
    `pages/<plural>/<kind>-columns.ts` with a test; a link (`DetailsLink`) or
-   the host's `BadgeBoolean` for a flag (`booleanColumn`: Ready of every page
-   that has it, `-` for `Unknown`, with `conditionFlag`) on top of the value
-   is fine, another value is not. So is a quantity of memory or ephemeral
+   the host's `BadgeBoolean` for a flag (`booleanColumn`; `readyColumn` for
+   Ready of every page that has it, `-` for `Unknown`) on top of the value is
+   fine, another value is not. So is a quantity of memory or ephemeral
    storage in units, as the host's Node details show it, `15.5GiB`, with the
    quantity as written in its tooltip (`resourceQuantity` of
    `utils/quantity.ts`, `quantityColumn`, as Memory of the Node Pools page;
    the resources in the details too). A short number gets a narrow column
    (`numberColumn`, as Nodes, Weight and CPU of the Node Pools page).
-   The GCE Node Classes page has one column the CRD has none for, ImageFamily
-   first: the image selector terms, each field a `key=value` badge
+   The GCE Node Classes page has one column the CRD has none for, Image
+   Family, first: the image selector terms, each field a `key=value` badge
    (`badgesColumn`), in the order of the Go struct, not the sorted keys the
    API server returns, or the image family alone as a term
    (`gceNodeClassImageTerms`).

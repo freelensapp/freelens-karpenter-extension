@@ -3,6 +3,7 @@ declare const classNames: {
   readonly name: "name";
   readonly age: "age";
   readonly flag: "flag";
+  readonly ready: "ready";
   readonly number: "number";
   readonly quantity: "quantity";
   readonly notServed: "notServed";

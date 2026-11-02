@@ -2,14 +2,13 @@ import { observer } from "mobx-react";
 import { NodeOverlay } from "../../api/nodeoverlay/nodeoverlay-v1alpha1";
 import {
   ageColumn,
-  booleanColumn,
   type KindColumn,
   KindListPage,
   nameColumn,
   numberColumn,
+  readyColumn,
 } from "../../components/KindListPage/KindListPage";
 import { getNodeOverlayStore } from "../../data/stores";
-import { conditionFlag } from "../../utils/printer-columns";
 import { nodeOverlayColumnValues, nodeOverlaySortValues } from "./nodeoverlay-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
@@ -22,12 +21,7 @@ export interface NodeOverlaysPageProps {
 const columns: KindColumn<NodeOverlay>[] = [
   nameColumn(),
   numberColumn("weight", "Weight", (overlay) => nodeOverlayColumnValues(overlay).weight, nodeOverlaySortValues.weight),
-  booleanColumn(
-    "ready",
-    "Ready",
-    (overlay) => conditionFlag(nodeOverlayColumnValues(overlay).ready),
-    nodeOverlaySortValues.ready,
-  ),
+  readyColumn((overlay) => nodeOverlayColumnValues(overlay).ready, nodeOverlaySortValues.ready),
   ageColumn(),
 ];
 

@@ -221,7 +221,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
   });
 
   it("lists the GCENodeClasses on their page, and shows the details of one", async () => {
-    // The entry of the sidebar, ImageFamily, with the fields of the image
+    // The entry of the sidebar, Image Family, with the fields of the image
     // selector term in the order of the Go struct, and the columns of kubectl
     // get gcenodeclasses -o wide. The image selector term of default with the
     // image it resolved, its boot disk and its kubelet configuration are in the

@@ -51,7 +51,7 @@ describe("GCENodeClassesPage", () => {
     expect(screen.getByRole("heading", { name: "GCE Node Classes" })).toBeTruthy();
     expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual([
       "Name",
-      "ImageFamily",
+      "Image Family",
       "Ready",
       "Age",
     ]);

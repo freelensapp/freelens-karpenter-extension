@@ -1,5 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
+import { conditionFlag } from "../../utils/printer-columns";
 import { resourceQuantity } from "../../utils/quantity";
 import styles from "./kind-list-page.module.scss";
 
@@ -115,6 +116,20 @@ export function badgesColumn<K extends KubeObject>(
       </>
     ),
     sortBy,
+  };
+}
+
+/**
+ * The Ready column of every page that has one: the status of the Ready condition as the host's badge of a boolean,
+ * `-` for `Unknown` and none (`conditionFlag`), in a column narrower than another flag.
+ */
+export function readyColumn<K extends KubeObject>(
+  status: (object: K) => string | undefined,
+  sortBy: (object: K) => string | number | undefined,
+): KindColumn<K> {
+  return {
+    ...booleanColumn("ready", "Ready", (object) => conditionFlag(status(object)), sortBy),
+    className: styles.ready,
   };
 }
 
