@@ -330,9 +330,7 @@ pnpm dev
 
 It rebuilds the extension whenever a source file changes, and Freelens
 reloads the extension after each rebuild, without a restart and without
-packing: a few seconds after you save. A reload takes the extension down and
-up again, so an open Karpenter page closes; open it again from the sidebar.
-Stop `pnpm dev` with `ctrl`+`C`.
+packing. Stop it with `ctrl`+`C`.
 
 Neither `pnpm build` nor `pnpm dev` type-checks; run `pnpm type:check` for
 that. A change to `main` or `renderer` in `package.json` needs Freelens
@@ -408,8 +406,8 @@ Optional variables:
   through the context `kind-<name>`.
 - `FREELENS_CDP_URL`: the CDP endpoint of Freelens dev,
   `http://127.0.0.1:9223` by default.
-- `FREELENS_MAIN_LOG`: a log of the main process to check for errors. Without
-  it only the renderer's errors are checked.
+- `FREELENS_MAIN_LOG`: a log of the main process to check for errors, such
+  as its `lens.log`. Without it only the renderer's errors are checked.
 
 ### Testing the extension with unpublished Freelens
 
