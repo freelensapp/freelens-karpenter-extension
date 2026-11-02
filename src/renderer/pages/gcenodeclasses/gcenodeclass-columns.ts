@@ -57,3 +57,21 @@ function fieldOrder(key: string): number {
   const index = termFields.indexOf(key);
   return index === -1 ? termFields.length : index;
 }
+
+/**
+ * Disks, which the CRD has no printer column for: each disk of `spec.disks` as one short text, the boot disk said so,
+ * then its size and its category, `boot 100 GiB pd-balanced`; the details have the rest of each disk.
+ */
+export function gceNodeClassDiskLabels(nodeClass: GCENodeClass): string[] {
+  return (nodeClass.spec?.disks ?? []).map(
+    (disk) =>
+      [disk.boot ? "boot" : undefined, disk.sizeGiB ? `${disk.sizeGiB} GiB` : undefined, disk.category]
+        .filter(Boolean)
+        .join(" ") || "disk",
+  );
+}
+
+/** Subnet, which the CRD has no printer column for: `spec.subnetRangeName`; an empty one is none. */
+export function gceNodeClassSubnet(nodeClass: GCENodeClass): string | undefined {
+  return nodeClass.spec?.subnetRangeName || undefined;
+}

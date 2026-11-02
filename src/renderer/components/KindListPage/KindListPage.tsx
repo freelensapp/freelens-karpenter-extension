@@ -84,6 +84,15 @@ export function quantityColumn<K extends KubeObject>(
   };
 }
 
+/** A narrow column whose cell is a short text, such as a name of a range; one without a text sorts first. */
+export function shortTextColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  value: (object: K) => string | undefined,
+): KindColumn<K> {
+  return textColumn(id, title, value, (object) => value(object) ?? "", styles.short);
+}
+
 /** A narrow column whose cell is a short number, such as a count or a quantity. */
 export function numberColumn<K extends KubeObject>(
   id: string,

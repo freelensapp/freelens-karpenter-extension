@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
-import { gceNodeClassColumnValues, gceNodeClassImageTerms, gceNodeClassSortValues } from "./gcenodeclass-columns";
+import {
+  gceNodeClassColumnValues,
+  gceNodeClassDiskLabels,
+  gceNodeClassImageTerms,
+  gceNodeClassSortValues,
+  gceNodeClassSubnet,
+} from "./gcenodeclass-columns";
 
 import type { GCENodeClassSpec, GCENodeClassStatus } from "../../api/gcenodeclass/gcenodeclass-v1alpha1-types";
 
@@ -81,5 +87,47 @@ describe("gceNodeClassImageTerms", () => {
       gceNodeClassImageTerms(withSpec({ imageFamily: "Ubuntu", imageSelectorTerms: [{ alias: "Ubuntu@latest" }] })),
     ).toEqual(["alias=Ubuntu@latest"]);
     expect(gceNodeClassImageTerms(withSpec({}))).toEqual([]);
+  });
+});
+
+describe("gceNodeClassDiskLabels", () => {
+  const withDisks = (disks: GCENodeClassSpec["disks"]) =>
+    new GCENodeClass({
+      apiVersion: "karpenter.k8s.gcp/v1alpha1",
+      kind: "GCENodeClass",
+      metadata: { name: "c", uid: "c", resourceVersion: "1", selfLink: "" },
+      spec: { imageSelectorTerms: [], disks },
+    });
+
+  it("has each disk as its size and category, the boot disk said so", () => {
+    expect(
+      gceNodeClassDiskLabels(
+        withDisks([
+          { category: "pd-balanced", sizeGiB: 100, boot: true },
+          { category: "hyperdisk-balanced", sizeGiB: 500, provisionedIOPS: 3000 },
+        ]),
+      ),
+    ).toEqual(["boot 100 GiB pd-balanced", "500 GiB hyperdisk-balanced"]);
+  });
+
+  it("has a disk without any of them as a disk, and nothing without disks", () => {
+    expect(gceNodeClassDiskLabels(withDisks([{}]))).toEqual(["disk"]);
+    expect(gceNodeClassDiskLabels(withDisks(undefined))).toEqual([]);
+  });
+});
+
+describe("gceNodeClassSubnet", () => {
+  const withSubnet = (subnetRangeName?: string) =>
+    new GCENodeClass({
+      apiVersion: "karpenter.k8s.gcp/v1alpha1",
+      kind: "GCENodeClass",
+      metadata: { name: "c", uid: "c", resourceVersion: "1", selfLink: "" },
+      spec: { imageSelectorTerms: [], subnetRangeName },
+    });
+
+  it("has the subnet range name, and none for an empty one", () => {
+    expect(gceNodeClassSubnet(withSubnet("pods"))).toBe("pods");
+    expect(gceNodeClassSubnet(withSubnet(""))).toBeUndefined();
+    expect(gceNodeClassSubnet(withSubnet())).toBeUndefined();
   });
 });

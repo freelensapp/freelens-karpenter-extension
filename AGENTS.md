@@ -425,11 +425,13 @@ Node Classes and GCE Node Classes have them:
    `utils/quantity.ts`, `quantityColumn`, as Memory of the Node Pools page;
    the resources in the details too). A short number gets a narrow column
    (`numberColumn`, as Nodes, Weight and CPU of the Node Pools page).
-   The GCE Node Classes page has one column the CRD has none for, Image
-   Family, first: the image selector terms, each field a `key=value` badge
+   The GCE Node Classes page has three columns the CRD has none for, first:
+   Image Family, the image selector terms, each field a `key=value` badge
    (`badgesColumn`), in the order of the Go struct, not the sorted keys the
    API server returns, or the image family alone as a term
-   (`gceNodeClassImageTerms`).
+   (`gceNodeClassImageTerms`); Disks, a badge for each disk, boot, size and
+   category (`gceNodeClassDiskLabels`); and Subnet, `spec.subnetRangeName`
+   (`shortTextColumn`).
    The other exception is the Node Claims page. It has Status in place of
    Ready, before Drifted: the status of the NodeClaim as the Overview counts
    it (Ready, Provisioning, Claiming, Terminating, Not Ready), from its node

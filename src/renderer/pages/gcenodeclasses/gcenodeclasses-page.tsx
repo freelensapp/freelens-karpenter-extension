@@ -7,9 +7,16 @@ import {
   KindListPage,
   nameColumn,
   readyColumn,
+  shortTextColumn,
 } from "../../components/KindListPage/KindListPage";
 import { getGCENodeClassStore } from "../../data/stores";
-import { gceNodeClassColumnValues, gceNodeClassImageTerms, gceNodeClassSortValues } from "./gcenodeclass-columns";
+import {
+  gceNodeClassColumnValues,
+  gceNodeClassDiskLabels,
+  gceNodeClassImageTerms,
+  gceNodeClassSortValues,
+  gceNodeClassSubnet,
+} from "./gcenodeclass-columns";
 
 import type { Renderer } from "@freelensapp/extensions";
 
@@ -17,10 +24,12 @@ export interface GCENodeClassesPageProps {
   extension: Renderer.LensExtension;
 }
 
-// The columns of `kubectl get gcenodeclasses -o wide`, after Image Family, which the CRD has no column for.
+// The columns of `kubectl get gcenodeclasses -o wide`, after Image Family, Disks and Subnet, which the CRD has no columns for.
 const columns: KindColumn<GCENodeClass>[] = [
   nameColumn(),
   badgesColumn("imageFamily", "Image Family", gceNodeClassImageTerms),
+  badgesColumn("disks", "Disks", gceNodeClassDiskLabels),
+  shortTextColumn("subnet", "Subnet", gceNodeClassSubnet),
   readyColumn((nodeClass) => gceNodeClassColumnValues(nodeClass).ready, gceNodeClassSortValues.ready),
   ageColumn(),
 ];
