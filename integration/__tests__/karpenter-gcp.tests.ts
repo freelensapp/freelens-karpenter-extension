@@ -159,7 +159,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "2",
       "10",
       "12",
-      "49283072Ki",
+      "47.0GiB",
       "True",
       agePattern,
     ]);

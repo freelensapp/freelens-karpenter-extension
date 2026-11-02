@@ -174,7 +174,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "1",
       "50",
       "4",
-      "16202400Ki",
+      "15.5GiB",
       "False",
       agePattern,
     ]);

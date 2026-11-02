@@ -1,6 +1,6 @@
 // What the details of a NodeClaim compute from its spec and its status.
 
-import { notTrueReason, resourceNames, resourceText } from "./karpenter-v1";
+import { notTrueReason, resourceNames, resourceText, withWritten, writtenPair } from "./karpenter-v1";
 
 import type { Condition, ResourceList } from "../api/types";
 
@@ -44,6 +44,8 @@ export interface CapacityRow {
   capacity: string | undefined;
   /** What of it pods can request, `status.allocatable`. */
   allocatable: string | undefined;
+  /** Both as they were written, when the row shows them in units. */
+  written?: string;
 }
 
 /** The resources of a NodeClaim's node: its capacity and what is allocatable, one row each, the well-known first. */
@@ -52,6 +54,7 @@ export function capacityRows(capacity: ResourceList | undefined, allocatable: Re
     name,
     capacity: resourceText(capacity, name),
     allocatable: resourceText(allocatable, name),
+    ...withWritten(writtenPair(name, capacity, allocatable)),
   }));
 }
 

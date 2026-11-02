@@ -1,5 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
+import { resourceQuantity } from "../../utils/quantity";
 import styles from "./kind-list-page.module.scss";
 
 import type React from "react";
@@ -56,6 +57,29 @@ export function textColumn<K extends KubeObject>(
   className?: string,
 ): KindColumn<K> {
   return { id, title, render: (object) => <WithTooltip>{value(object) ?? ""}</WithTooltip>, sortBy, className };
+}
+
+/**
+ * A column whose cell is a quantity of a resource, as the host's Node details show it: memory and ephemeral storage in
+ * units, with the quantity as it was written in its tooltip (`resourceQuantity`).
+ */
+export function quantityColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  resource: string,
+  value: (object: K) => string | undefined,
+  sortBy: (object: K) => string | number | undefined,
+): KindColumn<K> {
+  return {
+    id,
+    title,
+    render: (object) => {
+      const written = value(object);
+      const shown = resourceQuantity(resource, written);
+      return <WithTooltip tooltip={shown !== written ? written : undefined}>{shown ?? ""}</WithTooltip>;
+    },
+    sortBy,
+  };
 }
 
 /** A narrow column whose cell is a short number, such as a count or a quantity. */

@@ -419,9 +419,13 @@ Node Classes and GCE Node Classes have them:
    `pages/<plural>/<kind>-columns.ts` with a test; a colour (`ConditionStatus`
    for a condition's status), a link (`DetailsLink`) or the host's
    `BadgeBoolean` for a flag (`booleanColumn`, as Ready of the Node Pools
-   page) on top of the value is fine, another value is not. A short number
-   gets a narrow column (`numberColumn`, as Nodes, Weight and CPU of the Node
-   Pools page). The one exception is the Node Claims page. It has Status in place of
+   page) on top of the value is fine, another value is not. So is a quantity
+   of memory or ephemeral storage in units, as the host's Node details show
+   it, `15.5GiB`, with the quantity as written in its tooltip
+   (`resourceQuantity` of `utils/quantity.ts`, `quantityColumn`, as Memory of
+   the Node Pools page; the resources in the details too). A short number gets
+   a narrow column (`numberColumn`, as Nodes, Weight and CPU of the Node Pools
+   page). The one exception is the Node Claims page. It has Status in place of
    Ready, before Drifted: the status of the NodeClaim as the Overview counts
    it (Ready, Provisioning, Claiming, Terminating, Not Ready), from its node
    when the host's store has it, which the page loads, else from its

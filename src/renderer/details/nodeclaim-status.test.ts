@@ -63,19 +63,19 @@ describe("capacityRows", () => {
       ),
     ).toEqual([
       { name: "cpu", capacity: "8", allocatable: "7920m" },
-      { name: "memory", capacity: "32118888Ki", allocatable: "28906999Ki" },
+      { name: "memory", capacity: "30.6GiB", allocatable: "27.6GiB", written: "32118888Ki / 28906999Ki" },
       { name: "pods", capacity: "58", allocatable: "58" },
-      { name: "ephemeral-storage", capacity: "20Gi", allocatable: undefined },
+      { name: "ephemeral-storage", capacity: "20.0GiB", allocatable: undefined, written: "20Gi / -" },
     ]);
     expect(capacityRows(undefined, undefined)).toEqual([]);
   });
 });
 
 describe("formatResources", () => {
-  it("writes each resource with its quantity, the well-known ones first", () => {
+  it("writes each resource with its quantity, memory in units, the well-known ones first", () => {
     expect(formatResources({ "nvidia.com/gpu": 1, memory: "1Gi", cpu: "500m" })).toEqual([
       "cpu 500m",
-      "memory 1Gi",
+      "memory 1.0GiB",
       "nvidia.com/gpu 1",
     ]);
     expect(formatResources(undefined)).toEqual([]);

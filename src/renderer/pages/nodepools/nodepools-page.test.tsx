@@ -70,7 +70,7 @@ describe("NodePoolsPage", () => {
       "4",
       "50",
       "16",
-      "59687568Ki",
+      "56.9GiB",
       "True",
       "age",
     ]);

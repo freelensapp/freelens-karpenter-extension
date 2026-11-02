@@ -81,7 +81,9 @@ and events with them.
 The NodePools with the columns of `kubectl get nodepools -o wide`: NodeClass,
 Nodes, Weight, CPU, Memory, Ready and Age, sortable, searchable, and with the
 columns you choose. A NodePool without a weight has 0, as Karpenter takes it.
-The entry is in the sidebar while the cluster serves NodePools.
+Memory is in units, such as 15.5GiB, as Freelens shows the memory of a node,
+here and in the details. The entry is in the sidebar while the cluster serves
+NodePools.
 
 A click on a NodePool, here or in the tabs, opens its details: why it is not
 ready, its node class, weight, replicas and nodes, the resources in use

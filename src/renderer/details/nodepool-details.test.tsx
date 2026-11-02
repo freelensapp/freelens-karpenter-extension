@@ -92,7 +92,7 @@ describe("NodePoolDetails", () => {
       "False, NodeClassNotReady",
       "3",
       "4 / 32",
-      "16202400Ki / no limit",
+      "15.5GiB / no limit",
       "team=ml",
       "example.com/owner=ml-platform",
       "karpenter.k8s.aws/instance-family In [g5]",

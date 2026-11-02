@@ -11,7 +11,7 @@ import { capacityRows, formatResources, stageNotReached, trueReason } from "./no
 import type { NodeClaim } from "../api/nodeclaim/nodeclaim-v1";
 
 const {
-  Component: { DrawerItem, DrawerTitle, LocaleDate },
+  Component: { DrawerItem, DrawerTitle, LocaleDate, WithTooltip },
 } = Renderer;
 
 /**
@@ -88,9 +88,9 @@ export const NodeClaimDetails = observer(
         {resources.length > 0 && (
           <>
             <DrawerTitle>Resources (capacity / allocatable)</DrawerTitle>
-            {resources.map(({ name, capacity, allocatable }) => (
+            {resources.map(({ name, capacity, allocatable, written }) => (
               <DrawerItem key={name} name={name}>
-                {`${capacity ?? "-"} / ${allocatable ?? "-"}`}
+                <WithTooltip tooltip={written}>{`${capacity ?? "-"} / ${allocatable ?? "-"}`}</WithTooltip>
               </DrawerItem>
             ))}
           </>

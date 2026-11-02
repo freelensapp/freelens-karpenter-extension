@@ -11,7 +11,7 @@ import { formatBudget, formatRequirement, formatTaint, notTrueReason, resourceRo
 import { nodeClaimsOfNodePool, overlaysOfNodePool, rejectedOverlaysOfNodePool } from "./nodepool-relations";
 
 const {
-  Component: { DrawerItem, DrawerItemLabels, DrawerTitle },
+  Component: { DrawerItem, DrawerItemLabels, DrawerTitle, WithTooltip },
 } = Renderer;
 
 /**
@@ -68,9 +68,9 @@ export const NodePoolDetails = observer(({ object: nodePool }: Renderer.Componen
       {resources.length > 0 && (
         <>
           <DrawerTitle>Resources (in use / limit)</DrawerTitle>
-          {resources.map(({ name, inUse, limit }) => (
+          {resources.map(({ name, inUse, limit, written }) => (
             <DrawerItem key={name} name={name}>
-              {`${inUse ?? "-"} / ${limit ?? "no limit"}`}
+              <WithTooltip tooltip={written}>{`${inUse ?? "-"} / ${limit ?? "no limit"}`}</WithTooltip>
             </DrawerItem>
           ))}
         </>

@@ -7,7 +7,7 @@ import {
   KindListPage,
   nameColumn,
   numberColumn,
-  textColumn,
+  quantityColumn,
 } from "../../components/KindListPage/KindListPage";
 import { DetailsLink } from "../../components/shared/DetailsLink";
 import { detectProvider, nodeClassPage, nodeClassSelfLink } from "../../data/nodeclass";
@@ -51,7 +51,13 @@ const columns: KindColumn<NodePool>[] = [
   numberColumn("nodes", "Nodes", (nodePool) => nodePoolColumnValues(nodePool).nodes, nodePoolSortValues.nodes),
   numberColumn("weight", "Weight", (nodePool) => nodePoolColumnValues(nodePool).weight, nodePoolSortValues.weight),
   numberColumn("cpu", "CPU", (nodePool) => nodePoolColumnValues(nodePool).cpu, nodePoolSortValues.cpu),
-  textColumn("memory", "Memory", (nodePool) => nodePoolColumnValues(nodePool).memory, nodePoolSortValues.memory),
+  quantityColumn(
+    "memory",
+    "Memory",
+    "memory",
+    (nodePool) => nodePoolColumnValues(nodePool).memory,
+    nodePoolSortValues.memory,
+  ),
   booleanColumn(
     "ready",
     "Ready",
