@@ -62,30 +62,35 @@ describe("gceNodeClassImageTerms", () => {
       spec: { imageSelectorTerms: [], ...spec },
     });
 
-  it("has each field of each image selector term as key=value", () => {
+  it("has the family of each term with its version, latest without one, and nothing of a term by id", () => {
     expect(
       gceNodeClassImageTerms(
         withSpec({
-          imageSelectorTerms: [{ family: "ContainerOptimizedOS", channel: "stable" }, { id: "projects/lab/images/x" }],
+          imageSelectorTerms: [
+            { family: "ContainerOptimizedOS", channel: "stable" },
+            { family: "Ubuntu2404", version: "v20260101" },
+            { id: "projects/lab/images/x" },
+          ],
         }),
       ),
-    ).toEqual(["family=ContainerOptimizedOS", "channel=stable", "id=projects/lab/images/x"]);
+    ).toEqual(["ContainerOptimizedOS=latest", "Ubuntu2404=v20260101"]);
   });
 
-  it("orders the fields of a term as the Go struct, whatever order the API server returns them in", () => {
-    expect(
-      gceNodeClassImageTerms(withSpec({ imageSelectorTerms: [{ channel: "stable", family: "ContainerOptimizedOS" }] })),
-    ).toEqual(["family=ContainerOptimizedOS", "channel=stable"]);
+  it("has the family and the version of an alias term", () => {
+    expect(gceNodeClassImageTerms(withSpec({ imageSelectorTerms: [{ alias: "ContainerOptimizedOS@v1" }] }))).toEqual([
+      "ContainerOptimizedOS=v1",
+    ]);
+    expect(gceNodeClassImageTerms(withSpec({ imageSelectorTerms: [{ alias: "Ubuntu" }] }))).toEqual(["Ubuntu=latest"]);
   });
 
-  it("takes the image family alone for a term of that family", () => {
-    expect(gceNodeClassImageTerms(withSpec({ imageFamily: "Ubuntu" }))).toEqual(["family=Ubuntu"]);
+  it("takes the image family alone at latest", () => {
+    expect(gceNodeClassImageTerms(withSpec({ imageFamily: "Ubuntu" }))).toEqual(["Ubuntu=latest"]);
   });
 
   it("takes the terms over the image family, and has nothing without either", () => {
     expect(
       gceNodeClassImageTerms(withSpec({ imageFamily: "Ubuntu", imageSelectorTerms: [{ alias: "Ubuntu@latest" }] })),
-    ).toEqual(["alias=Ubuntu@latest"]);
+    ).toEqual(["Ubuntu=latest"]);
     expect(gceNodeClassImageTerms(withSpec({}))).toEqual([]);
   });
 });

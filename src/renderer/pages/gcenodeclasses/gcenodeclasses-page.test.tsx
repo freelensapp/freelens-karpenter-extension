@@ -61,7 +61,7 @@ describe("GCENodeClassesPage", () => {
     ]);
     expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
       "default",
-      "family=ContainerOptimizedOSchannel=stable",
+      "ContainerOptimizedOS=latest",
       "boot 100 GiB pd-balanced",
       "pods",
       "True",
