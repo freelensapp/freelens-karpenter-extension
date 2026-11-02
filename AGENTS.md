@@ -423,7 +423,9 @@ Node Classes and GCE Node Classes have them:
    host's store has it, which the page loads, else from its conditions
    (`nodeClaimStatus`), as plain text in the colour of the status, without
    the badge of the cards. It leaves out ImageID and ID, which the details
-   show, and has Age last.
+   show, shows Drifted as the host's `BadgeBoolean` in a narrow column
+   (`booleanColumn`), `False` without the condition, which Karpenter removes
+   rather than sets to `False`, and has Age last.
    A link to an object of a kind that has a page opens it there (`DetailsLink`
    with `page={pageUrl(pageId.x)}`); other links open over the page. Every
    column with a value sorts, numbers and quantities by their amount.

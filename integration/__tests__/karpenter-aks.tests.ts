@@ -185,9 +185,10 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
       "Claiming",
       "azure",
       "default",
+      "False",
       agePattern,
     ]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Drifted"]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node"]);
 
     await clickAndExpectDetails(
       frame,

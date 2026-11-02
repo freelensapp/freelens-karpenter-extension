@@ -2,12 +2,12 @@ import { observer } from "mobx-react";
 import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
 import {
   ageColumn,
+  booleanColumn,
   type KindColumn,
   KindListPage,
   nameColumn,
   textColumn,
 } from "../../components/KindListPage/KindListPage";
-import { ConditionStatus } from "../../components/shared/ConditionStatus";
 import { DetailsLink } from "../../components/shared/DetailsLink";
 import { STATUS_BORDER_COLOR, STATUS_VISUAL } from "../../config/theme";
 import { detectProvider, nodeClassPage, nodeClassSelfLink } from "../../data/nodeclass";
@@ -112,12 +112,12 @@ const columns: KindColumn<NodeClaim>[] = [
     render: (nodeClaim) => <NodeClassLink nodeClaim={nodeClaim} />,
     sortBy: nodeClaimSortValues.nodeClass,
   },
-  {
-    id: "drifted",
-    title: "Drifted",
-    render: (nodeClaim) => <ConditionStatus status={nodeClaimColumnValues(nodeClaim).drifted} />,
-    sortBy: nodeClaimSortValues.drifted,
-  },
+  booleanColumn(
+    "drifted",
+    "Drifted",
+    (nodeClaim) => nodeClaimColumnValues(nodeClaim).drifted === "True",
+    nodeClaimSortValues.drifted,
+  ),
   ageColumn(),
 ];
 

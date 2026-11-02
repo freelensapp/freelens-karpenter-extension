@@ -215,9 +215,10 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "Claiming",
       "general",
       "default",
+      "False",
       agePattern,
     ]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node", "Drifted"]);
+    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node"]);
 
     await clickAndExpectDetails(
       frame,

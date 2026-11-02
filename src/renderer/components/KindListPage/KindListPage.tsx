@@ -5,7 +5,7 @@ import styles from "./kind-list-page.module.scss";
 import type React from "react";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { BadgeBoolean, KubeObjectAge, KubeObjectListLayout, WithTooltip },
 } = Renderer;
 
 type KubeObject = Renderer.K8sApi.KubeObject;
@@ -55,6 +55,16 @@ export function textColumn<K extends KubeObject>(
   sortBy: (object: K) => string | number | undefined = value,
 ): KindColumn<K> {
   return { id, title, render: (object) => <WithTooltip>{value(object) ?? ""}</WithTooltip>, sortBy };
+}
+
+/** A narrow column whose cell is a flag, as the host's badge of a boolean. */
+export function booleanColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  value: (object: K) => boolean,
+  sortBy: (object: K) => string | number | undefined = (object) => (value(object) ? 0 : 1),
+): KindColumn<K> {
+  return { id, title, render: (object) => <BadgeBoolean value={value(object)} />, sortBy, className: styles.flag };
 }
 
 export interface KindListPageProps<K extends KubeObject> {
