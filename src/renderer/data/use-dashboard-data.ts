@@ -12,6 +12,17 @@ import {
 
 export type DashboardData = { status: "loading" } | { status: "not-installed" } | { status: "ready"; version: string };
 
+interface Loaded {
+  /** The API bases of the stores the load had. */
+  storesKey: string;
+  /** The controller version, or `null` when Karpenter is not installed. */
+  version: string | null;
+}
+
+// What the last load of this cluster frame found. The host's stores keep their objects while the page is not shown,
+// so a page shown again renders them at once, and loads again in the background.
+let lastLoaded: Loaded | undefined;
+
 /**
  * The state of the dashboard's data, for an `observer` page.
  *
@@ -19,6 +30,9 @@ export type DashboardData = { status: "loading" } | { status: "not-installed" } 
  * APIs of the Karpenter CRDs, which happens after the cluster frame has loaded them, often after a page restored
  * at start has rendered. The data is loaded again whenever that set of stores changes, and its subscriptions are
  * stopped when it changes again or the page is left.
+ *
+ * The page is loading only until the first load of a set of stores ends: shown again, it starts from what the last
+ * load found while it loads again.
  */
 export function useKarpenterDashboardData(): DashboardData {
   const storesKey = [
@@ -32,20 +46,24 @@ export function useKarpenterDashboardData(): DashboardData {
   ]
     .map((store) => store?.api.apiBase ?? "")
     .join(",");
-  const [loaded, setLoaded] = useState<{ storesKey: string; version: string | null }>();
+  const [loaded, setLoaded] = useState<Loaded | undefined>(lastLoaded);
 
   useEffect(() => {
     const controller = new AbortController();
     let data: KarpenterData | null = null;
 
+    const done = (version: string | null) => {
+      if (controller.signal.aborted) return;
+      lastLoaded = { storesKey, version };
+      setLoaded(lastLoaded);
+    };
+
     loadKarpenterData(controller.signal)
       .then((result) => {
         data = result;
-        if (!controller.signal.aborted) setLoaded({ storesKey, version: result?.version ?? null });
+        done(result?.version ?? null);
       })
-      .catch(() => {
-        if (!controller.signal.aborted) setLoaded({ storesKey, version: null });
-      });
+      .catch(() => done(null));
 
     return () => {
       controller.abort();
@@ -53,7 +71,8 @@ export function useKarpenterDashboardData(): DashboardData {
     };
   }, [storesKey]);
 
-  if (!loaded || loaded.storesKey !== storesKey) return { status: "loading" };
-  if (loaded.version === null) return { status: "not-installed" };
-  return { status: "ready", version: loaded.version };
+  const current = [loaded, lastLoaded].find((candidate) => candidate?.storesKey === storesKey);
+  if (!current) return { status: "loading" };
+  if (current.version === null) return { status: "not-installed" };
+  return { status: "ready", version: current.version };
 }

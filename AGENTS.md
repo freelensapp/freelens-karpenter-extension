@@ -252,6 +252,10 @@ Claims page, and the NodeClass column with `nodeClassPage` of
 - **The page's state**: `data/use-dashboard-data.ts` keys the load on the API
   bases of the served stores, so the page loads again, and stops the old
   subscriptions, when a Karpenter CRD appears or goes away while it is open.
+  The page shows its loading state only until the first load of a set of
+  stores ends in the cluster frame: shown again, it starts from what the last
+  load found, with the objects the host's stores keep, and loads again and
+  subscribes in the background.
   A new store goes into that key, into `loadKarpenterData`, and into
   `getServedStore` in `data/stores.ts`.
 - **Memos over a store's items**: `useItems(store.items)` of
