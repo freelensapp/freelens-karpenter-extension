@@ -444,8 +444,10 @@ Node Classes, GCE Node Classes and GCE Custom Machine Types have them:
    when the host's store has it, which the page loads, else from its
    conditions (`nodeClaimStatus`), as plain text in the colour of the status,
    without the badge of the cards. It leaves out ImageID and ID, which the
-   details show, and shows Drifted as a `BadgeBoolean`, `False` without the
-   condition, which Karpenter removes rather than sets to `False`.
+   details show, and shows Drifted as the host's badge of a boolean with its
+   colours swapped, `True` red and `False` green, as a drift is a problem
+   (`problemFlagColumn`), `False` without the condition, which Karpenter
+   removes rather than sets to `False`.
    A link to an object of a kind that has a page opens it there (`DetailsLink`
    with `page={pageUrl(pageId.x)}`); other links open over the page. Every
    column with a value sorts, numbers and quantities by their amount.
@@ -882,7 +884,8 @@ check still uses the real declaration. So a test that reaches a member the stub
 lacks compiles and fails on `undefined`: add the member to the stub, as small as
 the test needs. Here it has, besides the template's `LensExtensionKubeObject`,
 `KubeApi`, `KubeObjectStore` and `Common.logger`, the drawer components
-`DrawerItem`, `DrawerItemLabels` and `DrawerTitle`, `Badge`, `BadgeBoolean`, `Icon`,
+`DrawerItem`, `DrawerItemLabels` and `DrawerTitle`, `Badge` with its class, `BadgeBoolean` with
+`getBooleanText` and `getBooleanClass` (a class named after the value), `Icon`,
 `WithTooltip`, `KubeObjectAge` and `LocaleDate` as plain elements, `KubeObjectListLayout` as
 a plain table of the items of its store, and `Navigation.navigate` and
 `Navigation.showDetails` as spies. The other host modules are not stubbed: `react`, `mobx` and

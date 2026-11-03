@@ -2,10 +2,10 @@ import { observer } from "mobx-react";
 import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
 import {
   ageColumn,
-  booleanColumn,
   type KindColumn,
   KindListPage,
   nameColumn,
+  problemFlagColumn,
   textColumn,
 } from "../../components/KindListPage/KindListPage";
 import { DetailsLink } from "../../components/shared/DetailsLink";
@@ -112,7 +112,7 @@ const columns: KindColumn<NodeClaim>[] = [
     render: (nodeClaim) => <StatusCell nodeClaim={nodeClaim} />,
     sortBy: (nodeClaim) => nodeClaimStatusOrder(nodeClaimStatus(nodeClaim, nodeOf(nodeClaim))),
   },
-  booleanColumn(
+  problemFlagColumn(
     "drifted",
     "Drifted",
     (nodeClaim) => nodeClaimColumnValues(nodeClaim).drifted === "True",

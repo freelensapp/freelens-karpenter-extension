@@ -53,13 +53,21 @@ function DrawerItem({ name, hidden, children }: { name: ReactNode; hidden?: bool
 }
 
 // A badge as its label, and the labels of a drawer item as `key=value` badges, unless there are none.
-function Badge({ label }: { label?: ReactNode }) {
-  return createElement("span", null, label);
+function Badge({ label, className }: { label?: ReactNode; className?: string }) {
+  return createElement("span", { className }, label);
 }
 
-// A flag as the text of the host's `getBooleanText`.
+// The text of a flag, as the host's, and its class, named after the value rather than the host's CSS module.
+function getBooleanText(value?: boolean) {
+  return value === undefined ? "-" : value ? "True" : "False";
+}
+
+function getBooleanClass(value?: boolean) {
+  return value === undefined ? "undefined" : value ? "true" : "false";
+}
+
 function BadgeBoolean({ value }: { value?: boolean }) {
-  return createElement(Badge, { label: value === undefined ? "-" : value ? "True" : "False" });
+  return createElement(Badge, { className: getBooleanClass(value), label: getBooleanText(value) });
 }
 
 function DrawerItemLabels({ name, labels }: { name: ReactNode; labels: Record<string, string> | string[] }) {
@@ -135,6 +143,8 @@ export const Renderer = {
     KubeObjectListLayout,
     LocaleDate,
     WithTooltip,
+    getBooleanClass,
+    getBooleanText,
   },
   K8sApi: {
     LensExtensionKubeObject,
