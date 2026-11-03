@@ -97,6 +97,26 @@ describe("NodeClaimsPage", () => {
     ]);
   });
 
+  it("shows Drifted True in the colour of an error and False in that of a success", () => {
+    render(<NodeClaimsPage extension={extension} />);
+    const drifted = () => screen.getAllByRole("cell")[8].firstElementChild;
+
+    // The class of the host's badge of a boolean False, the colour of an error.
+    expect(drifted()?.textContent).toBe("True");
+    expect(drifted()?.className).toBe("false");
+
+    cleanup();
+    const conditions = launched.status?.conditions;
+    if (conditions) conditions[1] = { type: "Drifted", status: "False" };
+    try {
+      render(<NodeClaimsPage extension={extension} />);
+      expect(drifted()?.textContent).toBe("False");
+      expect(drifted()?.className).toBe("true");
+    } finally {
+      if (conditions) conditions[1] = { type: "Drifted", status: "True" };
+    }
+  });
+
   it("opens the node over the page, and the NodePool and the EC2NodeClass on their pages", () => {
     render(<NodeClaimsPage extension={extension} />);
 

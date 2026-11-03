@@ -7,7 +7,7 @@ import styles from "./kind-list-page.module.scss";
 import type React from "react";
 
 const {
-  Component: { Badge, BadgeBoolean, KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { Badge, BadgeBoolean, KubeObjectAge, KubeObjectListLayout, WithTooltip, getBooleanClass, getBooleanText },
 } = Renderer;
 
 type KubeObject = Renderer.K8sApi.KubeObject;
@@ -166,6 +166,25 @@ export function booleanColumn<K extends KubeObject>(
   sortBy: (object: K) => string | number | undefined = (object) => (value(object) ? 0 : 1),
 ): KindColumn<K> {
   return { id, title, render: (object) => <BadgeBoolean value={value(object)} />, sortBy, className: styles.flag };
+}
+
+/**
+ * A `booleanColumn` of a flag that is a problem when set, such as Drifted: the host's badge of a boolean with its
+ * colours swapped, `True` in the colour of an error and `False` in that of a success. `-` keeps its colour.
+ */
+export function problemFlagColumn<K extends KubeObject>(
+  id: string,
+  title: string,
+  value: (object: K) => boolean | undefined,
+  sortBy?: (object: K) => string | number | undefined,
+): KindColumn<K> {
+  return {
+    ...booleanColumn(id, title, value, sortBy),
+    render: (object) => {
+      const flag = value(object);
+      return <Badge className={getBooleanClass(flag === undefined ? undefined : !flag)} label={getBooleanText(flag)} />;
+    },
+  };
 }
 
 export interface KindListPageProps<K extends KubeObject> {
