@@ -4,8 +4,9 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { loadKarpenterData } from "./load";
-import { useKarpenterDashboardData } from "./use-dashboard-data";
+
+import type { loadKarpenterData } from "./load";
+import type { useKarpenterDashboardData } from "./use-dashboard-data";
 
 // The host registers the APIs of the CRDs after the cluster frame has loaded them, and its registry is
 // observable: `served` stands for it.
@@ -27,14 +28,19 @@ vi.mock("./stores", () => ({
 
 vi.mock("./load", () => ({ loadKarpenterData: vi.fn() }));
 
-const load = vi.mocked(loadKarpenterData);
+// The hook keeps what the last load found for the life of the module, so every test imports it anew.
+let load: ReturnType<typeof vi.mocked<typeof loadKarpenterData>>;
+let useData: typeof useKarpenterDashboardData;
 
 const Probe = observer(() => {
-  const data = useKarpenterDashboardData();
+  const data = useData();
   return <p>{data.status === "ready" ? `ready ${data.version}` : data.status}</p>;
 });
 
-beforeEach(() => {
+beforeEach(async () => {
+  vi.resetModules();
+  load = vi.mocked((await import("./load")).loadKarpenterData);
+  useData = (await import("./use-dashboard-data")).useKarpenterDashboardData;
   runInAction(() => {
     served.set(false);
     customMachineTypesServed.set(false);
@@ -95,6 +101,36 @@ describe("useKarpenterDashboardData", () => {
     expect(await screen.findByText("ready 0.7.0")).toBeDefined();
     expect(load).toHaveBeenCalledTimes(2);
     expect(first).toHaveBeenCalledTimes(1);
+  });
+
+  it("shown again, starts from what the last load found, and loads again in the background", async () => {
+    load
+      .mockResolvedValueOnce({ version: "1.14.0", dispose: vi.fn() })
+      .mockResolvedValueOnce({ version: "1.15.0", dispose: vi.fn() });
+    runInAction(() => served.set(true));
+
+    const { unmount } = render(<Probe />);
+    await screen.findByText("ready 1.14.0");
+    unmount();
+
+    render(<Probe />);
+    expect(screen.getByText("ready 1.14.0")).toBeDefined();
+    expect(await screen.findByText("ready 1.15.0")).toBeDefined();
+    expect(load).toHaveBeenCalledTimes(2);
+  });
+
+  it("is loading when shown again with a set of stores that the last load did not have", async () => {
+    load.mockResolvedValue({ version: "1.15.0", dispose: vi.fn() });
+    runInAction(() => served.set(true));
+
+    const { unmount } = render(<Probe />);
+    await screen.findByText("ready 1.15.0");
+    unmount();
+
+    runInAction(() => customMachineTypesServed.set(true));
+    render(<Probe />);
+    expect(screen.getByText("loading")).toBeDefined();
+    expect(await screen.findByText("ready 1.15.0")).toBeDefined();
   });
 
   it("stops the subscriptions when the page is left", async () => {
