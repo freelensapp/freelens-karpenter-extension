@@ -199,15 +199,17 @@ export const NodesList = observer(function NodesList({
   useNodeMetrics();
   return (
     <table className={style.nodesTable}>
+      {/* In a window 1280 px wide the usage ("1.02 / 16.00", "166Mi / 25.4Gi") and Pods ("4/110") columns stay whole;
+          a long node name is cut at its end, after the part that tells the nodes apart, and its title shows it whole. */}
       <colgroup>
-        <col style={{ width: "26%" }} />
-        <col style={{ width: "16%" }} />
+        <col style={{ width: "23%" }} />
+        <col style={{ width: "13%" }} />
         <col style={{ width: "10%" }} />
         <col style={{ width: "9%" }} />
         <col style={{ width: "9%" }} />
-        <col style={{ width: "11%" }} />
-        <col style={{ width: "11%" }} />
-        <col style={{ width: "5%" }} />
+        <col style={{ width: "13%" }} />
+        <col style={{ width: "13%" }} />
+        <col style={{ width: "7%" }} />
         <col style={{ width: "3%" }} />
       </colgroup>
       <thead>
@@ -241,7 +243,9 @@ export const NodesList = observer(function NodesList({
               <td>
                 <span className={style.nodeNameCell}>
                   <span className={style.nodeIcon}>{ICON.node}</span>
-                  <span className={style.nodeName}>{nodeName}</span>
+                  <span className={style.nodeName} title={nodeName}>
+                    {nodeName}
+                  </span>
                 </span>
               </td>
               <td>
@@ -253,7 +257,9 @@ export const NodesList = observer(function NodesList({
               <td>
                 <StatusBadge status={getNodeStatus(node)} />
               </td>
-              <td className={style.monoSmall}>{node.status?.nodeInfo?.kubeletVersion ?? "—"}</td>
+              <td className={style.monoSmall} title={node.status?.nodeInfo?.kubeletVersion}>
+                {node.status?.nodeInfo?.kubeletVersion ?? "—"}
+              </td>
               <UsageCell used={usage?.cpu} total={parseCpuCores(allocatable?.cpu)} fmt={fmtCores} />
               <UsageCell used={usage?.memory} total={parseMemGi(allocatable?.memory) * 1024 ** 3} fmt={fmtBytes} />
               <td className={style.monoSmall}>{podLabel}</td>
