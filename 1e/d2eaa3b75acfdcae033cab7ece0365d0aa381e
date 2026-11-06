@@ -1,0 +1,63 @@
+src/renderer/data/use-dashboard-data.ts
+  s_7f6ff1c0803962::t_b5a6ecc7fcdf3e 13-17
+  s_16cc1841911c68::t_848a46904fe3b4 65-68
+src/renderer/data/load.ts
+  s_7f6ff1c0803962::t_d1fff90509db38 100,118-120,122
+  s_7f6ff1c0803962::t_81d09fcb1533d7 29,66-67
+  s_7f6ff1c0803962::t_47bed5c1ddd463 92-93,95-98,121
+src/renderer/components/PieChart/pie-chart.tsx
+  s_7f6ff1c0803962::t_4347bbf9ad472f 2,76-79
+src/renderer/components/KarpenterCard/KarpenterCard.test.tsx
+  s_16cc1841911c68::t_ad3ef4f3f85fb2 69
+  s_7f6ff1c0803962::t_24aedaac82eb7c 6,18-22,58-68
+src/renderer/data/node-metrics.test.tsx
+  s_7f6ff1c0803962::t_af438c108ae1a1 1-39
+src/renderer/data/load.test.ts
+  s_7f6ff1c0803962::t_6b8104cadaf3f3 33-40
+src/renderer/data/node-metrics.ts
+  s_7f6ff1c0803962::t_a715fc4b4bf5a8 1,3,5-10,16,20-21,24,29-30,41-43,45
+  s_16cc1841911c68::t_ad3ef4f3f85fb2 2,4,11-15,17-19,22-23,25-28,31-40,44
+src/renderer/utils/kube-helpers.test.ts
+  s_7f6ff1c0803962::t_2ee0cf45d91788 134-135
+test/freelens-extensions.ts
+  s_7f6ff1c0803962::t_ce504573240b63 146
+  s_7f6ff1c0803962::t_24aedaac82eb7c 144
+src/renderer/utils/kube-helpers.ts
+  s_7f6ff1c0803962::t_074902fbac7a4f 185-187
+src/renderer/components/KarpenterCard/KarpenterCard.tsx
+  s_7f6ff1c0803962::t_b9ad657812480c 176-187,189-190,198-200
+  s_7f6ff1c0803962::t_c545daca62c0c4 201-244,246-298
+  s_7f6ff1c0803962::t_e673bd4daa0246 15,188
+  s_7f6ff1c0803962::t_ae13f441ff437d 9,299-300
+  s_7f6ff1c0803962::t_bdda61be28450d 38
+src/renderer/components/PieChart/pie-chart.test.tsx
+  s_7f6ff1c0803962::t_04882cf3b1e0a0 1-32
+src/renderer/data/use-dashboard-data.test.tsx
+  s_7f6ff1c0803962::t_db5174e52ae757 67-81
+src/renderer/pages/dashboard.tsx
+  s_7f6ff1c0803962::t_25df269c780ce1 132-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1ed2eaa3b75acfdcae033cab7ece0365d0aa381e",
+  "prompts": {},
+  "sessions": {
+    "s_16cc1841911c68": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "f93c8223-af52-45b9-89f7-abf779863a56",
+        "model": "auto"
+      },
+      "human_author": "albyrex <thealbyrex@gmail.com>"
+    },
+    "s_7f6ff1c0803962": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "e4d73513-9b24-4a0d-ba70-de450195bab1",
+        "model": "auto"
+      },
+      "human_author": null
+    }
+  }
+}
