@@ -30,6 +30,14 @@ describe("loadAndSubscribe", () => {
     expect(dispose).toBeTypeOf("function");
   });
 
+  it("only subscribes to a store the host has already loaded", async () => {
+    const s = { ...store(), isLoaded: true };
+
+    expect(await loadAndSubscribe(s, new AbortController().signal)).toBeTypeOf("function");
+    expect(s.loadAll).not.toHaveBeenCalled();
+    expect(s.subscribe).toHaveBeenCalledTimes(1);
+  });
+
   it("tries a failed load again, then subscribes", async () => {
     const s = store(["fail", "throw", "ok"]);
 

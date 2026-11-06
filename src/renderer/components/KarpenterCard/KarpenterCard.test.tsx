@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
-import { KarpenterCard } from "./KarpenterCard";
+import { KarpenterCard, NodesList } from "./KarpenterCard";
 
 import type { Node } from "../../utils/kube-helpers";
 
@@ -13,6 +13,11 @@ vi.mock("../../data/stores", () => ({
   getNodeOverlayStore: () => undefined,
   getPodStore: () => ({ items: [] }),
   karpenterEventNamespaces: ["default"],
+}));
+
+vi.mock("../../data/node-metrics", () => ({
+  useNodeMetrics: vi.fn(),
+  getNodeUsage: () => ({ cpu: 0.5, memory: 1024 ** 3 }),
 }));
 
 const nodePool = new NodePool({
@@ -49,5 +54,17 @@ describe("KarpenterCard", () => {
     expect(screen.getByText(/No events found for/)).toBeTruthy();
     expect(screen.getByRole("button", { name: /Refresh/ })).toBeTruthy();
     expect(screen.queryByText(/debug/i)).toBeNull();
+  });
+
+  it("shows the kubelet version and the usage of each node against its allocatable", () => {
+    const withInfo = {
+      ...node,
+      status: { ...node.status, nodeInfo: { kubeletVersion: "v1.33.5" }, allocatable: { cpu: "2", memory: "4Gi" } },
+    } as unknown as Node;
+    render(<NodesList nodes={[withInfo]} podCountMap={{}} />);
+
+    expect(screen.getByText("v1.33.5")).toBeTruthy();
+    expect(screen.getByText("0.50 / 2.00")).toBeTruthy();
+    expect(screen.getByText("1.0Gi / 4.0Gi")).toBeTruthy();
   });
 });

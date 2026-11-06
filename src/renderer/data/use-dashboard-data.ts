@@ -10,7 +10,11 @@ import {
   getNodePoolStore,
 } from "./stores";
 
-export type DashboardData = { status: "loading" } | { status: "not-installed" } | { status: "ready"; version: string };
+export type DashboardData =
+  | { status: "loading" }
+  | { status: "not-installed" }
+  /** `version` is empty while the controller version is still loading. */
+  | { status: "ready"; version: string };
 
 interface Loaded {
   /** The API bases of the stores the load had. */
@@ -58,7 +62,10 @@ export function useKarpenterDashboardData(): DashboardData {
       setLoaded(lastLoaded);
     };
 
-    loadKarpenterData(controller.signal)
+    // Ready once the stores are loaded; shown again, the version the last load found stays until the new one.
+    loadKarpenterData(controller.signal, () => {
+      if (lastLoaded?.storesKey !== storesKey || !lastLoaded.version) done("");
+    })
       .then((result) => {
         data = result;
         done(result?.version ?? null);

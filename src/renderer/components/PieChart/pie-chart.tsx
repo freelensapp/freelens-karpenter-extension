@@ -1,5 +1,5 @@
 import { Renderer } from "@freelensapp/extensions";
-import React from "react";
+import React, { useMemo } from "react";
 import { COLOR } from "../../config/theme";
 import { computeOverviewSlices, nodePoolDotColor, overviewChartData } from "./overview-slices";
 import { computeOverviewStats } from "./overview-stats";
@@ -73,7 +73,10 @@ export function PieChart(props: PieChartProps): React.ReactElement {
 
   // ── aggregate stats: every NodePool counts; the slices of the chart are the nodes by status ──
   const stats = computeOverviewStats(nodes, nodePools);
-  const chartData = overviewChartData(computeOverviewSlices(stats));
+  // The host's chart animates on every render; a new `data` only when a count changes keeps it still.
+  const slices = computeOverviewSlices(stats);
+  const slicesKey = slices.map((slice) => `${slice.label}:${slice.value}`).join();
+  const chartData = useMemo(() => overviewChartData(slices), [slicesKey]);
 
   return (
     <>

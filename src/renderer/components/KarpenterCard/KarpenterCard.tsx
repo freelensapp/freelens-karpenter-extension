@@ -6,11 +6,13 @@ import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
 import { NodeOverlay } from "../../api/nodeoverlay/nodeoverlay-v1alpha1";
 import { NodePool } from "../../api/nodepool/nodepool-v1";
 import { COLOR, ICON, LABEL, STATUS_BORDER_COLOR } from "../../config/theme";
+import { getNodeUsage, useNodeMetrics } from "../../data/node-metrics";
 import { detectProvider, NODE_CLASS_KIND, openNodeClassDetail } from "../../data/nodeclass";
 import { getNodeOverlayStore } from "../../data/stores";
 import { fmtAgo, useKarpenterCardData, usePoolEvents } from "../../hooks/useKarpenterData";
 import { eventTs, eventVisual, type KarpenterEvent } from "../../utils/karpenter-events";
 import {
+  formatMemory,
   getInstanceType,
   getNodeClaimName,
   getNodeCpu,
@@ -33,7 +35,7 @@ import style from "./karpentercard.module.scss";
 import type { ResourceList } from "../../api/types";
 
 const {
-  Component: { Icon },
+  Component: { Icon, LineProgress },
 } = Renderer;
 
 type Node = Renderer.K8sApi.Node;
@@ -171,7 +173,21 @@ function ToggleButton({
 
 // ── Table view ────────────────────────────────────────────────────────────────
 
-export const NodesList = ({
+/** `used / allocatable` over a bar, as the host's Nodes page shows it; the allocatable alone without metrics. */
+function UsageCell({ used, total, fmt }: { used: number | undefined; total: number; fmt: (v: number) => string }) {
+  if (used === undefined || !(total > 0)) return <td className={style.monoSmall}>{fmt(total)}</td>;
+  return (
+    <td className={style.monoSmall}>
+      <LineProgress value={used} max={total} />
+      {formatUsage(used, total, fmt)}
+    </td>
+  );
+}
+
+const fmtCores = (cores: number) => cores.toFixed(2);
+const fmtBytes = formatMemory;
+
+export const NodesList = observer(function NodesList({
   nodes,
   claims = [],
   podCountMap,
@@ -179,100 +195,115 @@ export const NodesList = ({
   nodes: Node[];
   claims?: NodeClaim[];
   podCountMap: Record<string, number>;
-}) => (
-  <table className={style.nodesTable}>
-    <colgroup>
-      <col style={{ width: "34%" }} />
-      <col style={{ width: "22%" }} />
-      <col style={{ width: "10%" }} />
-      <col style={{ width: "10%" }} />
-      <col style={{ width: "7%" }} />
-      <col style={{ width: "7%" }} />
-      <col style={{ width: "7%" }} />
-      <col style={{ width: "3%" }} />
-    </colgroup>
-    <thead>
-      <tr>
-        <th>Node</th>
-        <th>NodeClaim</th>
-        <th>Type</th>
-        <th>Status</th>
-        <th>CPU</th>
-        <th>Memory</th>
-        <th>Pods</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {nodes.map((node, idx) => {
-        if (!node?.metadata) return null;
-        const nodeName = node.metadata?.name ?? "";
-        const maxPods = getNodeMaxPods(node);
-        const runningPods = podCountMap[nodeName] ?? -1;
-        const podLabel = maxPods > 0 ? (runningPods >= 0 ? `${runningPods}/${maxPods}` : `—/${maxPods}`) : "—";
-        return (
-          <tr
-            key={node.metadata?.uid ?? nodeName ?? idx}
-            onClick={() => openNodeDetail(node)}
-            title="Click to open node details"
-          >
-            <td>
-              <span className={style.nodeNameCell}>
-                <span className={style.nodeIcon}>{ICON.node}</span>
-                <span className={style.nodeName}>{nodeName}</span>
-              </span>
-            </td>
-            <td>
-              <span className={style.monoSmall}>{getNodeClaimName(node) || "—"}</span>
-            </td>
-            <td>
-              <span className={style.monoSmall}>{getInstanceType(node)}</span>
-            </td>
-            <td>
-              <StatusBadge status={getNodeStatus(node)} />
-            </td>
-            <td className={style.monoSmall}>{getNodeCpu(node)}</td>
-            <td className={style.monoSmall}>{getNodeMemory(node)}</td>
-            <td className={style.monoSmall}>{podLabel}</td>
-            <td className={style.clickHint}>{ICON.external}</td>
-          </tr>
-        );
-      })}
-      {claims.map((claim, idx) => {
-        const claimName = claim.metadata?.name ?? "";
-        return (
-          <tr
-            key={`claim-${claim.metadata?.uid ?? claimName ?? idx}`}
-            onClick={() => openNodeClaimDetail(claimName)}
-            title="Click to open NodeClaim details"
-          >
-            <td>
-              <span className={style.nodeNameCell}>
-                <span className={style.nodeIcon}>{ICON.nodeclaim}</span>
-                <span className={style.nodeName} style={{ color: COLOR.textSecondary, fontStyle: "italic" }}>
-                  (pending)
+}) {
+  useNodeMetrics();
+  return (
+    <table className={style.nodesTable}>
+      {/* In a window 1280 px wide the usage ("1.02 / 16.00", "166Mi / 25.4Gi") and Pods ("4/110") columns stay whole;
+          a long node name is cut at its end, after the part that tells the nodes apart, and its title shows it whole. */}
+      <colgroup>
+        <col style={{ width: "23%" }} />
+        <col style={{ width: "13%" }} />
+        <col style={{ width: "10%" }} />
+        <col style={{ width: "9%" }} />
+        <col style={{ width: "9%" }} />
+        <col style={{ width: "13%" }} />
+        <col style={{ width: "13%" }} />
+        <col style={{ width: "7%" }} />
+        <col style={{ width: "3%" }} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Node</th>
+          <th>NodeClaim</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Version</th>
+          <th>CPU</th>
+          <th>Memory</th>
+          <th>Pods</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {nodes.map((node, idx) => {
+          if (!node?.metadata) return null;
+          const nodeName = node.metadata?.name ?? "";
+          const maxPods = getNodeMaxPods(node);
+          const runningPods = podCountMap[nodeName] ?? -1;
+          const podLabel = maxPods > 0 ? (runningPods >= 0 ? `${runningPods}/${maxPods}` : `—/${maxPods}`) : "—";
+          const usage = getNodeUsage(node);
+          const allocatable = node.status?.allocatable ?? node.status?.capacity;
+          return (
+            <tr
+              key={node.metadata?.uid ?? nodeName ?? idx}
+              onClick={() => openNodeDetail(node)}
+              title="Click to open node details"
+            >
+              <td>
+                <span className={style.nodeNameCell}>
+                  <span className={style.nodeIcon}>{ICON.node}</span>
+                  <span className={style.nodeName} title={nodeName}>
+                    {nodeName}
+                  </span>
                 </span>
-              </span>
-            </td>
-            <td>
-              <span className={style.monoSmall}>{claimName || "—"}</span>
-            </td>
-            <td>
-              <span className={style.monoSmall}>{getNodeClaimInstanceType(claim)}</span>
-            </td>
-            <td>
-              <StatusBadge status="Claiming" />
-            </td>
-            <td className={style.monoSmall}>—</td>
-            <td className={style.monoSmall}>—</td>
-            <td className={style.monoSmall}>—</td>
-            <td className={style.clickHint}>{ICON.external}</td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-);
+              </td>
+              <td>
+                <span className={style.monoSmall}>{getNodeClaimName(node) || "—"}</span>
+              </td>
+              <td>
+                <span className={style.monoSmall}>{getInstanceType(node)}</span>
+              </td>
+              <td>
+                <StatusBadge status={getNodeStatus(node)} />
+              </td>
+              <td className={style.monoSmall} title={node.status?.nodeInfo?.kubeletVersion}>
+                {node.status?.nodeInfo?.kubeletVersion ?? "—"}
+              </td>
+              <UsageCell used={usage?.cpu} total={parseCpuCores(allocatable?.cpu)} fmt={fmtCores} />
+              <UsageCell used={usage?.memory} total={parseMemGi(allocatable?.memory) * 1024 ** 3} fmt={fmtBytes} />
+              <td className={style.monoSmall}>{podLabel}</td>
+              <td className={style.clickHint}>{ICON.external}</td>
+            </tr>
+          );
+        })}
+        {claims.map((claim, idx) => {
+          const claimName = claim.metadata?.name ?? "";
+          return (
+            <tr
+              key={`claim-${claim.metadata?.uid ?? claimName ?? idx}`}
+              onClick={() => openNodeClaimDetail(claimName)}
+              title="Click to open NodeClaim details"
+            >
+              <td>
+                <span className={style.nodeNameCell}>
+                  <span className={style.nodeIcon}>{ICON.nodeclaim}</span>
+                  <span className={style.nodeName} style={{ color: COLOR.textSecondary, fontStyle: "italic" }}>
+                    (pending)
+                  </span>
+                </span>
+              </td>
+              <td>
+                <span className={style.monoSmall}>{claimName || "—"}</span>
+              </td>
+              <td>
+                <span className={style.monoSmall}>{getNodeClaimInstanceType(claim)}</span>
+              </td>
+              <td>
+                <StatusBadge status="Claiming" />
+              </td>
+              <td className={style.monoSmall}>—</td>
+              <td className={style.monoSmall}>—</td>
+              <td className={style.monoSmall}>—</td>
+              <td className={style.monoSmall}>—</td>
+              <td className={style.clickHint}>{ICON.external}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+});
 
 // ── Tree (cards) view ─────────────────────────────────────────────────────────
 

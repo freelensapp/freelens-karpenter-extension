@@ -182,6 +182,9 @@ export function parseCpuCores(cpu: Quantity | null | undefined): number {
   if (typeof cpu === "number") return cpu;
   if (!cpu) return 0;
   if (cpu.endsWith("m")) return parseFloat(cpu) / 1000;
+  // The metrics API reports usage in nanocores or microcores.
+  if (cpu.endsWith("u")) return parseFloat(cpu) / 1e6;
+  if (cpu.endsWith("n")) return parseFloat(cpu) / 1e9;
   return parseFloat(cpu) || 0;
 }
 
