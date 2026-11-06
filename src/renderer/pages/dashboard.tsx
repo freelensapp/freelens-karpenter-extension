@@ -129,23 +129,25 @@ export const KarpenterDashboard = observer((_props: KarpenterDashboardProps) => 
             {tab.label}
           </button>
         ))}
-        {/* Karpenter version badge */}
-        <span
-          style={{
-            marginLeft: "auto",
-            marginRight: 16,
-            padding: "2px 10px",
-            borderRadius: 12,
-            background: "var(--borderColor, #2a2a36)",
-            color: "#00a7e1",
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: "0.04em",
-            border: "1px solid #00a7e133",
-          }}
-        >
-          Karpenter {data.version}
-        </span>
+        {/* Karpenter version badge, once the version is loaded */}
+        {data.version && (
+          <span
+            style={{
+              marginLeft: "auto",
+              marginRight: 16,
+              padding: "2px 10px",
+              borderRadius: 12,
+              background: "var(--borderColor, #2a2a36)",
+              color: "#00a7e1",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.04em",
+              border: "1px solid #00a7e133",
+            }}
+          >
+            Karpenter {data.version}
+          </span>
+        )}
       </div>
 
       {/* ── Tab content ── */}

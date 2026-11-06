@@ -64,6 +64,21 @@ describe("useKarpenterDashboardData", () => {
     expect(await screen.findByText("ready 1.15.0")).toBeDefined();
   });
 
+  it("is ready as soon as the stores are loaded, and gets the version later", async () => {
+    let resolve!: (data: { version: string; dispose: () => void }) => void;
+    load.mockImplementation((_signal, onStoresLoaded) => {
+      onStoresLoaded?.();
+      return new Promise((r) => (resolve = r));
+    });
+    runInAction(() => served.set(true));
+
+    render(<Probe />);
+    expect(await screen.findByText("ready")).toBeDefined();
+
+    act(() => resolve({ version: "1.15.0", dispose: vi.fn() }));
+    expect(await screen.findByText("ready 1.15.0")).toBeDefined();
+  });
+
   it("is not installed when the cluster has no NodePool CRD", async () => {
     load.mockResolvedValue(null);
 

@@ -26,6 +26,7 @@ interface LoadableStore {
     reqInit?: { signal?: AbortSignal };
   }): Promise<unknown>;
   subscribe(): () => void;
+  isLoaded?: boolean;
 }
 
 /** Waits for `ms`, or less when the signal is aborted meanwhile. */
@@ -62,6 +63,8 @@ export async function loadAndSubscribe(
   { attempts = 5, delayMs = 2000 }: RetryOptions = {},
 ): Promise<(() => void) | undefined> {
   if (!store) return undefined;
+  // Reopening the page: the host keeps the store loaded, so subscribing is enough.
+  if (!namespaces && store.isLoaded) return store.subscribe();
   for (let attempt = 1; ; attempt++) {
     let failed = false;
     try {
@@ -86,11 +89,15 @@ export interface KarpenterData {
 /**
  * Loads what the dashboard shows: the Karpenter kinds the cluster serves, nodes, the pods of every namespace and
  * the Karpenter events, each subscribed to; then the controller version. Resolves to `null` when the cluster has
- * no NodePool CRD, that is, Karpenter is not installed.
+ * no NodePool CRD, that is, Karpenter is not installed. `onStoresLoaded` is called once the Karpenter kinds and the
+ * nodes are loaded, so that the page shows them while the pods, the events and the version still load.
  */
-export async function loadKarpenterData(signal: AbortSignal): Promise<KarpenterData | null> {
+export async function loadKarpenterData(
+  signal: AbortSignal,
+  onStoresLoaded?: () => void,
+): Promise<KarpenterData | null> {
   const crdStore = Renderer.K8sApi.crdStore;
-  await crdStore.loadAll({ onLoadFailure: () => undefined });
+  if (!crdStore.isLoaded) await crdStore.loadAll({ onLoadFailure: () => undefined });
   const crd = crdStore.items.find((item) => item.getName() === nodePoolCrdName);
   if (!crd) return null;
 
@@ -108,7 +115,11 @@ export async function loadKarpenterData(signal: AbortSignal): Promise<KarpenterD
     getGCENodeClassStore(),
     getGCECustomMachineTypeStore(),
   ];
-  (await Promise.all(stores.map((store) => loadAndSubscribe(store, signal)))).forEach(keep);
+  const loads = stores.map((store) => loadAndSubscribe(store, signal));
+  // The NodePools and the nodes are enough to show the page; a kind that is retried must not hold it back.
+  await Promise.all(loads.slice(0, 2));
+  if (!signal.aborted) onStoresLoaded?.();
+  (await Promise.all(loads)).forEach(keep);
 
   // Pods are namespaced, and the host loads a namespaced store for all namespaces only when it is given every one
   // of them, so the namespaces come first.

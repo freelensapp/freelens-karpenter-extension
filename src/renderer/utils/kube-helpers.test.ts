@@ -131,6 +131,8 @@ describe("node resources", () => {
   it("parses CPU cores and memory in GiB", () => {
     expect(parseCpuCores("3920m")).toBeCloseTo(3.92);
     expect(parseCpuCores("4")).toBe(4);
+    expect(parseCpuCores("123456789n")).toBeCloseTo(0.123456789);
+    expect(parseCpuCores("2500000u")).toBeCloseTo(2.5);
     expect(parseCpuCores(2)).toBe(2);
     expect(parseCpuCores(undefined)).toBe(0);
     expect(parseMemGi("1048576Ki")).toBe(1);
