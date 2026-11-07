@@ -1,10 +1,33 @@
-# Freelens Karpenter Extension
+# @freelensapp/karpenter-extension
 
-[Freelens](https://freelens.app) extension for [Karpenter](https://karpenter.sh/).
+<!-- markdownlint-disable MD013 -->
 
-A visual interface to monitor Karpenter's resources and the actions it performs.
+[![Home](https://img.shields.io/badge/%F0%9F%8F%A0-freelens.app-02a7a0)](https://freelens.app)
+[![GitHub](https://img.shields.io/github/stars/freelensapp/freelens-karpenter-extension?style=flat&label=GitHub%20%E2%AD%90)](https://github.com/freelensapp/freelens-karpenter-extension)
+[![Release](https://img.shields.io/github/v/release/freelensapp/freelens-karpenter-extension?display_name=tag&sort=semver)](https://github.com/freelensapp/freelens-karpenter-extension/releases)
+[![Integration tests](https://github.com/freelensapp/freelens-karpenter-extension/actions/workflows/integration-tests.yaml/badge.svg?branch=main)](https://github.com/freelensapp/freelens-karpenter-extension/actions/workflows/integration-tests.yaml)
+[![npm](https://img.shields.io/npm/v/@freelensapp/karpenter-extension.svg)](https://www.npmjs.com/package/@freelensapp/karpenter-extension)
 
-Born from an idea by Roberto Bandini [@robertobandini](https://github.com/robertobandini) and Alberto Lunghi [@albyrex](https://github.com/albyrex), who created the first version.
+<!-- markdownlint-enable MD013 -->
+
+[Freelens](https://freelens.app) extension for [Karpenter](https://karpenter.sh/),
+the open source node autoscaler that launches and removes the nodes of a
+Kubernetes cluster to fit its pods. A visual interface to watch what Karpenter
+does to your nodes, on AWS, Azure and GCP: the extension reads the Karpenter
+objects, the nodes, the pods and the events of the cluster, and writes nothing
+to it.
+
+[Video Demo](https://github.com/user-attachments/assets/c0fda200-c32e-4580-be34-59087b05343f)
+
+## Authors
+
+- [Alberto Lunghi](https://github.com/albyrex) created the first version of
+  this extension and, in 2.3.0, added the usage of the nodes to the cards of
+  the Overview.
+- [Roberto Bandini](https://github.com/robertobandini) helped him complete the
+  first version and ported the extension to the extension API of Freelens 2.
+- [Piotr Roszatycki](https://github.com/dex4er) added the support for Karpenter
+  on GCP and the pages of every kind, and maintains the extension.
 
 ## What it shows
 
@@ -197,8 +220,8 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 
 ## Requirements
 
-- Freelens >= 2.0.0. The 1.x versions of the extension are for Freelens 1.x
-  and are no longer maintained.
+- Freelens 2.0.0 or a later 2.x (extension API v2). Freelens 1.x needs a 1.x
+  version of the extension, which is no longer maintained.
 - Karpenter v1 (`karpenter.sh/v1`), on AWS EKS, Azure AKS (node
   autoprovisioning) or Google GKE (the
   [GCP provider](https://github.com/cloudpilot-ai/karpenter-provider-gcp) of
