@@ -23,6 +23,7 @@ already applied to `package.json`.
 Review the bump in `package.json`, then **merge the PR** into `main`.
 
 The merge automatically triggers the `Automated tag` workflow, which:
+
 - Reads the version from `package.json`.
 - Creates tag `vX.Y.Z` on `main` (only if the version is a stable release, not a
   pre-release).
@@ -33,6 +34,7 @@ comment on the corresponding issue to trigger tagging manually.
 ## Step 3 — Automatic: `Release`
 
 Pushing the `vX.Y.Z` tag automatically triggers the `Release` workflow, which:
+
 1. Verifies the tag matches the version in `package.json`.
 2. Builds and packs the extension.
 3. Publishes to npm with dist-tag `latest` (or `next` for pre-release versions
