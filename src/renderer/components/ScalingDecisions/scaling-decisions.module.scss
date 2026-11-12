@@ -388,7 +388,9 @@
   text-align: left;
   font: inherit;
   color: inherit;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 
   &:hover {
     border-color: #00a7e1;
@@ -554,7 +556,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
   &:hover {
     color: var(--textColorPrimary);
