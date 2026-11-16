@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { GCENodeClass } from "./gcenodeclass-v1alpha1";
 
-import type { DiskCategory, GCENodeClassSpec, GCENodeClassStatus } from "./gcenodeclass-v1alpha1-types";
+import type {
+  AdvancedMachineFeatures,
+  DiskCategory,
+  GCENodeClassSpec,
+  GCENodeClassStatus,
+  GPUSharingStrategy,
+  MemorySwapConfiguration,
+} from "./gcenodeclass-v1alpha1-types";
 
 const nodeClass = (spec?: GCENodeClassSpec) =>
   new GCENodeClass({
@@ -84,6 +91,42 @@ describe("GCENodeClass (karpenter.k8s.gcp/v1alpha1)", () => {
     const status: GCENodeClassStatus = { subnetRanges: [{ name: "pods-a", totalFreeIP: 3840 }, { name: "pods-b" }] };
     expect(GCENodeClass.getSubnetRangeNames(nodeClass(spec))).toEqual(["pods-a"]);
     expect(status.subnetRanges?.map((range) => range.totalFreeIP)).toEqual([3840, undefined]);
+  });
+
+  it("types the fields of v0.8.0", () => {
+    const spec: GCENodeClassSpec = {
+      imageSelectorTerms: [{ family: "Ubuntu2404", version: "v20251218a" }],
+      resourceManagerTags: { "lab/env": "prod", "tagKeys/123": "tagValues/456" },
+      minCpuPlatform: "Intel Ice Lake",
+      gvnic: { enabled: true },
+      gpuSharingConfig: { strategy: "TimeSharing", maxSharedClientsPerGPU: 4 },
+      linuxNodeConfig: {
+        swapConfig: { enabled: true, encryptionConfig: { disabled: false }, bootDiskProfile: { swapSizeGib: 8 } },
+      },
+      advancedMachineFeatures: { threadsPerCore: 1 },
+      kubeletConfiguration: {
+        failSwapOn: false,
+        memorySwap: { swapBehavior: "LimitedSwap" },
+        shutdownGracePeriod: "30s",
+        shutdownGracePeriodCriticalPods: "10s",
+      },
+      disks: [
+        { category: "pd-balanced", sizeGiB: 100, boot: true },
+        { category: "pd-ssd", sizeGiB: 375, deviceName: "scratch" },
+      ],
+    };
+    expect(GCENodeClass.getSubnetRangeNames(nodeClass(spec))).toEqual([]);
+    expect(spec.disks?.map((disk) => disk.deviceName)).toEqual([undefined, "scratch"]);
+  });
+
+  it("has the threads per core and the swap behaviours of v0.8.0 only", () => {
+    // @ts-expect-error GCE takes one or two threads per core.
+    const threads: AdvancedMachineFeatures = { threadsPerCore: 4 };
+    // @ts-expect-error The kubelet takes NoSwap or LimitedSwap.
+    const swap: MemorySwapConfiguration = { swapBehavior: "UnlimitedSwap" };
+    // @ts-expect-error v0.8.0 shares a GPU by time sharing only.
+    const sharing: GPUSharingStrategy = "MPS";
+    expect([threads.threadsPerCore, swap.swapBehavior, sharing]).toEqual([4, "UnlimitedSwap", "MPS"]);
   });
 
   it("has the disk categories of v0.7.0, without local-ssd", () => {

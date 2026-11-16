@@ -94,7 +94,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     // has a card for its NodeClaim still waiting for its node; it sets no
     // memory limit, and the NodeOverlay that can apply to it is on its card.
     await openTab(frame, "Overview", [
-      "Karpenter 0.7.0",
+      "Karpenter 0.8.0",
       "gke",
       "gke-pend1",
       /\/ —$/,
@@ -226,7 +226,8 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
 
   it("lists the GCENodeClasses on their page, and shows the details of one", async () => {
     // The entry of the sidebar, Image Family, the family of the image selector
-    // term at its channel, as it names no version, Disks, Subnet (the two
+    // term at its channel, as it names no version, Disks (the boot disk and the
+    // data disk of v0.8.0, a badge each), Subnet (the two
     // subnetRangeNames of v0.7.0, a badge each), and the columns of kubectl get
     // gcenodeclasses -o wide. The image selector term of default with the image
     // it resolved and its kubelet configuration are in the details only. The
@@ -237,7 +238,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     const row = await expectListRow(frame, gceNodeClassColumns, [
       "default",
       "ContainerOptimizedOS=stable",
-      "boot 100 GiB pd-balanced",
+      /^boot 100 GiB pd-balanced\s*375 GiB pd-ssd$/,
       /^pods-a\s*pods-b$/,
       "True",
       agePattern,
@@ -263,6 +264,21 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "maxParallelImagePulls: 5",
       "pods-a: 3840 free IPs",
       "pods-b: 1012 free IPs",
+    ]);
+    // The fields of v0.8.0: the device name of the data disk, the swap file,
+    // the swap behaviour and the graceful shutdown of the kubelet, one thread
+    // per core, the minimum CPU platform, gVNIC, the resource manager tag and
+    // the GPU sharing.
+    await expectInDetails(frame, [
+      "disk: 375 GiB, pd-ssd, device name scratch",
+      "enabled, 8 GiB, encrypted",
+      "memorySwap: swapBehavior=LimitedSwap",
+      "shutdownGracePeriod: 30s",
+      "threadsPerCore: 1",
+      "Intel Ice Lake",
+      "gVNIC",
+      "lab/env=prod",
+      "TimeSharing, 4 clients per GPU",
     ]);
   });
 

@@ -6,7 +6,10 @@
 #
 # The GCENodeClass sets the fields that v0.7.0 adds: the pod ranges as
 # subnetRangeNames, hugepages, nested virtualization, the local SSD mode, the
-# preemption notice of Spot VMs and parallel image pulls of the kubelet.
+# preemption notice of Spot VMs and parallel image pulls of the kubelet. And
+# those that v0.8.0 adds: the device name of a data disk, a swap file with the
+# swap behaviour and the graceful shutdown of the kubelet, one thread per core,
+# the minimum CPU platform, gVNIC, resource manager tags and GPU sharing.
 apiVersion: karpenter.k8s.gcp/v1alpha1
 kind: GCENodeClass
 metadata:
@@ -20,6 +23,9 @@ spec:
     - category: pd-balanced
       sizeGiB: 100
       boot: true
+    - category: pd-ssd
+      sizeGiB: 375
+      deviceName: scratch
   subnetRangeNames:
     - pods-a
     - pods-b
@@ -29,11 +35,28 @@ spec:
     maxPods: 64
     serializeImagePulls: false
     maxParallelImagePulls: 5
+    memorySwap:
+      swapBehavior: LimitedSwap
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
   linuxNodeConfig:
     hugepages:
       hugepageSize2m: 512
+    swapConfig:
+      enabled: true
+      bootDiskProfile:
+        swapSizeGib: 8
   advancedMachineFeatures:
     enableNestedVirtualization: true
+    threadsPerCore: 1
+  minCpuPlatform: Intel Ice Lake
+  gvnic:
+    enabled: true
+  resourceManagerTags:
+    lab/env: prod
+  gpuSharingConfig:
+    strategy: TimeSharing
+    maxSharedClientsPerGPU: 4
   localSsdMode: Ephemeral
   preemptionNoticeDuration: 120s
 ---
@@ -275,4 +298,4 @@ spec:
     spec:
       containers:
         - name: karpenter
-          image: public.ecr.aws/cloudpilotai/gcp/karpenter:v0.7.0
+          image: public.ecr.aws/cloudpilotai/gcp/karpenter:v0.8.0

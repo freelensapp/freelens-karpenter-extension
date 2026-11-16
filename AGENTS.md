@@ -32,7 +32,7 @@ there, and is copied here.
   Azure/karpenter-provider-azure, `karpenter.k8s.gcp/v1alpha1`
   (GCENodeClass, GCECustomMachineType) of cloudpilot-ai/karpenter-provider-gcp;
   the types follow Karpenter 1.15.0, the AWS provider 1.15.0, the Azure
-  provider 1.14.5 and the GCP provider 0.7.0
+  provider 1.14.5 and the GCP provider 0.8.0
 - **Toolchain**: Node.js 24.x, yq 4.x and cosign 3.x (`mise.toml` with
   `mise.lock`; Node also in `.nvmrc`)
 - **Package manager**: pnpm 12.x (`packageManager`, run through corepack)

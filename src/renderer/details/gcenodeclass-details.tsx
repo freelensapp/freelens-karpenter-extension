@@ -10,9 +10,11 @@ import { fieldTexts, formatSelectorTerm } from "./fields";
 import {
   formatAdditionalNetworkInterface,
   formatDisk,
+  formatGPUSharing,
   formatImage,
   formatSubnetRange,
   hugepagesTexts,
+  swapText,
 } from "./gcenodeclass-fields";
 import { notTrueReason } from "./karpenter-v1";
 
@@ -47,9 +49,10 @@ function Section({ title, hasContent, children }: SectionProps) {
  * The details of a GCENodeClass of karpenter.k8s.gcp/v1alpha1, after the host's own: the metadata, the printer columns
  * and the conditions, and the events of the object at the end. Grouped as the fields of the spec go together: the
  * image selector terms next to the images they resolved to, with `ImagesReady` when it is not `True`; the instances
- * (service account, disks and local SSDs, shielded and confidential instance, advanced machine features, the
- * preemption notice of Spot VMs, hugepages, kubelet, labels, metadata); the network, with the pod ranges it names next
- * to their free IPs; the GPU; then the NodePools that use it.
+ * (service account, minimum CPU platform, disks and local SSDs, shielded and confidential instance, advanced machine
+ * features, the preemption notice of Spot VMs, hugepages, swap, kubelet, labels, metadata, resource manager tags); the
+ * network, with the pod ranges it names next to their free IPs, and gVNIC; the GPU, with its sharing; then the
+ * NodePools that use it.
  *
  * An observer: it reads the NodePools from their store, which it loads when the page under the drawer has not.
  */
@@ -70,6 +73,7 @@ export const GCENodeClassDetails = observer(
     const shieldedInstance = fieldTexts(spec?.shieldedInstanceConfig);
     const advancedMachineFeatures = fieldTexts(spec?.advancedMachineFeatures);
     const hugepages = hugepagesTexts(spec?.linuxNodeConfig);
+    const swap = swapText(spec?.linuxNodeConfig);
     const kubelet = fieldTexts(spec?.kubeletConfiguration);
     const network = spec?.networkConfig;
     const networkTags = spec?.networkTags ?? [];
@@ -97,6 +101,7 @@ export const GCENodeClassDetails = observer(
           title="Instances"
           hasContent={
             !!spec?.serviceAccount ||
+            !!spec?.minCpuPlatform ||
             disks.length > 0 ||
             shieldedInstance.length > 0 ||
             advancedMachineFeatures.length > 0 ||
@@ -104,13 +109,18 @@ export const GCENodeClassDetails = observer(
             !!spec?.localSsdMode ||
             !!spec?.preemptionNoticeDuration ||
             hugepages.length > 0 ||
+            swap !== undefined ||
             kubelet.length > 0 ||
             Object.keys(spec?.labels ?? {}).length > 0 ||
-            Object.keys(spec?.metadata ?? {}).length > 0
+            Object.keys(spec?.metadata ?? {}).length > 0 ||
+            Object.keys(spec?.resourceManagerTags ?? {}).length > 0
           }
         >
           <DrawerItem name="Service Account" hidden={!spec?.serviceAccount}>
             {spec?.serviceAccount}
+          </DrawerItem>
+          <DrawerItem name="Min CPU Platform" hidden={!spec?.minCpuPlatform}>
+            {spec?.minCpuPlatform}
           </DrawerItem>
           <Badges name="Disks" texts={disks} />
           <DrawerItem name="Local SSD Mode" hidden={!spec?.localSsdMode}>
@@ -125,9 +135,13 @@ export const GCENodeClassDetails = observer(
             {spec?.preemptionNoticeDuration}
           </DrawerItem>
           <Badges name="Hugepages" texts={hugepages} />
+          <DrawerItem name="Swap" hidden={swap === undefined}>
+            {swap}
+          </DrawerItem>
           <Badges name="Kubelet" texts={kubelet} />
           <DrawerItemLabels name="Labels" labels={spec?.labels ?? {}} />
           <DrawerItemLabels name="Metadata" labels={spec?.metadata ?? {}} />
+          <DrawerItemLabels name="Resource Manager Tags" labels={spec?.resourceManagerTags ?? {}} />
         </Section>
 
         <Section
@@ -139,7 +153,8 @@ export const GCENodeClassDetails = observer(
             network?.enablePrivateNodes !== undefined ||
             !!network?.subnetwork ||
             additionalInterfaces.length > 0 ||
-            networkTags.length > 0
+            networkTags.length > 0 ||
+            spec?.gvnic !== undefined
           }
         >
           <DrawerItem name="Subnetwork" hidden={!network?.subnetwork}>
@@ -155,14 +170,23 @@ export const GCENodeClassDetails = observer(
           </DrawerItem>
           <Badges name="Additional Network Interfaces" texts={additionalInterfaces} />
           <Badges name="Network Tags" texts={networkTags} />
+          <DrawerItem name="gVNIC" hidden={spec?.gvnic === undefined}>
+            <BadgeBoolean value={!!spec?.gvnic?.enabled} />
+          </DrawerItem>
         </Section>
 
-        <Section title="GPU" hasContent={spec?.autoGPUTaint !== undefined || !!spec?.gpuDriverVersion}>
+        <Section
+          title="GPU"
+          hasContent={spec?.autoGPUTaint !== undefined || !!spec?.gpuDriverVersion || !!spec?.gpuSharingConfig}
+        >
           <DrawerItem name="Driver Version" hidden={!spec?.gpuDriverVersion}>
             {spec?.gpuDriverVersion}
           </DrawerItem>
           <DrawerItem name="Auto GPU Taint" hidden={spec?.autoGPUTaint === undefined}>
             <BadgeBoolean value={!!spec?.autoGPUTaint} />
+          </DrawerItem>
+          <DrawerItem name="Sharing" hidden={!spec?.gpuSharingConfig}>
+            {spec?.gpuSharingConfig && formatGPUSharing(spec.gpuSharingConfig)}
           </DrawerItem>
         </Section>
 

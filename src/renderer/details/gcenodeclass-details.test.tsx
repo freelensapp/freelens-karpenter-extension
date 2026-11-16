@@ -117,6 +117,31 @@ const v070Class = new GCENodeClass({
   },
 });
 
+// default of the fixtures of the integration tests as v0.8.0 writes it: the fields it adds.
+const v080Class = new GCENodeClass({
+  apiVersion: "karpenter.k8s.gcp/v1alpha1",
+  kind: "GCENodeClass",
+  metadata: { name: "default", uid: "4", resourceVersion: "1", selfLink: "" },
+  spec: {
+    imageSelectorTerms: [{ family: "ContainerOptimizedOS", channel: "stable" }],
+    disks: [
+      { category: "pd-balanced", sizeGiB: 100, boot: true },
+      { category: "pd-ssd", sizeGiB: 375, deviceName: "scratch" },
+    ],
+    kubeletConfiguration: {
+      memorySwap: { swapBehavior: "LimitedSwap" },
+      shutdownGracePeriod: "30s",
+      shutdownGracePeriodCriticalPods: "10s",
+    },
+    linuxNodeConfig: { swapConfig: { enabled: true, bootDiskProfile: { swapSizeGib: 8 } } },
+    advancedMachineFeatures: { threadsPerCore: 1 },
+    resourceManagerTags: { "lab/env": "prod" },
+    minCpuPlatform: "Intel Ice Lake",
+    gvnic: { enabled: true },
+    gpuSharingConfig: { strategy: "TimeSharing", maxSharedClientsPerGPU: 4 },
+  },
+});
+
 vi.mock("../data/stores", () => ({
   getNodePoolStore: () => ({ items: nodePools, api: { apiBase: "/apis/karpenter.sh/v1/nodepools" } }),
 }));
@@ -203,6 +228,29 @@ describe("GCENodeClassDetails", () => {
     expect(screen.queryByText("Subnet Range")).toBeNull();
   });
 
+  it("shows the fields of v0.8.0", () => {
+    render(<GCENodeClassDetails object={v080Class} />);
+
+    for (const text of [
+      "Intel Ice Lake",
+      "disk: 375 GiB, pd-ssd, device name scratch",
+      "threadsPerCore: 1",
+      "enabled, 8 GiB, encrypted",
+      "memorySwap: swapBehavior=LimitedSwap",
+      "shutdownGracePeriod: 30s",
+      "shutdownGracePeriodCriticalPods: 10s",
+      "lab/env=prod",
+      "TimeSharing, 4 clients per GPU",
+    ]) {
+      expect(screen.getByText(text)).toBeTruthy();
+    }
+    for (const name of ["Min CPU Platform", "Swap", "Resource Manager Tags", "Network", "gVNIC", "GPU", "Sharing"]) {
+      expect(screen.getByText(name)).toBeTruthy();
+    }
+    // gVNIC is the only flag of the network and the GPU that it sets.
+    expect(screen.getAllByText("True")).toHaveLength(1);
+  });
+
   it("opens a NodePool that uses it in the drawer", () => {
     render(<GCENodeClassDetails object={defaultClass} />);
 
@@ -225,6 +273,7 @@ describe("GCENodeClassDetails", () => {
       "Resolved",
       "Instances",
       "Service Account",
+      "Min CPU Platform",
       "Disks",
       "Local SSD Mode",
       "Shielded Instance",
@@ -232,13 +281,17 @@ describe("GCENodeClassDetails", () => {
       "Confidential Instance",
       "Preemption Notice",
       "Hugepages",
+      "Swap",
       "Kubelet",
       "Labels",
       "Metadata",
+      "Resource Manager Tags",
       "Network",
       "Subnet Ranges",
       "Resolved Ranges",
+      "gVNIC",
       "GPU",
+      "Sharing",
     ]) {
       expect(screen.queryByText(name)).toBeNull();
     }
