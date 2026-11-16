@@ -1,5 +1,5 @@
 // The spec and status types of karpenter.k8s.gcp/v1alpha1 (GCECustomMachineType), after the Go types of
-// cloudpilot-ai/karpenter-provider-gcp v0.7.0 (pkg/apis/v1alpha1) and the optional fields of its generated CRD.
+// cloudpilot-ai/karpenter-provider-gcp v0.8.0 (pkg/apis/v1alpha1) and the optional fields of its generated CRD.
 
 import type { Condition } from "../types";
 

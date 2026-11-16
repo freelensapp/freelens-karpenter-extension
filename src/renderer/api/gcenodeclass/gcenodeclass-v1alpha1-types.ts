@@ -1,5 +1,5 @@
 // The spec and status types of karpenter.k8s.gcp/v1alpha1 (GCENodeClass), after the Go types of
-// cloudpilot-ai/karpenter-provider-gcp v0.7.0 (pkg/apis/v1alpha1) and the optional fields of its generated CRD.
+// cloudpilot-ai/karpenter-provider-gcp v0.8.0 (pkg/apis/v1alpha1) and the optional fields of its generated CRD.
 
 import type { Condition, NodeSelectorRequirement } from "../types";
 
@@ -10,6 +10,8 @@ export type ConfidentialInstanceType = "SEV" | "SEV_SNP" | "TDX";
 export type GPUDriverVersion = "default" | "latest" | "disabled";
 
 export type LocalSSDMode = "RawBlock" | "Ephemeral";
+
+export type GPUSharingStrategy = "TimeSharing";
 
 export interface GCENodeClassSpec {
   serviceAccount?: string;
@@ -24,15 +26,28 @@ export interface GCENodeClassSpec {
   labels?: Record<string, string>;
   metadata?: Record<string, string>;
   networkTags?: NetworkTag[];
+  resourceManagerTags?: Record<string, ResourceManagerTagValue>;
   shieldedInstanceConfig?: ShieldedInstanceConfig;
+  minCpuPlatform?: string;
+  gvnic?: VirtualNIC;
   advancedMachineFeatures?: AdvancedMachineFeatures;
   confidentialInstanceType?: ConfidentialInstanceType;
   networkConfig?: NetworkConfig;
   autoGPUTaint?: boolean;
   gpuDriverVersion?: GPUDriverVersion;
+  gpuSharingConfig?: GPUSharingConfig;
   localSsdMode?: LocalSSDMode;
   /** A `metav1.Duration` of at most two minutes, such as `120s`. */
   preemptionNoticeDuration?: string;
+}
+
+export interface GPUSharingConfig {
+  strategy: GPUSharingStrategy;
+  maxSharedClientsPerGPU: number;
+}
+
+export interface VirtualNIC {
+  enabled: boolean;
 }
 
 export interface NetworkConfig {
@@ -78,6 +93,18 @@ export interface KubeletConfiguration {
   cpuCFSQuota?: boolean;
   serializeImagePulls?: boolean;
   maxParallelImagePulls?: number;
+  failSwapOn?: boolean;
+  memorySwap?: MemorySwapConfiguration;
+  /** A `metav1.Duration`, such as `30s`. */
+  shutdownGracePeriod?: string;
+  /** A `metav1.Duration` of at most `shutdownGracePeriod`, such as `15s`. */
+  shutdownGracePeriodCriticalPods?: string;
+}
+
+export type SwapBehavior = "NoSwap" | "LimitedSwap";
+
+export interface MemorySwapConfiguration {
+  swapBehavior?: SwapBehavior;
 }
 
 export interface Disk {
@@ -85,6 +112,7 @@ export interface Disk {
   category?: DiskCategory;
   boot?: boolean;
   secondaryBootImage?: string;
+  deviceName?: string;
   secondaryBootMode?: SecondaryBootDiskMode;
   kmsKeyName?: string;
   kmsKeyServiceAccount?: string;
@@ -108,6 +136,9 @@ export type SecondaryBootDiskMode = "MODE_UNSPECIFIED" | "CONTAINER_IMAGE_CACHE"
 /** A GCE network tag: lowercase letters, digits and hyphens, RFC 1035. */
 export type NetworkTag = string;
 
+/** A resource manager tag value: `tagValues/{id}`, or the short name of the value. */
+export type ResourceManagerTagValue = string;
+
 export interface ShieldedInstanceConfig {
   enableSecureBoot?: boolean;
   enableVtpm?: boolean;
@@ -116,6 +147,7 @@ export interface ShieldedInstanceConfig {
 
 export interface LinuxNodeConfig {
   hugepages?: HugepagesConfig;
+  swapConfig?: SwapConfig;
 }
 
 export interface HugepagesConfig {
@@ -123,8 +155,23 @@ export interface HugepagesConfig {
   hugepageSize1g?: number;
 }
 
+export interface SwapConfig {
+  enabled?: boolean;
+  encryptionConfig?: SwapEncryptionConfig;
+  bootDiskProfile?: SwapBootDiskProfile;
+}
+
+export interface SwapEncryptionConfig {
+  disabled?: boolean;
+}
+
+export interface SwapBootDiskProfile {
+  swapSizeGib?: number;
+}
+
 export interface AdvancedMachineFeatures {
   enableNestedVirtualization?: boolean;
+  threadsPerCore?: 1 | 2;
 }
 
 export interface GCENodeClassStatus {

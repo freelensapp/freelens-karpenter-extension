@@ -1,12 +1,13 @@
 // What the details of a GCENodeClass of karpenter.k8s.gcp/v1alpha1 show of its fields, as text: the images its
-// selector terms resolved to, its disks, its additional network interfaces, its hugepages and its pod ranges, after
-// the Go types of cloudpilot-ai/karpenter-provider-gcp v0.7.0.
+// selector terms resolved to, its disks, its additional network interfaces, its hugepages, its swap, its GPU sharing
+// and its pod ranges, after the Go types of cloudpilot-ai/karpenter-provider-gcp v0.8.0.
 
 import { formatRequirement } from "./karpenter-v1";
 
 import type {
   AdditionalNetworkInterface,
   Disk,
+  GPUSharingConfig,
   Image,
   LinuxNodeConfig,
   SubnetRangeStatus,
@@ -20,8 +21,8 @@ export function formatImage(image: Image): string {
 
 /**
  * A disk of the instances: the boot disk said so, then its size, its category, the IOPS and throughput provisioned
- * for it, its KMS key and the service account that reaches the key, and its secondary boot image with its mode, in
- * the order of the struct.
+ * for it, its KMS key and the service account that reaches the key, and its secondary boot image with its mode, or
+ * the device name of a data disk, which the provider takes only without a secondary boot image.
  */
 export function formatDisk(disk: Disk): string {
   const secondaryBoot = disk.secondaryBootImage
@@ -35,6 +36,7 @@ export function formatDisk(disk: Disk): string {
     disk.kmsKeyName ? `KMS key ${disk.kmsKeyName}` : undefined,
     disk.kmsKeyServiceAccount ? `KMS key service account ${disk.kmsKeyServiceAccount}` : undefined,
     secondaryBoot,
+    disk.deviceName ? `device name ${disk.deviceName}` : undefined,
   ].filter(Boolean);
   const name = disk.boot ? "boot disk" : "disk";
   return parts.length ? `${name}: ${parts.join(", ")}` : name;
@@ -57,6 +59,27 @@ export function hugepagesTexts(linuxNodeConfig: LinuxNodeConfig | undefined): st
     hugepages?.hugepageSize2m ? `${hugepages.hugepageSize2m} pages of 2 MiB` : undefined,
     hugepages?.hugepageSize1g ? `${hugepages.hugepageSize1g} pages of 1 GiB` : undefined,
   ].filter((text): text is string => text !== undefined);
+}
+
+/**
+ * The swap file of `spec.linuxNodeConfig` that the node creates at boot: `disabled` when it is set and not enabled;
+ * when enabled, its size on the boot disk, or the automatic size that GKE derives from the memory of the machine, and
+ * whether it is encrypted, which it is unless its encryption is disabled: `enabled, 8 GiB, encrypted`. Nothing
+ * without a swap config.
+ */
+export function swapText(linuxNodeConfig: LinuxNodeConfig | undefined): string | undefined {
+  const swap = linuxNodeConfig?.swapConfig;
+  if (!swap) return undefined;
+  if (!swap.enabled) return "disabled";
+
+  const size = swap.bootDiskProfile?.swapSizeGib;
+  const encryption = swap.encryptionConfig?.disabled ? "not encrypted" : "encrypted";
+  return `enabled, ${size === undefined ? "automatic size" : `${size} GiB`}, ${encryption}`;
+}
+
+/** The GPU sharing of `spec.gpuSharingConfig`: its strategy and how many containers share a GPU. */
+export function formatGPUSharing(config: GPUSharingConfig): string {
+  return `${config.strategy}, ${config.maxSharedClientsPerGPU} clients per GPU`;
 }
 
 /**

@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   formatAdditionalNetworkInterface,
   formatDisk,
+  formatGPUSharing,
   formatImage,
   formatSubnetRange,
   hugepagesTexts,
+  swapText,
 } from "./gcenodeclass-fields";
 
 const sourceImage = "projects/gke-node-images/global/images/gke-1336-gke1046000-cos-121-18867-90-38-c-pre";
@@ -47,6 +49,12 @@ describe("formatDisk", () => {
     );
   });
 
+  it("writes the device name of a data disk of v0.8.0", () => {
+    expect(formatDisk({ category: "pd-ssd", sizeGiB: 375, deviceName: "scratch" })).toBe(
+      "disk: 375 GiB, pd-ssd, device name scratch",
+    );
+  });
+
   it("writes a disk with nothing set but its kind", () => {
     expect(formatDisk({})).toBe("disk");
     expect(formatDisk({ boot: true, secondaryBootImage: "global/images/cache" })).toBe(
@@ -78,6 +86,35 @@ describe("hugepagesTexts", () => {
     expect(hugepagesTexts({ hugepages: {} })).toEqual([]);
     expect(hugepagesTexts({})).toEqual([]);
     expect(hugepagesTexts(undefined)).toEqual([]);
+  });
+});
+
+describe("swapText", () => {
+  it("writes the size of an enabled swap file and whether it is encrypted", () => {
+    expect(swapText({ swapConfig: { enabled: true, bootDiskProfile: { swapSizeGib: 8 } } })).toBe(
+      "enabled, 8 GiB, encrypted",
+    );
+    expect(swapText({ swapConfig: { enabled: true, encryptionConfig: { disabled: true } } })).toBe(
+      "enabled, automatic size, not encrypted",
+    );
+    expect(
+      swapText({ swapConfig: { enabled: true, bootDiskProfile: {}, encryptionConfig: { disabled: false } } }),
+    ).toBe("enabled, automatic size, encrypted");
+  });
+
+  it("writes a swap config that is not enabled as disabled, and nothing without one", () => {
+    expect(swapText({ swapConfig: {} })).toBe("disabled");
+    expect(swapText({ swapConfig: { enabled: false } })).toBe("disabled");
+    expect(swapText({ hugepages: { hugepageSize2m: 512 } })).toBeUndefined();
+    expect(swapText(undefined)).toBeUndefined();
+  });
+});
+
+describe("formatGPUSharing", () => {
+  it("writes the strategy and the clients per GPU", () => {
+    expect(formatGPUSharing({ strategy: "TimeSharing", maxSharedClientsPerGPU: 4 })).toBe(
+      "TimeSharing, 4 clients per GPU",
+    );
   });
 });
 
