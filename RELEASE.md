@@ -6,14 +6,18 @@ by a manual post-release version bump for ongoing development.
 ## Step 1 — Trigger: `Automated npm version`
 
 Go to **Actions → Automated npm version → Run workflow** and choose the version
-bump type:
+bump type from the list of the `bump` input:
 
-| Input `newversion` | When to use                                |
-| ------------------ | ------------------------------------------ |
-| `patch`            | Bug fix (e.g. 1.2.3 → 1.2.4)               |
-| `minor`            | New feature (e.g. 1.2.3 → 1.3.0)           |
-| `major`            | Breaking change (e.g. 1.2.3 → 2.0.0)       |
-| `prerelease`       | Pre-release preview (e.g. 1.2.3 → 1.2.4-0) |
+| Input `bump` | When to use                                                   |
+| ------------ | ------------------------------------------------------------- |
+| `patch`      | Bug fix (e.g. 1.2.3 → 1.2.4, or 1.2.4-0 → 1.2.4)              |
+| `minor`      | New feature (e.g. 1.2.3 → 1.3.0)                              |
+| `major`      | Breaking change (e.g. 1.2.3 → 2.0.0)                          |
+| `prerelease` | Next pre-release (e.g. 1.2.3 → 1.2.4-0, or 1.2.4-0 → 1.2.4-1) |
+| `prepatch`   | First pre-release of the next patch (e.g. 1.2.4-0 → 1.2.5-0)  |
+| `preminor`   | First pre-release of the next minor (e.g. 1.2.3 → 1.3.0-0)    |
+| `premajor`   | First pre-release of the next major (e.g. 1.2.3 → 2.0.0-0)    |
+| `manual`     | An exact version, given in the `version` input (e.g. `1.3.0`) |
 
 The workflow opens a pull request `automated/npm-version` with the version bump
 already applied to `package.json`.
