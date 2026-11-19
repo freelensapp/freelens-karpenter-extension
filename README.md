@@ -224,8 +224,8 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
   version of the extension, which is no longer maintained.
 - Karpenter v1 (`karpenter.sh/v1`), on AWS EKS, Azure AKS (node
   autoprovisioning) or Google GKE (the
-  [GCP provider](https://github.com/cloudpilot-ai/karpenter-provider-gcp) of
-  CloudPilot AI). The extension follows Karpenter 1.15, the AWS provider 1.15,
+  [GCP provider](https://github.com/karpenter-gcp/karpenter-provider-gcp) of the
+  Karpenter GCP community). The extension follows Karpenter 1.15, the AWS provider 1.15,
   the Azure provider 1.14 and the GCP provider 0.7.
 
 ## Supported APIs

@@ -4,7 +4,7 @@
  */
 
 // Self-hosted Karpenter on GKE, with the CRDs of
-// cloudpilot-ai/karpenter-provider-gcp: a GCENodeClass, a
+// karpenter-gcp/karpenter-provider-gcp: a GCENodeClass, a
 // GCECustomMachineType, a NodePool, a NodeOverlay, NodeClaims and their
 // events, without nodes. The controller
 // Deployment is scaled to zero. The session disconnects the kind cluster, sets

@@ -1,5 +1,5 @@
 // The columns of `kubectl get gcenodeclasses -o wide`, from the `additionalPrinterColumns` of
-// karpenter.k8s.gcp_gcenodeclasses.yaml of cloudpilot-ai/karpenter-provider-gcp v0.8.0: the value of each `jsonPath`
+// karpenter.k8s.gcp_gcenodeclasses.yaml of karpenter-gcp/karpenter-provider-gcp v0.8.0: the value of each `jsonPath`
 // as `kubectl` prints it, and the value it sorts by. The CRD has no `-o wide` column.
 
 import { GCENodeClass } from "../../api/gcenodeclass/gcenodeclass-v1alpha1";
