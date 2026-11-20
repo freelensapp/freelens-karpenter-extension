@@ -240,7 +240,6 @@ registered and initialized, and whether Karpenter is disrupting it or must not.
 | `karpenter.k8s.gcp`   | v1alpha1          | `GCENodeClass`         | Overview, Node Classes, GCE Node Classes           |
 | `karpenter.k8s.gcp`   | v1alpha1          | `GCECustomMachineType` | GCE Custom Machine Types                           |
 
-
 A kind that the cluster does not serve is left out; the Overview says so when the
 cluster has no NodePool CRD.
 
