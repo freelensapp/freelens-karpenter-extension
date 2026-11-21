@@ -1036,7 +1036,7 @@ extension. They attach to it with Playwright's `chromium.connectOverCDP` on the
 port that script opens (see "Checking the Extension in Freelens"), so they need
 no package of Freelens and no file of its checkout. `playwright` is a
 devDependency at the version of Freelens's catalog. The workflow builds the
-extension, checks out Freelens at each release tag of its matrix (`v2.0.0`),
+extension, checks out Freelens at each release tag of its matrix (`v2.0.0`, `v2.1.0`),
 starts `pnpm dev` there in the background under `xvfb-run`, with its output in a
 file and a fresh profile in `FREELENS_INTEGRATION_TESTING_DIR`, which it seeds
 with a kubeconfig sync of the kind cluster alone, and runs
