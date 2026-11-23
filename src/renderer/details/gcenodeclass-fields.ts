@@ -1,6 +1,6 @@
 // What the details of a GCENodeClass of karpenter.k8s.gcp/v1alpha1 show of its fields, as text: the images its
 // selector terms resolved to, its disks, its additional network interfaces, its hugepages, its swap, its GPU sharing
-// and its pod ranges, after the Go types of cloudpilot-ai/karpenter-provider-gcp v0.8.0.
+// and its pod ranges, after the Go types of karpenter-gcp/karpenter-provider-gcp v0.8.0.
 
 import { formatRequirement } from "./karpenter-v1";
 

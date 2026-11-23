@@ -1,5 +1,5 @@
 // What the details of a GCECustomMachineType of karpenter.k8s.gcp/v1alpha1 show of its fields, as text: its prices
-// and the resources the provider resolved for it, after the Go types of cloudpilot-ai/karpenter-provider-gcp v0.8.0.
+// and the resources the provider resolved for it, after the Go types of karpenter-gcp/karpenter-provider-gcp v0.8.0.
 
 import { GCECustomMachineType } from "../api/gcecustommachinetype/gcecustommachinetype-v1alpha1";
 import { resourceQuantity } from "../utils/quantity";

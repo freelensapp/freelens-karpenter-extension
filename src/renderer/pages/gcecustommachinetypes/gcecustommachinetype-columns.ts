@@ -1,5 +1,5 @@
 // The columns of `kubectl get gcecustommachinetypes -o wide`, from the `additionalPrinterColumns` of
-// karpenter.k8s.gcp_gcecustommachinetypes.yaml of cloudpilot-ai/karpenter-provider-gcp v0.8.0: the value of each
+// karpenter.k8s.gcp_gcecustommachinetypes.yaml of karpenter-gcp/karpenter-provider-gcp v0.8.0: the value of each
 // `jsonPath` as `kubectl` prints it, and the value it sorts by. The CRD has no `-o wide` column.
 
 import { conditionStatus, conditionStatusOrder } from "../../utils/printer-columns";
