@@ -1,0 +1,128 @@
+src/renderer/pages/nodeclaims/nodeclaim-columns.ts
+  s_3c3b672615b613::t_4209078015e2fc 3,14-15,44,66
+src/renderer/components/KarpenterCard/card-utils.test.ts
+  s_7280224a722407::t_0762e97e0ef50e 3-12,47-48,62-88
+  s_3c3b672615b613::t_5eb55e5ad5932a 36-46
+  s_7280224a722407::t_2205a0c7da612f 49
+AGENTS.md
+  s_7280224a722407::t_0a865b0503ad24 210-211,503-504,1124
+  s_7280224a722407::t_a74da3df2b4fad 228-232
+  s_7280224a722407::t_911530e0e9cb8d 16-18,222-226
+  s_7280224a722407::t_8e612d10c9f61c 190,219-221
+  s_3c3b672615b613::t_affec67784440b 461-462
+  s_7280224a722407::t_369179b124d057 227
+src/renderer/components/shared/NodeSelection.tsx
+  s_7280224a722407::t_0f1f29f99c3784 1-2,4-31,34-39,46-47,50-55,58,71,73,76-78,80-100
+  s_7280224a722407::t_923dbaa78d6bf4 3,32-33,40-45,48-49,56-57,59-65,69-70,72,74-75,79
+  s_7280224a722407::t_911530e0e9cb8d 66-68
+integration/__tests__/karpenter-aks.tests.ts
+  s_3c3b672615b613::t_4209078015e2fc 172,192
+integration/__tests__/karpenter-aws.tests.ts
+  s_3c3b672615b613::t_4209078015e2fc 202,222
+  s_7280224a722407::t_0a865b0503ad24 155
+src/renderer/components/KarpenterCard/KarpenterCard.test.tsx
+  s_3c3b672615b613::t_404d5339b0f3ba 40-44
+  s_7280224a722407::t_1e263894ca39e9 3,76,78-84,90,92-101
+  s_7280224a722407::t_0762e97e0ef50e 102-116
+  s_7280224a722407::t_923dbaa78d6bf4 77,85-89,91
+  s_3c3b672615b613::t_5eb55e5ad5932a 72
+src/renderer/utils/node-commands.ts
+  s_7280224a722407::t_923dbaa78d6bf4 1-3
+  s_7280224a722407::t_63aa51b05e26f2 4
+src/renderer/components/Topology/topology.module.d.scss.ts
+  s_7280224a722407::t_1e263894ca39e9 55-56
+test/freelens-extensions.ts
+  s_7280224a722407::t_923dbaa78d6bf4 148,159
+  s_7280224a722407::t_1e263894ca39e9 138-139,153,168
+integration/__tests__/extension-helpers.ts
+  s_3c3b672615b613::t_4209078015e2fc 840
+src/renderer/components/KarpenterCard/karpentercard.module.d.scss.ts
+  s_7280224a722407::t_a0cb05f509daca 83
+  s_7280224a722407::t_1e263894ca39e9 79-81
+  s_7280224a722407::t_0762e97e0ef50e 82,84-85
+src/renderer/pages/nodeclaims/nodeclaim-columns.test.ts
+  s_3c3b672615b613::t_4209078015e2fc 27,52,67
+src/renderer/pages/nodeclaims/nodeclaims-page.tsx
+  s_3c3b672615b613::t_4209078015e2fc 79,84
+src/renderer/components/KarpenterCard/KarpenterCard.tsx
+  s_7280224a722407::t_a0cb05f509daca 754-755
+  s_7280224a722407::t_191a4339416604 34-43,206,212,269,272-291,336-338,374,753,757-764,788-792,794
+  s_7280224a722407::t_f9678ddbd3a0a6 698,756,793
+  s_3c3b672615b613::t_404d5339b0f3ba 17
+  s_7280224a722407::t_b5d98fe3eaf746 32,205,211,215-227,233-234,247-256,386-387,395-396,400,403,415-423,449-451,470-478,485-490,702,786,796
+  s_3c3b672615b613::t_5eb55e5ad5932a 235,237,239-241,260
+  s_7280224a722407::t_0762e97e0ef50e 292-335,339-373
+src/renderer/utils/node-commands.test.ts
+  s_7280224a722407::t_7932942b22a232 1,3,8-10
+  s_7280224a722407::t_923dbaa78d6bf4 2,4-7
+integration/__tests__/karpenter-gcp.tests.ts
+  s_3c3b672615b613::t_4209078015e2fc 186,206
+src/renderer/data/nodeclass.test.ts
+  s_7280224a722407::t_7d5a7ce5b2a602 78-79
+  s_7280224a722407::t_95027b232a0f38 76,82-83,87-88,91-92,97,99
+src/renderer/components/shared/node-selection.module.scss
+  s_7280224a722407::t_d45497de6e9211 1-32
+src/renderer/utils/kube-helpers.ts
+  s_3c3b672615b613::t_5eb55e5ad5932a 162-165
+  s_7280224a722407::t_e4273490b54034 223,231
+  s_bdd4cfce58b4c8::t_4e61eb970bf428 219-221,225-226
+  s_7280224a722407::t_1eb82cd623d37f 240-241,245,249
+src/renderer/components/KarpenterCard/karpentercard.module.scss
+  s_7280224a722407::t_191a4339416604 734-735,743,753,782,789-803
+  s_7280224a722407::t_b5d98fe3eaf746 721-733
+  s_7280224a722407::t_a0cb05f509daca 736-742,744-752,754-781,783-788
+src/renderer/components/KarpenterCard/card-utils.ts
+  s_7280224a722407::t_5eb6d1c70fd717 1-2,4,29-41,43-88,92
+  s_7280224a722407::t_f0f87f07d019e0 42
+  s_7280224a722407::t_0762e97e0ef50e 89-91
+  s_3c3b672615b613::t_5eb55e5ad5932a 17-24
+src/renderer/pages/nodeclaims/nodeclaims-page.test.tsx
+  s_3c3b672615b613::t_4209078015e2fc 22,78,91,105
+src/renderer/data/nodeclass.ts
+  s_7280224a722407::t_913c56130d37ee 102,104
+  s_7280224a722407::t_4ea9c121ac4cd5 9
+README.md
+  s_3c3b672615b613::t_affec67784440b 86
+src/renderer/components/Topology/topology.module.scss
+  s_7280224a722407::t_7af1fc59be27b3 459-472
+src/renderer/components/Topology/TreemapView.tsx
+  s_7280224a722407::t_1e263894ca39e9 182-184,488-490
+  s_7280224a722407::t_7af1fc59be27b3 27,88,149,179,250,256-266,303
+src/renderer/utils/kube-helpers.test.ts
+  s_7280224a722407::t_95027b232a0f38 16,178-181,183,185-188,202-203,205
+  s_bdd4cfce58b4c8::t_65de9f9be0108f 193-198
+src/renderer/components/shared/node-selection.module.d.scss.ts
+  s_7280224a722407::t_1e263894ca39e9 1-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8e0ddc9fb90bbf7e65b8b2581a516ff03948b863",
+  "prompts": {},
+  "sessions": {
+    "s_3c3b672615b613": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "3d9d4b79-d2f1-4613-87f3-c46f408cddd3",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "albyrex <thealbyrex@gmail.com>"
+    },
+    "s_7280224a722407": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "4f7770c4-d81a-4a16-b03c-fbc1cd1c803e",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "albyrex <thealbyrex@gmail.com>"
+    },
+    "s_bdd4cfce58b4c8": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "cb61fe99-f3b5-4fa9-9763-296ab6e7c379",
+        "model": "auto"
+      },
+      "human_author": "albyrex <thealbyrex@gmail.com>"
+    }
+  }
+}
