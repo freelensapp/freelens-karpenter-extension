@@ -837,6 +837,7 @@ export const nodePoolColumns = ["Name", "NodeClass", "Nodes", "Weight", "CPU", "
 export const nodeClaimColumns = [
   "Name",
   "Type",
+  "Arch",
   "Capacity",
   "Zone",
   "Node",

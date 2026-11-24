@@ -24,6 +24,7 @@ import {
   getNodeStatus,
   openNodeDetail,
 } from "../../utils/kube-helpers";
+import { isSelectClick, NodeSelectionBar, useNodeSelection } from "../shared/NodeSelection";
 import style from "./topology.module.scss";
 import {
   getNodeCapacityType,
@@ -84,6 +85,7 @@ export const TreemapView: React.FC<TreemapViewProps> = observer(
     const containerRef = useRef<HTMLDivElement>(null);
 
     const visibleGroups = highlightedGroupId ? groups.filter((g) => g.id === highlightedGroupId) : groups;
+    const selection = useNodeSelection(visibleGroups.flatMap((g) => g.nodes.map((n) => n.metadata?.name ?? "")));
 
     const layout = useMemo(() => {
       if (width <= 0 || height <= 0 || visibleGroups.length === 0) return [];
@@ -144,6 +146,7 @@ export const TreemapView: React.FC<TreemapViewProps> = observer(
 
     return (
       <div ref={containerRef} style={{ position: "relative", width: "100%", height: "100%" }}>
+        <NodeSelectionBar selection={selection} className={style.selectionBar} />
         <svg
           className={style.treemapSvg}
           viewBox={`0 0 ${width} ${height}`}
@@ -173,9 +176,12 @@ export const TreemapView: React.FC<TreemapViewProps> = observer(
                   rect={nr}
                   podCount={podCountMap[node.metadata?.name ?? ""] ?? -1}
                   dimmed={!matchesFilter(node)}
+                  selected={selection.isSelected(node.metadata?.name ?? "")}
                   onEnter={(e) => onCellEnter(e, node, group)}
                   onLeave={() => setTooltip(null)}
-                  onClick={() => openNodeDetail(node)}
+                  onClick={(e) =>
+                    isSelectClick(e) ? selection.toggle(node.metadata?.name ?? "") : openNodeDetail(node)
+                  }
                 />
               ))}
             </g>
@@ -241,12 +247,23 @@ interface ChipProps {
   rect: Rect;
   podCount: number;
   dimmed: boolean;
+  selected: boolean;
   onEnter: (e: React.MouseEvent) => void;
   onLeave: () => void;
   onClick: (e: React.MouseEvent | React.KeyboardEvent) => void;
 }
 
-const Chip: React.FC<ChipProps> = ({ node, group: _group, rect, podCount, dimmed, onEnter, onLeave, onClick }) => {
+const Chip: React.FC<ChipProps> = ({
+  node,
+  group: _group,
+  rect,
+  podCount,
+  dimmed,
+  selected,
+  onEnter,
+  onLeave,
+  onClick,
+}) => {
   const w = Math.max(0, rect.w - CHIP_GAP);
   const h = Math.max(0, rect.h - CHIP_GAP);
   if (w < 8 || h < 8) return null;
@@ -283,7 +300,7 @@ const Chip: React.FC<ChipProps> = ({ node, group: _group, rect, podCount, dimmed
     >
       {/* Chip body */}
       <rect
-        className={style.chipBody}
+        className={selected ? `${style.chipBody} ${style.chipSelected}` : style.chipBody}
         x={x}
         y={y}
         width={w}
@@ -468,7 +485,9 @@ const NodeTooltip: React.FC<{
           ))}
         </tbody>
       </table>
-      <div style={{ marginTop: 8, color: "var(--textColorSecondary)", fontSize: 10 }}>Click for details</div>
+      <div style={{ marginTop: 8, color: "var(--textColorSecondary)", fontSize: 10 }}>
+        Click for details, Ctrl+click to select
+      </div>
     </div>
   );
 };

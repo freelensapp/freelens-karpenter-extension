@@ -13,6 +13,7 @@ import {
   getNodeMemory,
   getNodeStatus,
   openNodeClaimDetail,
+  openNodeDetail,
   openNodeOverlayDetail,
   openNodePoolDetail,
   parseCpuCores,
@@ -174,42 +175,34 @@ describe("detailUrl", () => {
   });
 });
 
-describe("openNodePoolDetail", () => {
-  it("opens the extension's Node Pools page with the details of the NodePool", () => {
+describe("open*Detail", () => {
+  it("opens the details drawer over the current page", () => {
+    openNodeDetail({ metadata: { name: "ip-1" } } as Renderer.K8sApi.Node);
+    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/api/v1/nodes/ip-1");
     openNodePoolDetail({ metadata: { name: "general" } } as NodePool);
-    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
-      "/extension/freelensapp--karpenter-extension/nodepools?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodepools%2Fgeneral",
-    );
-  });
-});
-
-describe("openNodeClaimDetail", () => {
-  it("opens the extension's Node Claims page with the details of the NodeClaim", () => {
+    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/apis/karpenter.sh/v1/nodepools/general");
     openNodeClaimDetail("general-pend1");
-    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
-      "/extension/freelensapp--karpenter-extension/nodeclaims?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodeclaims%2Fgeneral-pend1&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1%2Fnodeclaims%2Fgeneral-pend1",
-    );
-  });
-
-  it("opens nothing without a name", () => {
-    vi.mocked(Renderer.Navigation.navigate).mockClear();
-    openNodeClaimDetail("");
-    expect(Renderer.Navigation.navigate).not.toHaveBeenCalled();
-  });
-});
-
-describe("openNodeOverlayDetail", () => {
-  it("opens the extension's Node Overlays page with the details of the NodeOverlay", () => {
+    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith("/apis/karpenter.sh/v1/nodeclaims/general-pend1");
     openNodeOverlayDetail("spot-discount");
-    expect(Renderer.Navigation.navigate).toHaveBeenLastCalledWith(
-      "/extension/freelensapp--karpenter-extension/nodeoverlays?kube-details=%2Fapis%2Fkarpenter.sh%2Fv1alpha1%2Fnodeoverlays%2Fspot-discount&kube-selected=%2Fapis%2Fkarpenter.sh%2Fv1alpha1%2Fnodeoverlays%2Fspot-discount",
+    expect(Renderer.Navigation.showDetails).toHaveBeenLastCalledWith(
+      "/apis/karpenter.sh/v1alpha1/nodeoverlays/spot-discount",
     );
+    expect(Renderer.Navigation.navigate).not.toHaveBeenCalled();
+  });
+
+  it("prevents the default of the click, so that the drawer does not take it for one outside itself", () => {
+    const preventDefault = vi.fn();
+    vi.stubGlobal("window", { event: { preventDefault } });
+    openNodePoolDetail({ metadata: { name: "general" } } as NodePool);
+    vi.unstubAllGlobals();
+    expect(preventDefault).toHaveBeenCalled();
   });
 
   it("opens nothing without a name", () => {
-    vi.mocked(Renderer.Navigation.navigate).mockClear();
+    vi.mocked(Renderer.Navigation.showDetails).mockClear();
+    openNodeClaimDetail("");
     openNodeOverlayDetail("");
-    expect(Renderer.Navigation.navigate).not.toHaveBeenCalled();
+    expect(Renderer.Navigation.showDetails).not.toHaveBeenCalled();
   });
 });
 

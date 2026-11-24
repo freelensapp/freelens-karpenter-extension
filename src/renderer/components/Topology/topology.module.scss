@@ -456,3 +456,17 @@ $cap-spot: #c98ad6; // soft purple — spot
   font-size: 14px;
   font-style: italic;
 }
+
+.chipBody.chipSelected {
+  stroke: var(--primary);
+  stroke-width: 2.5;
+}
+
+.selectionBar {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+}

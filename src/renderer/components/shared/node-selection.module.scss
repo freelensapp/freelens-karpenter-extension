@@ -1,0 +1,32 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--borderColor);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--primary) 10%, var(--contentColor));
+  font-size: 12px;
+}
+
+.count {
+  margin-right: auto;
+  color: var(--textColorAccent);
+  font-weight: 600;
+}
+
+.button {
+  padding: 3px 10px;
+  border: 1px solid var(--borderColor);
+  border-radius: 4px;
+  background: var(--contentColor);
+  color: var(--textColorPrimary);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--textColorAccent);
+  }
+}

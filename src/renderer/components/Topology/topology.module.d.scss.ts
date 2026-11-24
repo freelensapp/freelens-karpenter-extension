@@ -52,5 +52,7 @@ declare const classNames: {
   readonly legendStatusSegment: "legendStatusSegment";
   readonly tooltip: "tooltip";
   readonly empty: "empty";
+  readonly chipSelected: "chipSelected";
+  readonly selectionBar: "selectionBar";
 };
 export = classNames;

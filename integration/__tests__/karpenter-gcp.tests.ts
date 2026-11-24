@@ -183,6 +183,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
     const row = await expectListRow(frame, nodeClaimColumns, [
       "gke-d3e4f",
       "n2-standard-8",
+      "amd64",
       "spot",
       "us-central1-b",
       "karpenter-gke-d3e4f",
@@ -202,7 +203,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on GCP", () => 
       "False",
       agePattern,
     ]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node"]);
+    await expectEmptyCells(frame, pending, ["Type", "Arch", "Zone", "Node"]);
 
     await clickAndExpectDetails(frame, row.getByText("gke-d3e4f", { exact: true }).first(), /^NodeClaim: gke-d3e4f/);
     await expectInDetails(frame, ["8 / 7910m", "node.kubernetes.io/instance-type In [n2-standard-8]"]);

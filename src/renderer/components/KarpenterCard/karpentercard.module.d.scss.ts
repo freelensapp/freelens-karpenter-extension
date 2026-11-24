@@ -76,5 +76,12 @@ declare const classNames: {
   readonly info: "info";
   readonly chart: "chart";
   readonly overlayItem: "overlayItem";
+  readonly selectCell: "selectCell";
+  readonly selectedRow: "selectedRow";
+  readonly selectedLeaf: "selectedLeaf";
+  readonly groupBy: "groupBy";
+  readonly groupByActive: "groupByActive";
+  readonly sectionRow: "sectionRow";
+  readonly sectionCount: "sectionCount";
 };
 export = classNames;

@@ -19,6 +19,7 @@ const launched = new NodeClaim({
       "karpenter.sh/nodepool": "general",
       "karpenter.sh/capacity-type": "on-demand",
       "node.kubernetes.io/instance-type": "m5.2xlarge",
+      "kubernetes.io/arch": "amd64",
       "topology.kubernetes.io/zone": "eu-west-1b",
     },
   },
@@ -74,6 +75,7 @@ describe("NodeClaimsPage", () => {
     expect(screen.getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual([
       "Name",
       "Type",
+      "Arch",
       "Capacity",
       "Zone",
       "Node",
@@ -86,6 +88,7 @@ describe("NodeClaimsPage", () => {
     expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
       "general-9qwmt",
       "m5.2xlarge",
+      "amd64",
       "on-demand",
       "eu-west-1b",
       "ip-10-0-2-12",
@@ -99,7 +102,7 @@ describe("NodeClaimsPage", () => {
 
   it("shows Drifted True in the colour of an error and False in that of a success", () => {
     render(<NodeClaimsPage extension={extension} />);
-    const drifted = () => screen.getAllByRole("cell")[8].firstElementChild;
+    const drifted = () => screen.getAllByRole("cell")[9].firstElementChild;
 
     // The class of the host's badge of a boolean False, the colour of an error.
     expect(drifted()?.textContent).toBe("True");

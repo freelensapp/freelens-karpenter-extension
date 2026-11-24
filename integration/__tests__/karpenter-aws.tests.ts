@@ -152,7 +152,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     ]);
     await openTab(frame, "Overview", ["general-pend1"]);
     await clickAndExpectDetails(frame, frame.getByTitle("Open EC2NodeClass default").first(), /^EC2NodeClass: default/);
-    // The NodeOverlay of the card of general opens on the Node Overlays page.
+    // The NodeOverlay of the card of general opens over the dashboard.
     await openTab(frame, "Overview", ["general-pend1"]);
     await clickAndExpectDetails(
       frame,
@@ -199,6 +199,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
     await expectListRow(frame, nodeClaimColumns, [
       "general-9qwmt",
       "m5.2xlarge",
+      "amd64",
       "on-demand",
       "eu-west-1b",
       "ip-10-0-2-12.eu-west-1.compute.internal",
@@ -218,7 +219,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AWS", () => 
       "False",
       agePattern,
     ]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node"]);
+    await expectEmptyCells(frame, pending, ["Type", "Arch", "Zone", "Node"]);
 
     await clickAndExpectDetails(
       frame,

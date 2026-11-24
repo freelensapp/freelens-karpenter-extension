@@ -83,7 +83,7 @@ a time bucket highlights its events in the tables.
 
 ### Node Claims
 
-The NodeClaims with the columns Type, Capacity, Zone, Node, NodePool,
+The NodeClaims with the columns Type, Arch, Capacity, Zone, Node, NodePool,
 NodeClass, Status, Drifted and Age, sortable, searchable, and with the columns
 you choose. Status is Ready, Provisioning, Claiming, Terminating or Not Ready,
 in the colours of the Overview. A NodeClaim still waiting for its node is
