@@ -33,9 +33,9 @@ there, and is copied here.
   (GCENodeClass, GCECustomMachineType) of cloudpilot-ai/karpenter-provider-gcp;
   the types follow Karpenter 1.15.0, the AWS provider 1.15.0, the Azure
   provider 1.14.5 and the GCP provider 0.8.0
-- **Toolchain**: Node.js 24.x, yq 4.x and cosign 3.x (`mise.toml` with
-  `mise.lock`; Node also in `.nvmrc`)
-- **Package manager**: pnpm 12.x (`packageManager`, run through corepack)
+- **Toolchain**: Node.js 24.x, pnpm 12.x, yq 4.x and cosign 3.x (`mise.toml`
+  with `mise.lock`; Node also in `.nvmrc`)
+- **Package manager**: pnpm 12.x (`packageManager`)
 - **License**: MIT
 
 Library and tool versions follow the Freelens stack exactly: the catalog in
@@ -58,12 +58,15 @@ package in `overridePackageName`, and the catalog rule's `rangeStrategy`,
 `minimumReleaseAge` and `groupName`.
 This repository has no override. What Freelens does not define (GitHub Actions, the
 tool versions in the workflows, `shx`) Renovate updates as usual.
-pnpm is the exception: Renovate updates it from the npm registry, in a pull
-request of its own, and not to the version of Freelens's `packageManager`.
-`packageManager` carries a Corepack hash (`+sha512.…`), and Renovate updates
-the hash only from the digest of the new version, which the registry has and a
-custom datasource does not; without it the update fails with "no valid digest
-available".
+pnpm follows the pnpm of Freelens's `mise.toml`, both in `mise.toml` and in
+`packageManager`, which must stay equal. The workflows install pnpm with mise,
+not with Corepack, which Node no longer bundles from version 26. Whichever pnpm
+runs reads `packageManager` and switches itself to that version, whose
+integrity `pnpm-lock.yaml` pins under `packageManagerDependencies`, so a pnpm
+from mise of another version makes every CI job download pnpm a second time.
+`packageManager` carries no Corepack hash (`+sha512.…`): Renovate updates the
+hash only from the digest of the new version, which a custom datasource does
+not have, and the update would fail with "no valid digest available".
 `mise.lock` pins a checksum and a URL per tool for all eight platforms; after
 changing `mise.toml`, run `mise lock` (not only `mise install`, which re-locks
 just the current platform). `mise.lock` is lockfile revision 3
