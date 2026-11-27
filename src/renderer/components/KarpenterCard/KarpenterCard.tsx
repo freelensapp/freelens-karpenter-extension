@@ -14,6 +14,7 @@ import { eventTs, eventVisual, type KarpenterEvent } from "../../utils/karpenter
 import {
   formatMemory,
   getInstanceType,
+  getNodeArch,
   getNodeClaimName,
   getNodeCpu,
   getNodeMaxPods,
@@ -28,8 +29,18 @@ import {
   parseMemGi,
 } from "../../utils/kube-helpers";
 import { CardLoadingSkeleton, Spinner } from "../shared/LoadingSkeleton";
+import { isSelectClick, type NodeSelection, NodeSelectionBar, useNodeSelection } from "../shared/NodeSelection";
 import { StatusBadge } from "../shared/StatusBadge";
-import { formatUsage, getNodeClaimInstanceType } from "./card-utils";
+import {
+  claimGroupKey,
+  formatUsage,
+  GROUP_BY,
+  type GroupBy,
+  getNodeClaimArch,
+  getNodeClaimInstanceType,
+  groupBy,
+  nodeGroupKey,
+} from "./card-utils";
 import style from "./karpentercard.module.scss";
 
 import type { ResourceList } from "../../api/types";
@@ -191,32 +202,62 @@ export const NodesList = observer(function NodesList({
   nodes,
   claims = [],
   podCountMap,
+  selection,
+  groupBy: by = "none",
 }: {
   nodes: Node[];
   claims?: NodeClaim[];
   podCountMap: Record<string, number>;
+  selection?: NodeSelection;
+  groupBy?: GroupBy;
 }) {
   useNodeMetrics();
+  const checkboxCell = (name?: string) =>
+    selection && (
+      <td className={style.selectCell} onClick={(e) => e.stopPropagation()}>
+        {name && (
+          <input
+            type="checkbox"
+            aria-label={`Select ${name}`}
+            checked={selection.isSelected(name)}
+            onChange={() => selection.toggle(name)}
+          />
+        )}
+      </td>
+    );
   return (
     <table className={style.nodesTable}>
       {/* In a window 1280 px wide the usage ("1.02 / 16.00", "166Mi / 25.4Gi") and Pods ("4/110") columns stay whole;
           a long node name is cut at its end, after the part that tells the nodes apart, and its title shows it whole. */}
       <colgroup>
-        <col style={{ width: "23%" }} />
-        <col style={{ width: "13%" }} />
+        {selection && <col style={{ width: "3%" }} />}
+        <col style={{ width: selection ? "18%" : "21%" }} />
+        <col style={{ width: "12%" }} />
         <col style={{ width: "10%" }} />
+        <col style={{ width: "6%" }} />
         <col style={{ width: "9%" }} />
-        <col style={{ width: "9%" }} />
-        <col style={{ width: "13%" }} />
-        <col style={{ width: "13%" }} />
+        <col style={{ width: "8%" }} />
+        <col style={{ width: "12%" }} />
+        <col style={{ width: "12%" }} />
         <col style={{ width: "7%" }} />
         <col style={{ width: "3%" }} />
       </colgroup>
       <thead>
         <tr>
+          {selection && (
+            <th className={style.selectCell}>
+              <input
+                type="checkbox"
+                aria-label="Select all nodes"
+                checked={selection.allSelected}
+                onChange={selection.toggleAll}
+              />
+            </th>
+          )}
           <th>Node</th>
           <th>NodeClaim</th>
           <th>Type</th>
+          <th>Arch</th>
           <th>Status</th>
           <th>Version</th>
           <th>CPU</th>
@@ -225,84 +266,112 @@ export const NodesList = observer(function NodesList({
           <th></th>
         </tr>
       </thead>
-      <tbody>
-        {nodes.map((node, idx) => {
-          if (!node?.metadata) return null;
-          const nodeName = node.metadata?.name ?? "";
-          const maxPods = getNodeMaxPods(node);
-          const runningPods = podCountMap[nodeName] ?? -1;
-          const podLabel = maxPods > 0 ? (runningPods >= 0 ? `${runningPods}/${maxPods}` : `—/${maxPods}`) : "—";
-          const usage = getNodeUsage(node);
-          const allocatable = node.status?.allocatable ?? node.status?.capacity;
-          return (
-            <tr
-              key={node.metadata?.uid ?? nodeName ?? idx}
-              onClick={() => openNodeDetail(node)}
-              title="Click to open node details"
-            >
-              <td>
-                <span className={style.nodeNameCell}>
-                  <span className={style.nodeIcon}>{ICON.node}</span>
-                  <span className={style.nodeName} title={nodeName}>
-                    {nodeName}
-                  </span>
-                </span>
-              </td>
-              <td>
-                <span className={style.monoSmall}>{getNodeClaimName(node) || "—"}</span>
-              </td>
-              <td>
-                <span className={style.monoSmall}>{getInstanceType(node)}</span>
-              </td>
-              <td>
-                <StatusBadge status={getNodeStatus(node)} />
-              </td>
-              <td className={style.monoSmall} title={node.status?.nodeInfo?.kubeletVersion}>
-                {node.status?.nodeInfo?.kubeletVersion ?? "—"}
-              </td>
-              <UsageCell used={usage?.cpu} total={parseCpuCores(allocatable?.cpu)} fmt={fmtCores} />
-              <UsageCell used={usage?.memory} total={parseMemGi(allocatable?.memory) * 1024 ** 3} fmt={fmtBytes} />
-              <td className={style.monoSmall}>{podLabel}</td>
-              <td className={style.clickHint}>{ICON.external}</td>
-            </tr>
-          );
-        })}
-        {claims.map((claim, idx) => {
-          const claimName = claim.metadata?.name ?? "";
-          return (
-            <tr
-              key={`claim-${claim.metadata?.uid ?? claimName ?? idx}`}
-              onClick={() => openNodeClaimDetail(claimName)}
-              title="Click to open NodeClaim details"
-            >
-              <td>
-                <span className={style.nodeNameCell}>
-                  <span className={style.nodeIcon}>{ICON.nodeclaim}</span>
-                  <span className={style.nodeName} style={{ color: COLOR.textSecondary, fontStyle: "italic" }}>
-                    (pending)
-                  </span>
-                </span>
-              </td>
-              <td>
-                <span className={style.monoSmall}>{claimName || "—"}</span>
-              </td>
-              <td>
-                <span className={style.monoSmall}>{getNodeClaimInstanceType(claim)}</span>
-              </td>
-              <td>
-                <StatusBadge status="Claiming" />
-              </td>
-              <td className={style.monoSmall}>—</td>
-              <td className={style.monoSmall}>—</td>
-              <td className={style.monoSmall}>—</td>
-              <td className={style.monoSmall}>—</td>
-              <td className={style.clickHint}>{ICON.external}</td>
-            </tr>
-          );
-        })}
-      </tbody>
+      <tbody>{sections()}</tbody>
     </table>
   );
+
+  function sections() {
+    const rows = [
+      ...nodes.map((node, idx) => ({ key: nodeGroupKey(node, by), row: nodeRow(node, idx) })),
+      ...claims.map((claim, idx) => ({ key: claimGroupKey(claim, by), row: claimRow(claim, idx) })),
+    ];
+    if (by === "none") return rows.map(({ row }) => row);
+    return groupBy(rows, ({ key }) => key).map(([key, section]) => (
+      <React.Fragment key={`section-${key}`}>
+        <tr className={style.sectionRow}>
+          <td colSpan={selection ? 11 : 10}>
+            {key} <span className={style.sectionCount}>{section.length}</span>
+          </td>
+        </tr>
+        {section.map(({ row }) => row)}
+      </React.Fragment>
+    ));
+  }
+
+  function nodeRow(node: Node, idx: number) {
+    if (!node?.metadata) return null;
+    const nodeName = node.metadata?.name ?? "";
+    const maxPods = getNodeMaxPods(node);
+    const runningPods = podCountMap[nodeName] ?? -1;
+    const podLabel = maxPods > 0 ? (runningPods >= 0 ? `${runningPods}/${maxPods}` : `—/${maxPods}`) : "—";
+    const usage = getNodeUsage(node);
+    const allocatable = node.status?.allocatable ?? node.status?.capacity;
+    return (
+      <tr
+        key={node.metadata?.uid ?? nodeName ?? idx}
+        onClick={() => openNodeDetail(node)}
+        title="Click to open node details"
+        className={selection?.isSelected(nodeName) ? style.selectedRow : undefined}
+      >
+        {checkboxCell(nodeName)}
+        <td>
+          <span className={style.nodeNameCell}>
+            <span className={style.nodeIcon}>{ICON.node}</span>
+            <span className={style.nodeName} title={nodeName}>
+              {nodeName}
+            </span>
+          </span>
+        </td>
+        <td>
+          <span className={style.monoSmall}>{getNodeClaimName(node) || "—"}</span>
+        </td>
+        <td>
+          <span className={style.monoSmall}>{getInstanceType(node)}</span>
+        </td>
+        <td>
+          <span className={style.monoSmall}>{getNodeArch(node)}</span>
+        </td>
+        <td>
+          <StatusBadge status={getNodeStatus(node)} />
+        </td>
+        <td className={style.monoSmall} title={node.status?.nodeInfo?.kubeletVersion}>
+          {node.status?.nodeInfo?.kubeletVersion ?? "—"}
+        </td>
+        <UsageCell used={usage?.cpu} total={parseCpuCores(allocatable?.cpu)} fmt={fmtCores} />
+        <UsageCell used={usage?.memory} total={parseMemGi(allocatable?.memory) * 1024 ** 3} fmt={fmtBytes} />
+        <td className={style.monoSmall}>{podLabel}</td>
+        <td className={style.clickHint}>{ICON.external}</td>
+      </tr>
+    );
+  }
+
+  function claimRow(claim: NodeClaim, idx: number) {
+    const claimName = claim.metadata?.name ?? "";
+    return (
+      <tr
+        key={`claim-${claim.metadata?.uid ?? claimName ?? idx}`}
+        onClick={() => openNodeClaimDetail(claimName)}
+        title="Click to open NodeClaim details"
+      >
+        {checkboxCell()}
+        <td>
+          <span className={style.nodeNameCell}>
+            <span className={style.nodeIcon}>{ICON.nodeclaim}</span>
+            <span className={style.nodeName} style={{ color: COLOR.textSecondary, fontStyle: "italic" }}>
+              (pending)
+            </span>
+          </span>
+        </td>
+        <td>
+          <span className={style.monoSmall}>{claimName || "—"}</span>
+        </td>
+        <td>
+          <span className={style.monoSmall}>{getNodeClaimInstanceType(claim)}</span>
+        </td>
+        <td>
+          <span className={style.monoSmall}>{getNodeClaimArch(claim)}</span>
+        </td>
+        <td>
+          <StatusBadge status="Claiming" />
+        </td>
+        <td className={style.monoSmall}>—</td>
+        <td className={style.monoSmall}>—</td>
+        <td className={style.monoSmall}>—</td>
+        <td className={style.monoSmall}>—</td>
+        <td className={style.clickHint}>{ICON.external}</td>
+      </tr>
+    );
+  }
 });
 
 // ── Tree (cards) view ─────────────────────────────────────────────────────────
@@ -314,6 +383,8 @@ function TreeLeaf({
   extra,
   color,
   onClick,
+  selected,
+  title = "Click to open details",
 }: {
   icon: string;
   kind: string;
@@ -321,13 +392,15 @@ function TreeLeaf({
   extra?: React.ReactNode;
   color?: string;
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  selected?: boolean;
+  title?: string;
 }) {
   return (
     <div
-      className={`${style.treeLeaf}${onClick ? ` ${style.treeClickable}` : ""}`}
+      className={`${style.treeLeaf}${onClick ? ` ${style.treeClickable}` : ""}${selected ? ` ${style.selectedLeaf}` : ""}`}
       style={{ borderLeft: `3px solid ${color ?? COLOR.border}` }}
       onClick={onClick}
-      title={onClick ? "Click to open details" : undefined}
+      title={onClick ? title : undefined}
     >
       <div className={style.treeLeafHeader}>
         <span className={style.treeLeafIcon}>{icon}</span>
@@ -339,7 +412,15 @@ function TreeLeaf({
   );
 }
 
-function NodePairRow({ node, podCountMap }: { node: Node; podCountMap: Record<string, number> }) {
+function NodePairRow({
+  node,
+  podCountMap,
+  selection,
+}: {
+  node: Node;
+  podCountMap: Record<string, number>;
+  selection: NodeSelection;
+}) {
   const status = getNodeStatus(node);
   const claimName = getNodeClaimName(node);
   const nodeName = node.metadata?.name ?? "";
@@ -365,7 +446,9 @@ function NodePairRow({ node, podCountMap }: { node: Node; podCountMap: Record<st
           kind="Node"
           name={nodeName}
           color={color}
-          onClick={() => openNodeDetail(node)}
+          selected={selection.isSelected(nodeName)}
+          title="Click to open details, Ctrl+click to select"
+          onClick={(e) => (isSelectClick(e) ? selection.toggle(nodeName) : openNodeDetail(node))}
           extra={
             <div className={style.treeLeafStats}>
               <StatusBadge status={status} />
@@ -384,14 +467,27 @@ function NodePairRow({ node, podCountMap }: { node: Node; podCountMap: Record<st
   );
 }
 
-function NodesTree({ nodes, podCountMap }: { nodes: Node[]; podCountMap: Record<string, number> }) {
+function NodesTree({
+  nodes,
+  podCountMap,
+  selection,
+}: {
+  nodes: Node[];
+  podCountMap: Record<string, number>;
+  selection: NodeSelection;
+}) {
   return (
     <div className={style.tree}>
       <div className={style.treeChildren} style={{ paddingLeft: 0, borderLeft: "none", marginLeft: 0 }}>
         {nodes.map((node, idx) => {
           if (!node?.metadata) return null;
           return (
-            <NodePairRow key={node.metadata?.uid ?? node.metadata?.name ?? idx} node={node} podCountMap={podCountMap} />
+            <NodePairRow
+              key={node.metadata?.uid ?? node.metadata?.name ?? idx}
+              node={node}
+              podCountMap={podCountMap}
+              selection={selection}
+            />
           );
         })}
       </div>
@@ -599,9 +695,11 @@ export const KarpenterCard = observer(function KarpenterCard({
   claims?: NodeClaim[];
 }) {
   const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [sectionBy, setSectionBy] = useState<GroupBy>("none");
   const [showHistory, setShowHistory] = useState(false);
 
   const { podCountMap, instanceTypeCounts, isLoading } = useKarpenterCardData(nodes);
+  const selection = useNodeSelection(nodes.map((n) => n.metadata?.name ?? "").filter(Boolean));
 
   if (!nodePool?.metadata) {
     return <div style={{ color: COLOR.danger }}>No NodePool provided</div>;
@@ -652,6 +750,18 @@ export const KarpenterCard = observer(function KarpenterCard({
             <>
               <div className={style.cardBodyHeader}>
                 <ViewToggle mode={viewMode} onChange={setViewMode} />
+                {viewMode === "table" && (
+                  <label className={`${style.groupBy} ${sectionBy === "none" ? "" : style.groupByActive}`}>
+                    <span>Group by</span>
+                    <select value={sectionBy} onChange={(e) => setSectionBy(e.target.value as GroupBy)}>
+                      {Object.entries(GROUP_BY).map(([value, title]) => (
+                        <option key={value} value={value}>
+                          {title}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
                 <ToggleButton
                   active={showHistory}
                   onClick={() => setShowHistory((v) => !v)}
@@ -673,10 +783,17 @@ export const KarpenterCard = observer(function KarpenterCard({
                 />
               )}
 
+              <NodeSelectionBar selection={selection} />
               {viewMode === "table" ? (
-                <NodesList nodes={nodes} claims={claims} podCountMap={podCountMap} />
+                <NodesList
+                  nodes={nodes}
+                  claims={claims}
+                  podCountMap={podCountMap}
+                  selection={selection}
+                  groupBy={sectionBy}
+                />
               ) : (
-                <NodesTree nodes={nodes} podCountMap={podCountMap} />
+                <NodesTree nodes={nodes} podCountMap={podCountMap} selection={selection} />
               )}
             </>
           )}

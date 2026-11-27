@@ -1,6 +1,6 @@
 // The columns of `kubectl get nodeclaims -o wide`, from the `additionalPrinterColumns` of karpenter.sh_nodeclaims.yaml
 // of kubernetes-sigs/karpenter v1.15.1: the value of each `jsonPath` as `kubectl` prints it, and the value it sorts by;
-// Status takes the place of Ready.
+// Status takes the place of Ready, and Arch, the architecture of the node, is added after Type.
 
 import { NodeClaim } from "../../api/nodeclaim/nodeclaim-v1";
 import { getNodeStatus } from "../../utils/kube-helpers";
@@ -11,6 +11,8 @@ import type { CondStatus, Node } from "../../utils/kube-helpers";
 export interface NodeClaimColumnValues {
   /** Type: `.metadata.labels.node\.kubernetes\.io/instance-type`. */
   type: string | undefined;
+  /** Arch: `.metadata.labels.kubernetes\.io/arch`, not a printer column of the CRD. */
+  arch: string | undefined;
   /** Capacity: `.metadata.labels.karpenter\.sh/capacity-type`. */
   capacity: string | undefined;
   /** Zone: `.metadata.labels.topology\.kubernetes\.io/zone`. */
@@ -39,6 +41,7 @@ export function nodeClaimColumnValues(nodeClaim: NodeClaim): NodeClaimColumnValu
   const labels = nodeClaim.metadata?.labels ?? {};
   return {
     type: text(labels["node.kubernetes.io/instance-type"]),
+    arch: text(labels["kubernetes.io/arch"]),
     capacity: text(labels["karpenter.sh/capacity-type"]),
     zone: text(labels["topology.kubernetes.io/zone"]),
     node: text(nodeClaim.status?.nodeName),
@@ -60,6 +63,7 @@ const byText = (column: keyof NodeClaimColumnValues) => (nodeClaim: NodeClaim) =
  */
 export const nodeClaimSortValues: Record<keyof NodeClaimColumnValues, (nodeClaim: NodeClaim) => string | number> = {
   type: byText("type"),
+  arch: byText("arch"),
   capacity: byText("capacity"),
   zone: byText("zone"),
   node: byText("node"),

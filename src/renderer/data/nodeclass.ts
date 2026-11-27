@@ -6,7 +6,7 @@
  */
 
 import { pageId, pageUrl } from "../pages/routes";
-import { navigateToDetail } from "../utils/kube-helpers";
+import { showDetail } from "../utils/kube-helpers";
 import { getAKSNodeClassStore, getEC2NodeClassStore, getGCENodeClassStore } from "./stores";
 
 import type { NodeClassReference } from "../api/karpenter/karpenter-v1-types";
@@ -99,11 +99,7 @@ export function nodeClassSelfLink(name: string, provider: NodeClassProvider): st
   return `${nodeClassApiBase(provider)}/${name}`;
 }
 
-/**
- * Opens the details of a node class on the extension's page of its kind; nothing for a node class the extension does
- * not model, which has no self-link either.
- */
+/** Opens the details of a node class over the current page; nothing for one the extension does not model. */
 export function openNodeClassDetail(name: string, provider: NodeClassProvider): void {
-  const page = nodeClassPage(provider);
-  if (page) navigateToDetail(page, nodeClassSelfLink(name, provider));
+  showDetail(nodeClassSelfLink(name, provider));
 }

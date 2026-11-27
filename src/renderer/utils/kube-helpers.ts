@@ -8,7 +8,6 @@
 
 import { Renderer } from "@freelensapp/extensions";
 import { getPodStore } from "../data/stores";
-import { pageId, pageUrl } from "../pages/routes";
 
 import type { NodePool } from "../api/nodepool/nodepool-v1";
 import type { Condition, Quantity } from "../api/types";
@@ -160,6 +159,10 @@ export function getInstanceType(node: Node): string {
   return node.metadata.labels?.["node.kubernetes.io/instance-type"] ?? "—";
 }
 
+export function getNodeArch(node: Node): string {
+  return node.metadata.labels?.["kubernetes.io/arch"] ?? "—";
+}
+
 // ── Memory / CPU parsing ──────────────────────────────────────────────────────
 
 /** A memory quantity in Gi. A number is a quantity written without quotes, which has no suffix: bytes. */
@@ -213,18 +216,19 @@ export function detailUrl(listPath: string, selfLink: string): string {
 }
 
 /**
- * Navigate to a Freelens list page with the detail drawer open for `selfLink`.
+ * Opens the details drawer of `selfLink` over the current page. The host's drawer closes on a click that reaches
+ * `window` from outside it, which the click that opened it does next; it leaves alone a click whose default is
+ * prevented.
  */
-export function navigateToDetail(listPath: string, selfLink: string): void {
+export function showDetail(selfLink: string): void {
   if (!selfLink) return;
-  Renderer.Navigation.navigate(detailUrl(listPath, selfLink));
+  globalThis.window?.event?.preventDefault();
+  Renderer.Navigation.showDetails(selfLink);
 }
 
 export function openNodeDetail(node: Node): void {
   const name = node.metadata?.name;
-  if (!name) return;
-
-  navigateToDetail("/nodes", nodeSelfLink(name));
+  if (name) showDetail(nodeSelfLink(name));
 }
 
 export const nodeSelfLink = (name: string) => `/api/v1/nodes/${name}`;
@@ -232,21 +236,15 @@ export const nodePoolSelfLink = (name: string) => `/apis/karpenter.sh/v1/nodepoo
 export const nodeClaimSelfLink = (name: string) => `/apis/karpenter.sh/v1/nodeclaims/${name}`;
 export const nodeOverlaySelfLink = (name: string) => `/apis/karpenter.sh/v1alpha1/nodeoverlays/${name}`;
 
-/** Opens the extension's Node Pools page with the details of a NodePool. */
 export function openNodePoolDetail(nodePool: NodePool): void {
-  const name = nodePool.metadata?.name ?? "";
-  if (!name) return;
-  navigateToDetail(pageUrl(pageId.nodePools), nodePoolSelfLink(name));
+  const name = nodePool.metadata?.name;
+  if (name) showDetail(nodePoolSelfLink(name));
 }
 
-/** Opens the extension's Node Claims page with the details of a NodeClaim. */
 export function openNodeClaimDetail(name: string): void {
-  if (!name) return;
-  navigateToDetail(pageUrl(pageId.nodeClaims), nodeClaimSelfLink(name));
+  if (name) showDetail(nodeClaimSelfLink(name));
 }
 
-/** Opens the extension's Node Overlays page with the details of a NodeOverlay. */
 export function openNodeOverlayDetail(name: string): void {
-  if (!name) return;
-  navigateToDetail(pageUrl(pageId.nodeOverlays), nodeOverlaySelfLink(name));
+  if (name) showDetail(nodeOverlaySelfLink(name));
 }

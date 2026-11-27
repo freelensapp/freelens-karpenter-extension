@@ -135,6 +135,8 @@ export const Renderer = {
   Component: {
     Badge,
     BadgeBoolean,
+    // The dialog confirms at once.
+    ConfirmDialog: { open: vi.fn(({ ok }: { ok?: () => void }) => ok?.()) },
     DrawerItem,
     DrawerItemLabels,
     DrawerTitle,
@@ -143,15 +145,18 @@ export const Renderer = {
     KubeObjectListLayout,
     LineProgress: vi.fn(() => null),
     LocaleDate,
+    Notifications: { error: vi.fn() },
     PieChart: vi.fn(() => null),
     WithTooltip,
     getBooleanClass,
     getBooleanText,
+    terminalStore: { sendCommand: vi.fn(async () => undefined) },
   },
   K8sApi: {
     LensExtensionKubeObject,
     KubeApi: class KubeApi {},
     KubeObjectStore: class KubeObjectStore {},
+    nodesApi: { patch: vi.fn(async () => null), delete: vi.fn(async () => ({})) },
   },
   Navigation: {
     navigate: vi.fn(),
@@ -160,6 +165,7 @@ export const Renderer = {
 };
 
 export const Common = {
+  App: { Preferences: { getKubectlPath: () => undefined } },
   logger: {
     debug: vi.fn(),
     info: vi.fn(),

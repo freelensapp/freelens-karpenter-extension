@@ -169,6 +169,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
     const row = await expectListRow(frame, nodeClaimColumns, [
       "azure-d3e4f",
       "Standard_D8s_v5",
+      "amd64",
       "spot",
       "westeurope-2",
       "aks-azure-d3e4f-12345678-vmss000001",
@@ -188,7 +189,7 @@ describe.skipIf(!(await appReady({ cluster: true })))("Karpenter on AKS", () => 
       "False",
       agePattern,
     ]);
-    await expectEmptyCells(frame, pending, ["Type", "Zone", "Node"]);
+    await expectEmptyCells(frame, pending, ["Type", "Arch", "Zone", "Node"]);
 
     await clickAndExpectDetails(
       frame,

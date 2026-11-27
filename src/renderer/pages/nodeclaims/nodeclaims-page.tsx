@@ -76,11 +76,12 @@ const NodeClassLink = observer(function NodeClassLink({ nodeClaim }: { nodeClaim
   );
 });
 
-// The columns of `kubectl get nodeclaims -o wide`, without ImageID and ID, with Status in place of Ready, before
+// The columns of `kubectl get nodeclaims -o wide`, with Arch after Type, without ImageID and ID, with Status in place of Ready, before
 // Drifted, and Age last.
 const columns: KindColumn<NodeClaim>[] = [
   nameColumn(),
   textColumn("type", "Type", (nodeClaim) => nodeClaimColumnValues(nodeClaim).type, nodeClaimSortValues.type),
+  textColumn("arch", "Arch", (nodeClaim) => nodeClaimColumnValues(nodeClaim).arch, nodeClaimSortValues.arch),
   textColumn(
     "capacity",
     "Capacity",

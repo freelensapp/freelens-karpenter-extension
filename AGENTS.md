@@ -13,7 +13,9 @@ Scaling Decisions), and a list page with details for each Karpenter kind it
 models, "Node Claims", "Node Pools", "Node Overlays", "EC2 Node Classes", "AKS
 Node Classes", "GCE Node Classes" and "GCE Custom Machine Types". It also adds a Karpenter section to the
 host's Node details. It reads the Karpenter objects, the nodes, the pods and the events of the
-cluster, and writes nothing to it.
+cluster, and writes to it only on request: the nodes selected in a NodePool card
+or in the Topology tab get the host's node actions, Cordon, Uncordon and Delete
+through the API, and Drain, as in the host, with `kubectl` in a terminal tab.
 
 The build, type-check, test and release setup is the one of
 freelensapp/freelens-example-extension, the reference template for Freelens
@@ -191,7 +193,7 @@ from the objects is in pure modules next to them, which the unit tests cover:
 `components/Topology/topology-utils.ts`,
 `components/NodeClassesTab/nodeclass-card.ts`,
 `components/KarpenterCard/card-utils.ts`, `utils/karpenter-events.ts`,
-`utils/kube-helpers.ts`, `utils/printer-columns.ts`,
+`utils/kube-helpers.ts`, `utils/node-commands.ts`, `utils/printer-columns.ts`,
 `pages/nodepools/nodepool-columns.ts`, `pages/nodeclaims/nodeclaim-columns.ts`,
 `pages/nodeoverlays/nodeoverlay-columns.ts`,
 `pages/ec2nodeclasses/ec2nodeclass-columns.ts`,
@@ -211,14 +213,28 @@ EC2NodeClass, AKSNodeClass, GCENodeClass, GCECustomMachineType) has an entry
 under "Karpenter" in the sidebar, a list page and details; see "Pages and
 Details of a Kind". No field of another kind refers to a GCECustomMachineType,
 so nothing links to it; it opens from its own page. A
-click on such an object in a tab opens its page with its details (`openNodePoolDetail`, `openNodeClaimDetail`
-and `openNodeOverlayDetail` of `utils/kube-helpers.ts`, `openNodeClassDetail`
+click on such an object, or on a node, in a tab opens its details over the page (`openNodeDetail`, `openNodePoolDetail`,
+`openNodeClaimDetail` and `openNodeOverlayDetail` of `utils/kube-helpers.ts`, `openNodeClassDetail`
 of `data/nodeclass.ts`), and a link inside a details drawer opens the other
 object's details over the page (`DetailsLink` of `components/shared/`). A link
 in a list page to an object of another kind with a page opens it on that
 kind's page (`DetailsLink` with `page`, as the NodePool column of the Node
 Claims page, and the NodeClass column with `nodeClassPage` of
 `data/nodeclass.ts`). No link opens a page of the host's Custom Resources.
+
+Nodes are selected with the checkboxes of the node table of a NodePool card,
+or with Ctrl/Cmd+click on a node of its tree view or of the Topology tab
+(`useNodeSelection` of `components/shared/NodeSelection.tsx`). The selection
+shows `NodeSelectionBar`: Cordon and Uncordon patch `spec.unschedulable` and
+Delete deletes the node, through `Renderer.K8sApi.nodesApi`, with a
+notification for each node that fails; Drain sends the command of
+`utils/node-commands.ts`, with the host's flags, to
+`terminalStore.sendCommand`. Drain and Delete ask first with `ConfirmDialog`.
+
+"Group by" above the node table of a NodePool card divides it into sections,
+by instance type, capacity type, zone, arch or status (`GROUP_BY`,
+`nodeGroupKey`, `claimGroupKey` and `groupBy` of
+`components/KarpenterCard/card-utils.ts`), sorted by their value, `—` last.
 
 ## Data Layer
 
@@ -448,7 +464,8 @@ Node Classes, GCE Node Classes and GCE Custom Machine Types have them:
    provider takes them, `spec.subnetRangeNames`, else the deprecated
    `spec.subnetRangeName` (`GCENodeClass.getSubnetRangeNames`), one as a text
    and several as a badge each (`shortTextsColumn`).
-   The other exception is the Node Claims page. It has Status in place of
+   The other exception is the Node Claims page. It has Arch after Type, the
+   `kubernetes.io/arch` label, which the CRD has no column for, and Status in place of
    Ready, before Drifted: the status of the NodeClaim as the Overview counts
    it (Ready, Provisioning, Claiming, Terminating, Not Ready), from its node
    when the host's store has it, which the page loads, else from its
@@ -489,8 +506,8 @@ Node Classes, GCE Node Classes and GCE Custom Machine Types have them:
    of each section of an AKSNodeClass, such as `LocalDNSReady`, and
    `ImagesReady` of a GCENodeClass next to its image selector terms). The
    stores of the objects around it are loaded with `useSubscribedStores`.
-5. **The links**: the `open*Detail` helper of the kind opens its page with its
-   details (`navigateToDetail(pageUrl(pageId.x), selfLink)`). A node class
+5. **The links**: the `open*Detail` helper of the kind opens its details over
+   the page (`showDetail(selfLink)`). A node class
    has one helper for every provider, `openNodeClassDetail`, and
    `nodeClassPage` of `data/nodeclass.ts` names the page of each provider's
    node class.
@@ -1110,7 +1127,7 @@ metrics API (`hostMetricsRequestPattern`), which kind does not serve and the
 host's views of pods and nodes ask for. The details of the kind node are
 opened with `Renderer.Navigation.showDetails`, not from the host's Nodes page.
 The link of the dashboard in the sidebar does not leave the tab that is open,
-and a link of a card opens the page of the kind, so `openTab` opens the
+and a link in a list page opens the page of another kind, so `openTab` opens the
 dashboard from the sidebar first when its tab bar is not shown. The sidebar
 keeps "Karpenter" closed until it is clicked, so the helpers open it first
 when its entries are not shown. `openTab` looks for its texts in the main area,

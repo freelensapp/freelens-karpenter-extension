@@ -24,6 +24,7 @@ const launched = nodeClaim(
     "karpenter.sh/nodepool": "general",
     "karpenter.sh/capacity-type": "on-demand",
     "node.kubernetes.io/instance-type": "m5.2xlarge",
+    "kubernetes.io/arch": "amd64",
     "topology.kubernetes.io/zone": "eu-west-1b",
   },
   {
@@ -48,6 +49,7 @@ describe("nodeClaimColumnValues", () => {
   it("has the value of the jsonPath of each column, as kubectl prints it", () => {
     expect(nodeClaimColumnValues(launched)).toEqual({
       type: "m5.2xlarge",
+      arch: "amd64",
       capacity: "on-demand",
       zone: "eu-west-1b",
       node: "ip-10-0-2-12.eu-west-1.compute.internal",
@@ -62,6 +64,7 @@ describe("nodeClaimColumnValues", () => {
   it("has no value where a NodeClaim without a node has none", () => {
     expect(nodeClaimColumnValues(pending)).toEqual({
       type: undefined,
+      arch: undefined,
       capacity: "on-demand",
       zone: undefined,
       node: undefined,
