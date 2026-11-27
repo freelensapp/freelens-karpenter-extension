@@ -45,7 +45,10 @@ Freelens's `mise.toml` and `.nvmrc` for Node and the other mise tools.
 Renovate keeps them there: custom datasources in `.renovaterc.json` read the
 versions from the same Freelens files on `main`, so an update arrives only once
 Freelens has adopted it, at that version, in one `Freelens dependencies` group
-PR together with a release of `@freelensapp/extensions`. A dependency added to
+PR together with a release of `@freelensapp/extensions`. Every rule of the
+group sets `separateMajorMinor: false`; otherwise Renovate splits a major
+update off into a PR of its own, and the host's stack arrives in two halves.
+A dependency added to
 `package.json` follows the Freelens catalog unless the catalog rule excludes
 it; one that Freelens does not have must be excluded there, or its lookup fails
 on the Dependency Dashboard. The catalog rule matches only `dependencies` and
@@ -55,7 +58,7 @@ and runs ahead of Freelens. Such an override gets a rule of its own, next to
 the catalog rule: `matchManagers: ["npm"]`, the override's key in
 `matchDepNames`, `overrideDatasource: "custom.freelens-catalog"`, the overridden
 package in `overridePackageName`, and the catalog rule's `rangeStrategy`,
-`minimumReleaseAge` and `groupName`.
+`minimumReleaseAge`, `groupName` and `separateMajorMinor`.
 This repository has no override. What Freelens does not define (GitHub Actions, the
 tool versions in the workflows, `shx`) Renovate updates as usual.
 pnpm follows the pnpm of Freelens's `mise.toml`, both in `mise.toml` and in
