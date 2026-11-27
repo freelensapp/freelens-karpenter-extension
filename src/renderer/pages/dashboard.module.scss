@@ -117,7 +117,9 @@
   font-size: 11px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
   opacity: 0.65;
 
   &:hover {
@@ -158,7 +160,9 @@
   padding: 3px 10px;
   margin-left: 8px;
   font-weight: 400;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 
   &:hover {
     background: rgba(0, 167, 225, 0.1);
